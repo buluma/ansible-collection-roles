@@ -6,7 +6,7 @@ on:
   push:
 
 jobs:
-  deploy:
+  test_collection:
     runs-on: "Ubuntu-20.04"
     steps:
       - run: ansible-galaxy collection install buluma.roles
