@@ -1,7 +1,7 @@
 ---
 namespace: buluma
 name: roles
-version: 1.9.4
+version: 1.9.5
 readme: README.md
 authors:
   - Michael Buluma <me@buluma.co.ke>
