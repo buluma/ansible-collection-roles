@@ -1,6 +1,6 @@
 # Ansible Collection - buluma.roles
 
-A collection of roles found on [buluma.co.ke](https://buluma.co.ke/).
+A collection of roles found on [buluma.co.ke](https://galaxy.ansible.com/buluma/).
 
 ## Using roles in this collection.
 
