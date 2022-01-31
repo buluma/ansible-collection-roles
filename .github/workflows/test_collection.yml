@@ -4,11 +4,9 @@ name: Test Collection
 
 on:
   push:
-  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: "Ubuntu-20.04"
     steps:
-      - name: Test Role
       - run: ansible-galaxy collection install buluma.roles
