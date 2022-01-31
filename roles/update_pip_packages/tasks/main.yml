@@ -1,0 +1,59 @@
+---
+# tasks file for update_pip_packages
+
+- name: import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: yes
+  delegate_to: localhost
+
+- name: install requirements
+  ansible.builtin.package:
+    name: "{{ update_pip_packages_requirements }}"
+    state: present
+
+- name: check if pip is used
+  block:
+    - name: check pip
+      ansible.builtin.command:
+        cmd: which pip
+      changed_when: no
+      register: update_pip_packages_pip
+      environment:
+        PATH: "/bin:/usr/bin:/usr/local/bin"
+  rescue:
+    - name: no pip
+      ansible.builtin.debug:
+        msg: "There is no pip."
+
+- name: check if pip3 is used
+  block:
+    - name: check pip3
+      ansible.builtin.command:
+        cmd: which pip3
+      changed_when: no
+      register: update_pip_packages_pip3
+      environment:
+        PATH: "/bin:/usr/bin:/usr/local/bin"
+  rescue:
+    - name: no pip3
+      ansible.builtin.debug:
+        msg: "There is no pip3."
+
+- name: add pip to list
+  ansible.builtin.set_fact:
+    update_pip_packages_clients: "{{ [ update_pip_packages_pip.stdout ] }}"
+  when:
+    - update_pip_packages_pip is succeeded
+
+- name: add pip3 to list
+  ansible.builtin.set_fact:
+    update_pip_packages_clients: "{{ update_pip_packages_clients + [ update_pip_packages_pip3.stdout ] }}"
+  when:
+    - update_pip_packages_pip3 is succeeded
+
+- name: include client.yml
+  ansible.builtin.include_tasks:
+    file: client.yml
+  loop: "{{ update_pip_packages_clients }}"
+  loop_control:
+    loop_var: client

@@ -1,0 +1,10 @@
+---
+roles:
+  - name: buluma.auditd
+  - name: buluma.bootstrap
+  - name: buluma.core_dependencies
+  - name: buluma.cron
+  - name: buluma.users
+collections:
+  - name: community.general
+  - name: ansible.posix

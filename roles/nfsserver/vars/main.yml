@@ -1,0 +1,32 @@
+---
+# vars file for nfsserver
+
+_nfsserver_packages:
+  Alpine:
+    - nfs-utils
+  Archlinux:
+    - nfs-utils
+  Debian:
+    - nfs-kernel-server
+  RedHat: &redhat_packages
+    - nfs-utils
+  Rocky: *redhat_packages
+  Suse:
+    - nfs-kernel-server
+
+nfsserver_packages: "{{ _nfsserver_packages[ansible_os_family] }}"
+
+_nfsserver_services:
+  Alpine:
+    - nfs
+  Archlinux:
+    - nfs-server
+  Debian:
+    - nfs-kernel-server
+  RedHat: &redhat_services
+    - nfs-server
+  Rocky: *redhat_services
+  Suse:
+    - nfsserver
+
+nfsserver_services: "{{ _nfsserver_services[ansible_os_family] }}"

@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: etherpad
+  description: Install and configure Etherpad on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - 8
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Fedora
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - focal
+
+  galaxy_tags:
+    - etherpad
+
+dependencies: []

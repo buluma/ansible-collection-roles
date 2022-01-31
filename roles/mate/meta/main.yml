@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: mate
+  description: Install MATE on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: OpenSUSE
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - mate
+
+dependencies: []

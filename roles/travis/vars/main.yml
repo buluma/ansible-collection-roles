@@ -1,0 +1,18 @@
+---
+# vars file for travis
+
+_travis_requirements:
+  default: []
+  Alpine:
+    - ruby-dev
+  Debian:
+    - ruby-dev
+  RedHat: &redhat_requirements
+    - ruby-devel
+  Rocky: *redhat_requirements
+  Suse:
+    - ruby-devel
+
+travis_requirements: "{{ _travis_requirements[ansible_os_family] | default(_travis_requirements['default'] ) }}"
+
+travis_package: travis

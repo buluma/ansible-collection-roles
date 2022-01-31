@@ -1,0 +1,83 @@
+---
+# vars file for mysql
+
+_mysql_name:
+  default: mariadb
+  RedHat-8: &redhat_name mysql
+  Rocky-8: *redhat_name
+  Amazon-2018: mysql
+
+mysql_name: "{{ _mysql_name[ansible_os_family ~ '-' ~ ansible_distribution_major_version] | default(_mysql_name['default'] ) }}"
+
+_mysql_packages:
+  default:
+    - "{{ mysql_name }}-server"
+    - "{{ mysql_name }}-devel"
+    - python2-mysql
+  Alpine:
+    - "{{ mysql_name }}"
+    - py-mysqldb
+  Amazon-2018:
+    - "{{ mysql_name }}-server"
+    - "{{ mysql_name }}-devel"
+    - MySQL-python27
+  Debian:
+    - "{{ mysql_name }}-server"
+    - python3-mysqldb
+  Suse:
+    - libmysqlclient-devel
+    - "{{ mysql_name }}"
+    - python3-mysqlclient
+  RedHat-7:
+    - "{{ mysql_name }}-server"
+    - "{{ mysql_name }}-devel"
+    - MySQL-python
+  RedHat: &redhat_packages
+    - "{{ mysql_name }}-server"
+    - "{{ mysql_name }}-devel"
+    - python3-PyMySQL
+  Rocky: *redhat_packages
+
+mysql_packages: "{{ _mysql_packages[ansible_os_family ~ '-' ~ ansible_distribution_major_version] | default(_mysql_packages[ansible_os_family] | default(_mysql_packages['default'] )) }}"
+
+_mysql_initialize_command:
+  Alpine: /etc/init.d/mariadb setup
+  Archlinux: mysql_install_db --basedir=/usr --datadir=/var/lib/mysql
+
+mysql_initialize_command: "{{ _mysql_initialize_command[ansible_os_family] }}"
+
+_mysql_service:
+  default: "{{ mysql_name }}"
+  RedHat-8: &redhat_service "{{ mysql_name }}d"
+  Rocky-8: *redhat_service
+
+mysql_service: "{{ _mysql_service[ansible_os_family ~ '-' ~ ansible_distribution_major_version] | default(_mysql_service['default'] ) }}"
+
+_mysql_socket:
+  default: /var/run/mysql/mysql.sock
+  Debian: /var/run/mysqld/mysqld.sock
+  RedHat: &redhat_socket /var/lib/mysql/mysql.sock
+  Rocky: *redhat_socket
+
+mysql_socket: "{{ _mysql_socket[ansible_os_family] | default(_mysql_socket['default'] ) }}"
+
+mysql_configuration_options:
+  - option: bind-address
+    section: mysqld
+    value: "{{ mysql_bind_address }}"
+  - option: socket
+    section: mysqld
+    value: "{{ mysql_socket }}"
+  - section: mysqld
+    option: innodb_buffer_pool_size
+    value: "{{ mysql_innodb_buffer_pool_size }}"
+  - section: mysqld
+    option: innodb_io_capacity
+    value: "{{ mysql_innodb_io_capacity }}"
+
+_mysql_configuration_destination:
+  default: /etc/mysql/mariadb.conf.d
+  RedHat: &redhat_configuration_destination /etc/my.cnf.d
+  Rocky: *redhat_configuration_destination
+
+mysql_configuration_destination: "{{ _mysql_configuration_destination[ansible_os_family] | default(_mysql_configuration_destination['default'] ) }}"

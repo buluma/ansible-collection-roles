@@ -1,0 +1,12 @@
+---
+# handlers file for haproxy
+
+- name: reboot
+  ansible.builtin.reboot:
+
+- name: restart haproxy
+  ansible.builtin.service:
+    name: haproxy
+    state: restarted
+  when:
+    - not ansible_check_mode | bool

@@ -1,0 +1,7 @@
+---
+roles:
+  - name: buluma.apt_autostart
+  - name: buluma.bootstrap
+  - name: buluma.ca_certificates
+collections:
+  - name: community.general

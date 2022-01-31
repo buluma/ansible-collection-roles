@@ -1,0 +1,15 @@
+---
+# defaults file for logrotate
+
+# How often to rotate logs, either daily, weekly or monthly.
+logrotate_frequency: weekly
+
+# How many files to keep.
+logrotate_keep: 4
+
+# Should rotated logs be compressed??
+logrotate_compress: yes
+
+# User/Group for rotated log files (Loaded by OS-Specific vars if found, or and can be set manually)
+logrotate_user: "{{ _logrotate_user[ansible_distribution] | default(_logrotate_user['default'] ) }}"
+logrotate_group: "{{ _logrotate_group[ansible_distribution] | default(_logrotate_group['default'] ) }}"

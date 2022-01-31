@@ -1,0 +1,9 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.java
+  - name: buluma.locale
+  - name: buluma.core_dependencies
+collections:
+  - name: community.general

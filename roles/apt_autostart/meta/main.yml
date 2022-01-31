@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: apt_autostart
+  description: Enable or disable automatic starting of services upon installation of packages.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - aptautostart
+    - apt
+    - autostart
+    - service
+    - invokerc
+    - sysvinit
+    - systemctl
+
+dependencies: []

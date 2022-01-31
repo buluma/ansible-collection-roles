@@ -1,0 +1,8 @@
+---
+# handlers file for digitalocean-agent
+
+- name: update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when:
+    - ansible_pkg_mgr == "apt"

@@ -1,0 +1,14 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.buildtools
+  - name: buluma.core_dependencies
+  - name: buluma.epel
+  # httpd is added to test the connection. (see `molecule/default/verify.yml`)
+  - name: buluma.httpd
+  - name: buluma.openssl
+  - name: buluma.python_pip
+collections:
+  - name: community.general
+  - name: ansible.posix
+  - name: community.crypto

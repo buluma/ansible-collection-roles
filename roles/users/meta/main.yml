@@ -1,0 +1,40 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: users
+  description: The purpose of this role is to add users and groups on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Alpine
+      versions:
+        - all
+    - name: Amazon
+      versions:
+        - Candidate
+    - name: EL
+      versions:
+        - 8
+    - name: Debian
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: OpenSUSE
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - users
+    - server
+    - sudo
+    - system
+
+dependencies: []

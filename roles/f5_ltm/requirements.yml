@@ -1,0 +1,6 @@
+---
+roles:
+  - name: buluma.bootstrap
+collections:
+  - name: f5networks.f5_modules
+  - name: community.general

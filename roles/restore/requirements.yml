@@ -1,0 +1,14 @@
+---
+roles:
+  - name: buluma.backup
+  - name: buluma.bootstrap
+  - name: buluma.core_dependencies
+  - name: buluma.mysql
+  - name: buluma.buildtools
+  - name: buluma.epel
+  - name: buluma.python_pip
+  - name: buluma.postgres
+collections:
+  - name: community.postgresql
+  - name: community.mysql
+  - name: community.general

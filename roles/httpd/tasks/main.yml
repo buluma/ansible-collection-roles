@@ -1,0 +1,93 @@
+---
+# tasks file for httpd
+
+- name: import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: yes
+  delegate_to: localhost
+
+- name: install apache httpd
+  ansible.builtin.package:
+    name: "{{ httpd_packages }}"
+    state: present
+
+- name: configure selinux
+  block:
+    - name: modify selinux settings
+      ansible.posix.seboolean:
+        name: "{{ item }}"
+        state: yes
+        persistent: yes
+      when:
+        - ansible_selinux.status is defined
+        - ansible_selinux.status == "enabled"
+      loop: "{{ httpd_sebooleans }}"
+
+    - name: allow connections to custom port
+      community.general.seport:
+        ports: "{{ item }}"
+        proto: tcp
+        setype: http_port_t
+        state: present
+      loop:
+        - "{{ httpd_port }}"
+        - "{{ httpd_ssl_port | default(omit) }}"
+  when:
+    - ansible_selinux.status is defined
+    - ansible_selinux.status == "enabled"
+
+- name: configure httpd
+  ansible.builtin.template:
+    src: "{{ httpd_config_src }}"
+    dest: "{{ httpd_config_dest }}"
+    mode: "0644"
+  notify:
+    - test httpd configuration validity
+    - restart httpd
+
+- name: import ssl.yml
+  ansible.builtin.import_tasks: ssl.yml
+  when:
+    - https_ssl_enable
+
+- name: import locations.yml
+  ansible.builtin.import_tasks: locations.yml
+  when:
+    - httpd_locations is defined
+
+- name: import vhosts.yml
+  ansible.builtin.import_tasks: vhosts.yml
+  when:
+    - httpd_vhosts is defined
+
+- name: configure ports
+  ansible.builtin.template:
+    src: "{{ httpd_ports_conf }}.j2"
+    dest: "{{ httpd_server_root }}/{{ httpd_ports_conf }}"
+    mode: "0644"
+  notify:
+    - test httpd configuration validity
+    - restart httpd
+  when:
+    - ansible_os_family in [ "Debian", "Suse" ]
+
+- name: import directories.yml
+  ansible.builtin.import_tasks: directories.yml
+  when:
+    - httpd_directories is defined
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: removing default html
+  ansible.builtin.file:
+    path: "{{ httpd_data_directory }}/index.html"
+    state: absent
+  when:
+    - httpd_remove_example
+
+- name: start and enable httpd
+  ansible.builtin.service:
+    name: "{{ httpd_service }}"
+    state: started
+    enabled: yes

@@ -1,0 +1,168 @@
+---
+
+- name: test if logrotate_frequency is set correctly
+  ansible.builtin.assert:
+    that:
+      - logrotate_frequency is defined
+      - logrotate_frequency is string
+      - logrotate_frequency in [ "daily", "weekly", "monthly" ]
+    quiet: yes
+
+- name: test if logrotate_keep is set correctly
+  ansible.builtin.assert:
+    that:
+      - logrotate_keep is defined
+      - logrotate_keep is number
+      - logrotate_keep >= 0
+    quiet: yes
+
+- name: test if logrotate_compress is set correctly
+  ansible.builtin.assert:
+    that:
+      - logrotate_compress is defined
+      - logrotate_compress is boolean
+    quiet: yes
+
+- name: test if logrotate_user is set correctly
+  ansible.builtin.assert:
+    that:
+      - logrotate_user is defined
+      - logrotate_user is string
+    quiet: yes
+
+- name: test if logrotate_group is set correctly
+  ansible.builtin.assert:
+    that:
+      - logrotate_group is defined
+      - logrotate_group is string
+    quiet: yes
+
+- name: test if logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - logrotate_entries is iterable
+    quiet: yes
+  when:
+    - logrotate_entries is defined
+
+- name: test if mandatory items in logrotate_entries are set correctly
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.path is defined
+      - item.path is string
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - logrotate_entries is defined
+
+- name: test if frequency in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.frequency is string
+      - item.frequency in [ "daily", "weekly", "monthly" ]
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.frequency is defined
+
+- name: test if keep in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.keep is integer
+      - item.keep >= 1
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.keep is defined
+
+- name: test if compress in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.compress is boolean
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.compress is defined
+
+- name: test if postrotate in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.postrotate is string
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.postrotate is defined
+
+- name: test if missingok in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.missingok is boolean
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.missingok is defined
+
+- name: test if create_* in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.create_mode is defined
+      - item.create_mode is string
+      - item.create_user is defined
+      - item.create_user is string
+      - item.create_group is defined
+      - item.create_group is string
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.create_mode is defined or
+      item.create_user is defined or
+      item.create_group is defined
+
+- name: test if minsize in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.minsize is string
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.minsize is defined
+
+- name: test if notifempty in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.notifempty is boolean
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.notifempty is defined
+
+- name: test if sharedscripts in logrotate_entries is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.sharedscripts is boolean
+    quiet: yes
+  loop: "{{ logrotate_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.sharedscripts is defined

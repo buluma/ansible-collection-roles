@@ -1,0 +1,7 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.buildtools
+  - name: buluma.epel
+collections:
+  - name: community.general

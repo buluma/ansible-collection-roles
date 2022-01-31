@@ -1,0 +1,35 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: php
+  description: Install and configure php on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - 8
+    - name: Debian
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: OpenSUSE
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - installer
+    - package
+    - php
+    - web
+
+dependencies:
+  - buluma.httpd

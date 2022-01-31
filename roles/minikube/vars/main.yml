@@ -1,0 +1,32 @@
+---
+# vars file for minikube
+
+_minikube_requirements:
+  default:
+  Alpine:
+    - ebtables
+    - ethtool
+    - socat
+  Debian:
+    - ebtables
+    - ethtool
+    - socat
+  RedHat: &redhat_requirements
+    - conntrack-tools
+    - ebtables
+    - ethtool
+    - iptables
+    - kmod
+    - socat
+  Rocky: *redhat_requirements
+
+minikube_requirements: "{{ _minikube_requirements[ansible_os_family] | default(_minikube_requirements['default'] ) }}"
+
+_minikube_packages:
+  Debian:
+    - "https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb"
+  RedHat: &redhat_packages
+    - "https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm"
+  Rocky: *redhat_packages
+
+minikube_packages: "{{ _minikube_packages[ansible_os_family] }}"

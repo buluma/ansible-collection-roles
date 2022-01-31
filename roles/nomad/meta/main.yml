@@ -1,0 +1,33 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: nomad
+  description: Install and configure Nomad.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - 8
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Fedora
+      versions:
+        - 34
+        - 35
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - hashicorp
+    - nomad
+    - server
+    - agent
+    - cluster
+
+dependencies: []

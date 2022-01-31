@@ -1,0 +1,10 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.ca_certificates
+  - name: buluma.epel
+  - name: buluma.git
+  - name: buluma.npm
+  - name: buluma.service
+collections:
+  - name: community.general

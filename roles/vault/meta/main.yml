@@ -1,0 +1,30 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: vault
+  description: Install, configure, initialize and unseal Hashicorp Vault.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+    - name: EL
+      versions:
+        - 8
+    - name: Fedora
+      versions:
+        - 34
+        - 35
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - vault
+    - hashicorp
+
+dependencies: []

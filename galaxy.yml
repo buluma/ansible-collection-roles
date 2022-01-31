@@ -1,0 +1,27 @@
+---
+namespace: buluma
+name: roles
+version: 1.9.3
+readme: README.md
+authors:
+  - Michael Buluma <robert@meinit.nl>
+description: A collection of all roles listed in [buluma.nl](https://buluma.nl/).
+license_file: 'LICENSE'
+tags:
+  - buluma
+  - roles
+  - linux
+dependencies:
+  ansible.posix: "*"
+  community.crypto: "*"
+  community.general: "*"
+  community.mysql: "*"
+  community.postgresql: "*"
+  community.zabbix: "*"
+  f5networks.f5_modules: "*"
+  gluster.gluster: "*"
+repository: https://github.com/buluma/ansible-collection-roles
+documentation: https://buluma.nl/
+homepage: https://buluma.nl/
+issues: http://github.com/buluma/ansible-collection-roles/issues
+build_ignore: []
