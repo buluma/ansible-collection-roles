@@ -20,7 +20,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
     - role: buluma.bootstrap
 ```
 
-Also see a [full explanation and example](https://buluma.nl/how-to-use-these-roles.html) on how to use these roles.
+Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -46,7 +46,7 @@ bootstrap_timeout: 3
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.nl/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-bootstrap/png/requirements.png "Dependencies")
@@ -87,6 +87,6 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.nl/)
+[Michael Buluma](https://buluma.co.ke/)
 
 Please consider [sponsoring me](https://github.com/sponsors/buluma).
