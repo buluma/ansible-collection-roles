@@ -5,7 +5,7 @@ name: Test Collection
 on:
   push:
   schedule:
-    - cron: '3 2 * * *'
+    - cron: '27 * * * *'
   workflow_dispatch:
 
 jobs:
