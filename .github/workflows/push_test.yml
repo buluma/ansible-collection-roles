@@ -6,8 +6,15 @@
 name: Release to Ansible Galaxy
 
 on:
-  release:
-    types: [created, edited, published, released]
+  pull_request:
+  push:
+    paths:
+      # - '1.34.1-glibc/**'
+      - '.github/workflows/push_test.yml'
+  schedule:
+    - cron: '10 4,6 * * *'
+  workflow_dispatch:
+
 jobs:
   release:
     runs-on: ubuntu-20.04
