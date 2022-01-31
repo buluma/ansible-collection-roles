@@ -16,7 +16,7 @@ ca_common_name: example.com
 
 # Other details for the CA.
 ca_country_name: NL
-ca_email_address: robert@meinit.nl
+ca_email_address: me@buluma.co.ke
 ca_organization_name: Very little
 ca_organizational_unit_name: Even less
 ca_state_or_province_name: Utrecht

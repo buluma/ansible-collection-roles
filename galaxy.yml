@@ -4,7 +4,7 @@ name: roles
 version: 1.9.3
 readme: README.md
 authors:
-  - Michael Buluma <robert@meinit.nl>
+  - Michael Buluma <me@buluma.co.ke>
 description: A collection of all roles listed in [buluma.nl](https://buluma.nl/).
 license_file: 'LICENSE'
 tags:
