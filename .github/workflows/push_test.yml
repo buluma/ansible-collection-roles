@@ -12,10 +12,10 @@ jobs:
   release:
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout Code
+      - name: Checkout Code.
         uses: actions/checkout@v2
 
-      - name: go to dir
+      - name: go to dir.
         run: cd roles/aide
 
       - name: Release Ansible Role to Galaxy
