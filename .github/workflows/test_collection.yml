@@ -4,6 +4,7 @@ name: Test Collection
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   test_collection:
