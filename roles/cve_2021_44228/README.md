@@ -1,10 +1,10 @@
-# [cve_2021_44228](#cve_2021_44228)
+# [cve_2022_44228](#cve_2022_44228)
 
-Check and report for cve_2021_44228 (log4shell) on your system.
+Check and report for cve_2022_44228 (log4shell) on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-cve_2021_44228/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-cve_2021_44228/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-cve_2021_44228/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-cve_2021_44228)|[![quality](https://img.shields.io/ansible/quality/57278)](https://galaxy.ansible.com/buluma/cve_2021_44228)|[![downloads](https://img.shields.io/ansible/role/d/57278)](https://galaxy.ansible.com/buluma/cve_2021_44228)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-cve_2021_44228.svg)](https://github.com/buluma/ansible-role-cve_2021_44228/releases/)|
+|[![github](https://github.com/buluma/ansible-role-cve_2022_44228/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-cve_2022_44228/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-cve_2022_44228/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-cve_2022_44228)|[![quality](https://img.shields.io/ansible/quality/57278)](https://galaxy.ansible.com/buluma/cve_2022_44228)|[![downloads](https://img.shields.io/ansible/role/d/57278)](https://galaxy.ansible.com/buluma/cve_2022_44228)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-cve_2022_44228.svg)](https://github.com/buluma/ansible-role-cve_2022_44228/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -17,7 +17,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
   gather_facts: yes
 
   roles:
-    - role: buluma.cve_2021_44228
+    - role: buluma.cve_2022_44228
 ```
 
 The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
@@ -40,7 +40,7 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
   post_tasks:
     - name: install required software
       ansible.builtin.package:
-        name: ["{{ cve_2021_44228_ps_package }}", unzip]
+        name: ["{{ cve_2022_44228_ps_package }}", unzip]
 ```
 
 Also see a [full explanation and example](https://buluma.nl/how-to-use-these-roles.html) on how to use these roles.
@@ -50,29 +50,29 @@ Also see a [full explanation and example](https://buluma.nl/how-to-use-these-rol
 The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
-# defaults file for cve_2021_44228
+# defaults file for cve_2022_44228
 
 # You can disable certain checks using these variables.
 
 # Check suspicous processes.
-cve_2021_44228_check_processes: yes
+cve_2022_44228_check_processes: yes
 
 # Check suspicous packages.
-cve_2021_44228_check_packages: yes
+cve_2022_44228_check_packages: yes
 
 # This check uses `find`, which may use the disk intensively.
 # Check suspicous files.
-cve_2021_44228_check_files: yes
+cve_2022_44228_check_files: yes
 
 # This check uses `find`, which may use the disk intensively.
 # Check suspicous jars
-cve_2021_44228_check_archives: yes
+cve_2022_44228_check_archives: yes
 
 # Add your own paths if you want to. The more paths you add, the more
 # the disk will be used, but not having enough paths poses a risk of
 # not finding vulnerable files.
 # Paths to find files and jars in.
-cve_2021_44228_paths_to_check:
+cve_2022_44228_paths_to_check:
   - /var
   - /etc
   - /usr
@@ -80,7 +80,7 @@ cve_2021_44228_paths_to_check:
   - /lib64
 
 # The types of archives to scan.
-cve_2021_44228_archive_patterns:
+cve_2022_44228_archive_patterns:
   - "*.jar"
   - "*.war"
   - "*.ear"
@@ -89,7 +89,7 @@ cve_2021_44228_archive_patterns:
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-cve_2021_44228/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-cve_2022_44228/blob/master/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -104,7 +104,7 @@ The following roles are used to prepare a system. You can prepare your system in
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.nl/) for further information.
 
 Here is an overview of related roles:
-![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-cve_2021_44228/png/requirements.png "Dependencies")
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-cve_2022_44228/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
 
@@ -128,7 +128,7 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 
-If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-cve_2021_44228/issues)
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-cve_2022_44228/issues)
 
 ## [License](#license)
 

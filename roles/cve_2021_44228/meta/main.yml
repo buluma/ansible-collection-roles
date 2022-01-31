@@ -1,9 +1,9 @@
 ---
 galaxy_info:
   author: Michael Buluma
-  role_name: cve_2021_44228
+  role_name: cve_2022_44228
   namespace: buluma
-  description: Check and report for cve_2021_44228 (log4shell) on your system.
+  description: Check and report for cve_2022_44228 (log4shell) on your system.
   license: Apache-2.0
   company: none
   min_ansible_version: "2.10"
@@ -34,7 +34,7 @@ galaxy_info:
         - bionic
 
   galaxy_tags:
-    - cve202144228
+    - cve202244228
     - log4shell
     - log4j
 
