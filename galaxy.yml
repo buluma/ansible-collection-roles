@@ -21,7 +21,7 @@ dependencies:
   f5networks.f5_modules: "*"
   gluster.gluster: "*"
 repository: https://github.com/buluma/ansible-collection-roles
-documentation: https://buluma.co.ke/
-homepage: https://buluma.co.ke/
+documentation: https://buluma.github.io/
+homepage: https://buluma.github.io/
 issues: http://github.com/buluma/ansible-collection-roles/issues
 build_ignore: []
