@@ -1,11 +1,11 @@
 ---
 namespace: buluma
 name: roles
-version: 1.9.5
+version: 1.9.6
 readme: README.md
 authors:
-  - Michael Buluma <me@buluma.co.ke>
-description: A collection of all roles listed in [buluma.co.ke](https://buluma.co.ke/).
+  - Michael Buluma <me@buluma.me.ke>
+description: A collection of all roles listed in [github](https://buluma.github.io/).
 license_file: 'LICENSE'
 tags:
   - buluma
