@@ -1,0 +1,20 @@
+<?php
+{{ ansible_managed | comment }}
+// Zabbix GUI configuration file.
+global $DB;
+
+$DB['TYPE']     = 'MYSQL';
+$DB['SERVER']   = '{{ zabbix_server_database_host }}';
+$DB['PORT']     = '{{ zabbix_server_database_port | default('3306') }}';
+$DB['DATABASE'] = '{{ zabbix_server_database_name }}';
+$DB['USER']     = '{{ zabbix_server_database_user }}';
+$DB['PASSWORD'] = '{{ zabbix_server_database_pass }}';
+
+// Schema name. Used for IBM DB2 and PostgreSQL.
+$DB['SCHEMA'] = '';
+
+$ZBX_SERVER      = '{{ zabbix_web_server }}';
+$ZBX_SERVER_PORT = '{{ zabbix_web_server_port }}';
+$ZBX_SERVER_NAME = '{{ zabbix_web_server_name }}';
+
+$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;

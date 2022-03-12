@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+[Time]
+NTP={{ ntp }}
+FallbackNTP={{ fallback_ntp }}
+{% if ansible_local.systemd.version|int >= 236 %}
+RootDistanceMaxSec=1
+{% endif %}

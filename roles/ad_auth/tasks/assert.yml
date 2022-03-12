@@ -1,0 +1,51 @@
+---
+
+- name: test if ad_auth_registration_username is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_registration_username is defined
+      - ad_auth_registration_username is string
+    quiet: yes
+
+- name: test if ad_auth_registration_password is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_registration_password is defined
+      - ad_auth_registration_password is string
+    quiet: yes
+
+- name: test if ad_auth_ou is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_ou is defined
+      - ad_auth_ou is string
+    quiet: yes
+
+- name: test if ad_auth_server is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_server is defined
+      - ad_auth_server is string
+    quiet: yes
+
+- name: test if ad_auth_domain is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_domain is defined
+      - ad_auth_domain is string
+    quiet: yes
+
+- name: test if ad_auth_join is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_join is defined
+      - ad_auth_join is boolean
+    quiet: yes
+
+- name: test if ad_auth_simple_allow_users is set correctly
+  ansible.builtin.assert:
+    that:
+      - ad_auth_simple_allow_users is iterable
+    quiet: yes
+  when:
+    - ad_auth_simple_allow_users is defined

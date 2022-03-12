@@ -1,0 +1,5 @@
+---
+# defaults file for desktop
+
+# What desktop to use. Either "gnome", "i3" or "mate"
+desktop: gnome

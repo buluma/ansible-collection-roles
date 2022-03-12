@@ -1,0 +1,80 @@
+---
+# tasks file for passenger
+# Install Ruby
+- name: Install ruby 2.3.1
+  ansible.builtin.command: rbenv install {{ rbenv_ruby_version }}
+  args:
+    creates: '{{ rbenv_root }}/versions/{{ rbenv_ruby_version }}/bin/ruby'
+  vars:
+    rbenv_root: /usr/local/rbenv
+    rbenv_ruby_version: 2.3.1
+  environment:
+    CONFIGURE_OPTS: '--disable-install-doc'
+    RBENV_ROOT: '{{ rbenv_root }}'
+    PATH: '{{ rbenv_root }}/bin:{{ rbenv_root }}/shims:{{ rbenv_plugins }}/ruby-build/bin:{{ ansible_env.PATH }}'
+
+# Variable setup.
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Define nginx_user.
+  set_fact:
+    nginx_user: "{{ __nginx_user }}"
+  when: nginx_user is not defined
+
+# Passenger repository setup.
+- name: Add Passenger apt key.
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 561F9B9CAC40B2F7
+    state: present
+
+- name: Add apt HTTPS capabilities.
+  apt: name=apt-transport-https state=present
+
+- name: Add Phusion apt repo.
+  apt_repository:
+    repo: 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ ansible_distribution_release }} main'
+    state: present
+    update_cache: true
+
+- name: Install Nginx and Passenger.
+  apt:
+    name:
+      - nginx
+      - libnginx-mod-http-passenger
+    state: present
+
+- name: Ensure passenger module is enabled.
+  file:  # noqa 208
+    src: /usr/share/nginx/modules-available/mod-http-passenger.load
+    dest: /etc/nginx/modules-enabled/50-mod-http-passenger.conf
+    state: link
+
+# Nginx and passenger configuration.
+- name: Copy Nginx configuration into place.
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: 0644
+  notify: restart nginx
+
+- name: Configure passenger virtual host.
+  template:
+    src: passenger.j2
+    dest: /etc/nginx/sites-available/passenger
+    mode: 0644
+  notify: restart nginx
+
+- name: Ensure passenger virtual host is enabled.
+  file:  # noqa 208
+    src: /etc/nginx/sites-available/passenger
+    dest: /etc/nginx/sites-enabled/passenger
+    state: link
+
+- name: Ensure default virtual host is removed.
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  when: nginx_remove_default_vhost
+  notify: restart nginx

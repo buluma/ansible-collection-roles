@@ -1,0 +1,6 @@
+---
+exceptions:
+  - variation: Alpine
+    reason: "Python.h: No such file or directory"
+  - variation: Ubuntu
+    reason: "Unable to find any of pip2, pip to use.  pip needs to be installed."

@@ -1,0 +1,21 @@
+---
+# handlers file for awx
+- name: run awx installer
+  command: ansible-playbook -i inventory install.yml
+  args:
+    chdir: "/tmp/awx-{{ awx_version }}/installer"
+  notify:
+    - wait for awx
+
+- name: wait for awx
+  uri:
+    url: "http://{{ ansible_default_ipv4.address }}/#/login"
+    follow_redirects: none
+  register: wait_for_awx_result
+  until: wait_for_awx_result.status == 200
+  retries: 20
+  delay: 30
+
+- name: wait 30 seconds
+  pause:
+    seconds: 30

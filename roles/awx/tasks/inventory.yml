@@ -1,0 +1,11 @@
+---
+- name: manage inventory
+  tower_inventory:
+    name: "{{ inventory.name }}"
+    description: "{{ inventory.description | default(inventory.name) }}"
+    organization: "{{ organization.name }}"
+    tower_host: "http://{{ ansible_default_ipv4.address }}"
+    tower_username: admin
+    tower_password: "{{ awx_admin_password }}"
+    tower_verify_ssl: "{{ awx_tower_verify_ssl }}"
+  connection: local

@@ -1,0 +1,62 @@
+---
+# file: tasks/set-role-variables.yml
+# set necessary role variables.
+#
+
+- name: set prometheus_use_service = True, if not defined
+  set_fact:
+    prometheus_use_service: True
+  when: prometheus_use_service is not defined
+
+
+- name: set internal variable platform-suffix for convenience
+  set_fact:
+    prometheus_platform_suffix: "linux-amd64"
+  when: ansible_userspace_bits == "64"
+
+- name: set internal variable platform-suffix for convenience
+  set_fact:
+    prometheus_platform_suffix: "linux-386"
+  when: ansible_userspace_bits == "32"
+
+
+- block:
+
+  - name: use systemd for CentOS >= 7
+    set_fact:
+      prometheus_use_systemd: true
+    when: ansible_distribution == "CentOS" and ansible_distribution_version is version_compare("7", ">=")
+
+  - name: use systemd for RHEL >= 7
+    set_fact:
+      prometheus_use_systemd: true
+    when: ansible_distribution == "RedHat" and ansible_distribution_version is version_compare("7", ">=")
+
+  - name: use systemd for Fedora >= 15
+    set_fact:
+      prometheus_use_systemd: true
+    when: ansible_distribution == "Fedora" and ansible_distribution_version is version_compare("15", ">=")
+
+  - name: use systemd for Virtuozzo >= 7
+    set_fact:
+      prometheus_use_systemd: true
+    when: ansible_distribution == "Virtuozzo" and ansible_distribution_version is version_compare("7", ">=")
+
+
+  - name: use systemd for Debian >= 8
+    set_fact:
+      prometheus_use_systemd: true
+    when: ansible_distribution == "Debian" and ansible_distribution_version is version_compare("8", ">=")
+
+  - name: use systemd for Ubuntu >= 16.04
+    set_fact:
+      prometheus_use_systemd: true
+    when: ansible_distribution == "Ubuntu" and ansible_distribution_version is version_compare("16", ">=")
+
+  when: prometheus_use_systemd is not defined
+
+
+- name: use traditional SysV init, otherwise
+  set_fact:
+    prometheus_use_systemd: false
+  when: prometheus_use_systemd is not defined

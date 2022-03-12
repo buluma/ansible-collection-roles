@@ -1,0 +1,10 @@
+
+- name: Ensure monit config dir exists
+  file:
+    path: '/etc/monit/conf.d/'
+    state: directory
+
+- name: Install monit check
+  template:
+    src: 'monit.service'
+    dest: /etc/monit/conf.d/automysqlbackup

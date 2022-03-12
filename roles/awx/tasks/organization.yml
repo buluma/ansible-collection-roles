@@ -1,0 +1,71 @@
+---
+- name: manage organization
+  tower_organization:
+    name: "{{ organization.name }}"
+    state: "{{ organization.state | default(omit) }}"
+    description: "{{ organization.description | default(omit) }}"
+    tower_host: "http://{{ ansible_default_ipv4.address }}"
+    tower_username: admin
+    tower_password: "{{ awx_admin_password }}"
+    tower_verify_ssl: "{{ awx_tower_verify_ssl }}"
+  register: manageorganization
+  until: manageorganization is succeeded
+  retries: 3
+  connection: local
+
+- name: manage users in organization
+  include_tasks: user.yml
+  loop: "{{ organization.users }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.name }}"
+  when:
+    - organization.users is defined
+
+- name: manage teams in organization
+  include_tasks: team.yml
+  loop: "{{ organization.teams }}"
+  loop_control:
+    loop_var: team
+    label: "{{ team.name }}"
+  when:
+    - organization.teams is defined
+
+- name: manage credentials in organization
+  include_tasks: credential.yml
+  loop: "{{ organization.credentials }}"
+  loop_control:
+    loop_var: credential
+    label: "{{ credential.name }}"
+  when:
+    - organization.credentials is defined
+
+- name: manage projects in organization
+  include_tasks: project.yml
+  loop: "{{ organization.projects }}"
+  loop_control:
+    loop_var: project
+    label: "{{ project.name }}"
+  when:
+    - organization.projects is defined
+
+- name: manage inventory in organization
+  include_tasks: inventory.yml
+  loop: "{{ organization.inventories }}"
+  loop_control:
+    loop_var: inventory
+    label: "{{ inventory.name }}"
+  when:
+    - organization.inventories is defined
+
+- name: manage job_templates in organization
+  include_tasks: job_template.yml
+  loop: "{{ organization.job_templates }}"
+  loop_control:
+    loop_var: job_template
+    label: "{{ job_template.name }}"
+  when:
+    - organization.job_templates is defined
+  register: managejobtemplateinorganization
+  until: managejobtemplateinorganization is succeeded
+  retries: 3

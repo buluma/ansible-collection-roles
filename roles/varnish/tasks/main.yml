@@ -1,0 +1,98 @@
+---
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Set the packagecloud repository name based on the version.
+  set_fact:
+    varnish_packagecloud_repo: "varnish{{ varnish_version|replace('.', '') }}"
+
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure Varnish config path exists.
+  file:
+    path: "{{ varnish_config_path }}"
+    state: directory
+    mode: 0755
+
+- name: Copy Varnish configuration (sysvinit).
+  template:
+    src: varnish.j2
+    dest: "{{ varnish_sysvinit_config_path }}/varnish"
+    owner: root
+    group: root
+    mode: 0644
+  when: >
+    (ansible_os_family == 'RedHat' and ansible_distribution_major_version|int < 7) or
+    (ansible_os_family == 'Debian' and ansible_distribution_release != "xenial")
+  notify: restart varnish
+
+- name: Copy Debian Jessie/Xenial specific Varnish configs (systemd).
+  template:
+    src: varnish.service.j2
+    dest: "{{ varnish_systemd_config_path }}/varnish.service"
+    owner: root
+    group: root
+    mode: 0644
+  when: >
+    (ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 7) or
+    (ansible_distribution == 'Debian' and ansible_distribution_version|int >= 8) or
+    (ansible_distribution == 'Ubuntu' and ansible_distribution_version.split(".")[0]|int >= 16)
+  notify:
+    - reload systemd
+    - restart varnish
+
+- name: Copy Varnish configuration (systemd).
+  template:
+    src: varnish.params.j2
+    dest: "{{ varnish_config_path }}/varnish.params"
+    owner: root
+    group: root
+    mode: 0644
+  when: >
+    (ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 7) or
+    (ansible_os_family == 'Debian' and ansible_distribution_release == "xenial")
+
+- name: Copy Varnish default VCL.
+  template:
+    src: "{{ varnish_default_vcl_template_path }}"
+    dest: "{{ varnish_config_path }}/default.vcl"
+    owner: root
+    group: root
+    mode: 0644
+  when: varnish_use_default_vcl
+  notify: restart varnish
+
+- name: Copy varnish secret.
+  template:
+    src: secret.j2
+    dest: "{{ varnish_config_path }}/secret"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart varnish
+
+- name: Ensure Varnish services are started and enabled on startup.
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  with_items: "{{ varnish_enabled_services | default([]) }}"
+  when: >
+    varnish_enabled_services and (ansible_os_family != 'Debian' or
+    (ansible_os_family != 'Debian' and ansible_distribution_release != "xenial"))
+
+# See: https://github.com/ansible/ansible/issues/22303
+- name: Ensure Varnish services are started and enabled on startup (Xenial specific)
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    use: "service"
+  with_items: "{{ varnish_enabled_services | default([]) }}"
+  when:
+    - varnish_enabled_services | length > 0
+    - (ansible_os_family == 'Debian' and ansible_distribution_release == "xenial")

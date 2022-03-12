@@ -1,0 +1,47 @@
+---
+- name: Ensure Varnish dependency is installed.
+  yum:
+    name: yum-utils
+    state: present
+
+- name: Ensure extra Varnish dependency on older RHEL versions is installed.
+  yum:
+    name: pygpgme
+    state: present
+  when: ansible_distribution_major_version | int < 8
+
+- name: Add Varnish packagecloud.io yum repo.
+  yum_repository:
+    name: varnishcache_{{ varnish_packagecloud_repo }}
+    description: Varnish Cache packagecloud.io repository.
+    baseurl: "{{ varnish_yum_repo_baseurl }}"
+    repo_gpgcheck: false
+    gpgcheck: false
+    enabled: true
+    gpgkey: https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/gpgkey
+    sslverify: 1
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    priority: "{{ varnish_packagecloud_repo_yum_repository_priority }}"
+  register: varnish_packagecloud_repo_addition
+
+- name: Refresh yum metadata cache if repo changed.
+  command: >
+    yum -q makecache -y --disablerepo='*' --enablerepo='varnishcache_{{ varnish_packagecloud_repo }}'
+  args:
+    warn: false
+  when: varnish_packagecloud_repo_addition.changed
+  tags: ['skip_ansible_lint']
+
+- name: Disable varnish AppStream in RHEL 8.
+  command: dnf module disable -y varnish
+  args:
+    warn: false
+  when:
+    - varnish_packagecloud_repo_addition.changed
+    - ansible_distribution_major_version | int == 8
+  tags: ['skip_ansible_lint']
+
+- name: Ensure Varnish is installed.
+  yum:
+    name: "{{ varnish_package_name }}"
+    state: present

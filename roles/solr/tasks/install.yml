@@ -1,0 +1,43 @@
+---
+- name: Ensure dependencies are installed.
+  package:
+    name:
+      - lsof
+      - acl
+      - sudo
+    state: present
+
+# We add '-n' to Solr versions beyond 6.3.0 to prevent autostart on install.
+- name: Run Solr installation script.
+  command: >
+    {{ solr_workspace }}/{{ solr_filename }}/bin/install_solr_service.sh
+    {{ solr_workspace }}/{{ solr_filename }}.tgz
+    -i {{ solr_install_dir }}
+    -d {{ solr_home }}
+    -u {{ solr_user }}
+    -s {{ solr_service_name }}
+    -p {{ solr_port }}
+    {{ (solr_version is version('6.3.0', '>=')) | ternary('-n','') }}
+    {{ (solr_version is version('5.4.0', '>=')) | ternary('-f','') }}
+    creates={{ solr_install_path }}/bin/solr
+  register: solr_install_script_result
+
+# Workaround for bug https://github.com/ansible/ansible-modules-core/issues/915.
+- name: Ensure solr is stopped (RHEL 7 workaround).
+  command: service {{ solr_service_name }} stop
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_version.split(".")[0] == '7'
+    - solr_install_script_result.changed
+  failed_when: false
+  tags: ['skip_ansible_lint']
+
+- name: Run systemd daemon_reload (RHEL 7 workaround).
+  systemd:
+    name: solr
+    daemon_reload: true
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_version.split(".")[0] == '7'
+    - solr_install_script_result.changed
+  tags: ['skip_ansible_lint']

@@ -1,0 +1,6 @@
+---
+# vars file for awx
+awx_pip_requirements:
+  - ansible
+  - docker
+  - docker-compose

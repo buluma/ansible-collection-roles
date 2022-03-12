@@ -1,0 +1,13 @@
+---
+# defaults file for y
+
+# y_presets is a list of presets that will be applied to images.
+# y_presets:
+#   - name: monochrome
+
+# y_import_from defines the path where to pickup files from.
+# This could be /dev/sdb1 (for some SD-card) for example.
+y_import_from: /tmp/import
+
+# y_export_to is the path where the images will be saved.
+y_export_to: /tmp/export

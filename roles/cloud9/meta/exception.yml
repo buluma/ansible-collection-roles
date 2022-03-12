@@ -1,0 +1,14 @@
+---
+exceptions:
+  - variation: Alpine
+    reason: Python version 2.7 is required
+  - variation: Archlinux
+    reason: Python version 2.7 is required
+  - variation: CentOS latest
+    reason: Python version 2.7 is required
+  - variation: Debian
+    reason: Python version 2.7 is required
+  - variation: openSUSE Leap
+    reason: Python version 2.7 is required
+  - variation: Ubuntu
+    reason: Python version 2.7 is required

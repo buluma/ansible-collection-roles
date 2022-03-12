@@ -1,0 +1,23 @@
+---
+- name: manage project
+  tower_project:
+    name: "{{ project.name }}"
+    description: "{{ project.description | default(project.name) }}"
+    organization: "{{ organization.name }}"
+    scm_credential: "{{ project.scm_credential }}"
+    scm_type: "{{ project.scm_type | default('git') }}"
+    scm_url: "{{ project.scm_url }}"
+    scm_update_on_launch: "{{ scm_update_on_launch | default('yes') }}"
+    tower_host: "http://{{ ansible_default_ipv4.address }}"
+    tower_username: admin
+    tower_password: "{{ awx_admin_password }}"
+    tower_verify_ssl: "{{ awx_tower_verify_ssl }}"
+  connection: local
+  when:
+    - project.scm_credential is defined
+    - project.scm_url is defined
+  notify:
+    - wait 30 seconds
+
+- name: flush handlers
+  meta: flush_handlers

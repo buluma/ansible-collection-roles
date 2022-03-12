@@ -1,0 +1,58 @@
+---
+# tasks file for cloud9
+- name: install requirements
+  package:
+    name: "{{ cloud9_requirements }}"
+    state: present
+  register: cloud9_install_requirements
+  until: cloud9_install_requirements is succeeded
+  retries: 3
+
+- name: create group
+  group:
+    name: "{{ cloud9_group }}"
+    state: present
+
+- name: create user
+  user:
+    name: "{{ cloud9_user }}"
+    group: "{{ cloud9_group }}"
+    state: present
+
+- name: create directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ cloud9_user }}"
+    group: "{{ cloud9_group }}"
+  with_items:
+    - "{{ cloud9_workspace }}"
+    - "{{ cloud9_installer }}"
+
+- name: clone git repository
+  git:
+    repo: "https://github.com/c9/core.git"
+    dest: "{{ cloud9_installer }}"
+    version: master
+  become_user: "{{ cloud9_user }}"
+  become: yes
+
+- name: run installer
+  command: ./scripts/install-sdk.sh
+  args:
+    chdir: "{{ cloud9_installer }}"
+    creates: "{{ cloud9_installer }}/installed"
+  become_user: "{{ cloud9_user }}"
+  become: yes
+  notify:
+    - place installed marker
+
+- name: create artifactory service
+  import_role:
+    name: robertdebock.service
+
+- name: start cloud9
+  service:
+    name: cloud9
+    state: started
+    enabled: yes

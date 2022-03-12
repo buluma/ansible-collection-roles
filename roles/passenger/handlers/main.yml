@@ -1,0 +1,4 @@
+---
+# handlers file for passenger
+- name: restart nginx
+  service: name=nginx state=restarted

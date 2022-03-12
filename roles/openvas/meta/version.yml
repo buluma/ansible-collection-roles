@@ -1,0 +1,6 @@
+---
+project_name: Atomicorp
+reference: "https://github.com/robertdebock/ansible-role-openvas/blob/master/vars/main.yml"
+versions:
+  - name: openvas
+    url: "https://updates.atomicorp.com/channels/atomic/centos/7/x86_64/RPMS/"

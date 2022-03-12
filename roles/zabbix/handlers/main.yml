@@ -1,0 +1,41 @@
+---
+# handlers file for zabbix
+- name: update cache (apt)
+  apt:
+    update_cache: yes
+  register: result
+  retries: 3
+  until: result is succeeded
+
+- name: restart zabbix agent
+  service:
+    name: zabbix-agent
+    state: restarted
+
+- name: restart zabbix server
+  service:
+    name: zabbix-server
+    state: restarted
+
+- name: create selinux mod
+  command: checkmodule -M -m -o /etc/zabbix/my-zabbixserver.mod /etc/zabbix/my-zabbixserver.te
+
+- name: create selinux pp
+  command: semodule_package -o /etc/zabbix/my-zabbixserver.pp -m /etc/zabbix/my-zabbixserver.mod
+
+- name: load selinux pp
+  command: semodule -i /etc/zabbix/my-zabbixserver.pp
+
+- name: import zabbix schema
+  mysql_db:
+    state: import
+    name: zabbix
+    target: "{{ zabbix_mysql_target }}"
+    login_host: "{{ zabbix_server_database_host }}"
+    login_user: "{{ zabbix_server_database_user }}"
+    login_password: "{{ zabbix_server_database_pass }}"
+
+- name: restart httpd
+  service:
+    name: "{{ zabbix_httpd_service }}"
+    state: restarted

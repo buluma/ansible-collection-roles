@@ -1,0 +1,35 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
+  role_name: blackfire
+  description: Blackfire installation for Linux.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - precise
+        - raring
+        - saucy
+        - trusty
+        - xenial
+        - bionic
+
+  galaxy_tags:
+    - development
+    - web
+    - packages
+    - system
+
+dependencies:
+  - buluma.php

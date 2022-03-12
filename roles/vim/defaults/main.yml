@@ -1,0 +1,15 @@
+---
+# defaults file for vim
+plugins:
+  - name: vim-airline
+    url: https://github.com/vim-airline/vim-airline
+  - name: nerdtree
+    url: https://github.com/preservim/nerdtree
+  - name: fzf-vim
+    url: https://github.com/junegunn/fzf.vim
+  - name: vim-gitgutter
+    url: https://github.com/airblade/vim-gitgutter
+  - name: vim-fugitive
+    url: https://github.com/tpope/vim-fugitive
+  - name: vim-floaterm
+    url: https://github.com/voldikss/vim-floaterm

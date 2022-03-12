@@ -1,0 +1,74 @@
+---
+- name: Define ruby_build_packages.
+  set_fact:
+    ruby_build_packages: "{{ __ruby_build_packages }}"
+  when: ruby_build_packages is not defined
+
+- name: Install packages required to build ruby.
+  yum:
+    name: "{{ ruby_build_packages }}"
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Update apt cache (Debian).
+  apt: update_cache=true cache_valid_time=86400
+  when: ansible_os_family == 'Debian'
+
+- name: Install packages required to build ruby (Debian).
+  apt:
+    name: "{{ ruby_build_packages }}"
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure that /var/cache/ansible/ exists
+  file:
+    path: "/var/cache/ansible/"
+    state: directory
+
+- name: Check if ruby is up-to-date
+  stat:
+    path: "/var/cache/ansible/ruby-{{ ruby_version }}.check"
+  register: ruby_version_marker
+
+- name: Download, extract, and install ruby
+  when: not ruby_version_marker.stat.exists
+  block:
+    - name: Download ruby.
+      get_url:
+        url: "{{ ruby_download_url }}"
+        dest: "{{ workspace }}/ruby-{{ ruby_version }}.tar.gz"
+
+    - name: Extract ruby.
+      unarchive:
+        src: "{{ workspace }}/ruby-{{ ruby_version }}.tar.gz"
+        dest: "{{ workspace }}/"
+        copy: false
+        mode: 0755
+
+    - name: Build ruby.
+      command: >
+        {{ item }}
+        chdir={{ workspace }}/ruby-{{ ruby_version }}
+      with_items:
+        - "{{ ruby_source_configure_command }}"
+        - make
+        - make install
+
+    - name: Touch install-marker
+      file:
+        path: "/var/cache/ansible/ruby-{{ ruby_version }}.check"
+        state: touch
+
+- name: Add ruby symlinks.
+  file:  # noqa 208
+    src: "/usr/local/bin/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    state: link
+    force: true
+  with_items:
+    - erb
+    - gem
+    - irb
+    - rake
+    - rdoc
+    - ruby

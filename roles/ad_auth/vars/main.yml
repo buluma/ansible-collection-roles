@@ -1,0 +1,95 @@
+---
+# vars file for ad_auth
+
+ad_auth_packages:
+  - adcli
+  - oddjob
+  - oddjob-mkhomedir
+  - pam_krb5
+  - realmd
+  - samba-common
+  - samba-common-tools
+  - sssd
+
+ad_auth_pip_packages:
+  - pexpect
+
+ad_auth_nsswich_maps:
+  - passwd
+  - shadow
+  - group
+  - netgroup
+  - services
+
+ad_auth_sssd_configuration:
+  # sssd items
+  - option: domains
+    section: sssd
+    value: "{{ ad_auth_domain }}"
+  - option: services
+    section: sssd
+    value: nss, pam
+  # nss items
+  - option: filter_groups
+    section: nss
+    value: root
+  - option: filter_users
+    section: nss
+    value: root
+  - option: entry_cache_timeout
+    section: nss
+    value: 300
+  - option: entry_cache_nowait_percentage
+    section: nss
+    value: 75
+  - option: offline_credentials_expiration
+    section: pam
+    value: 2
+  - option: offline_failed_login_attempts
+    section: pam
+    value: 3
+  - option: offline_failed_login_delay
+    section: pam
+    value: 5
+  # domain/{{ ad_auth_domain }} items
+  - option: realmd_tags
+    section: domain/{{ ad_auth_domain }}
+    value: manages-system joined-with-samba
+  - option: cache_credentials
+    section: domain/{{ ad_auth_domain }}
+    value: 'True'
+  - option: id_provider
+    section: domain/{{ ad_auth_domain }}
+    value: ad
+  - option: krb5_store_password_if_offline
+    section: domain/{{ ad_auth_domain }}
+    value: 'True'
+  - option: default_shell
+    section: domain/{{ ad_auth_domain }}
+    value: /bin/bash
+  - option: ldap_id_mapping
+    section: domain/{{ ad_auth_domain }}
+    value: 'True'
+  - option: fallback_homedir
+    section: domain/{{ ad_auth_domain }}
+    value: /home/%u
+  - option: access_provider
+    section: domain/{{ ad_auth_domain }}
+    value: simple
+  - option: ignore_group_members
+    section: domain/{{ ad_auth_domain }}
+    value: 'True'
+  - option: use_fully_qualified_names
+    section: domain/{{ ad_auth_domain }}
+    value: 'True'
+
+ad_auth_pam_files:
+  - system-auth
+  - password-auth
+
+ad_auth_services:
+  - realmd
+  - sssd
+  - oddjobd
+
+ad_auth_join_command: "/usr/sbin/realm join --user={{ ad_auth_registration_username }} --computer-ou={{ ad_auth_ou }} {{ ad_auth_server }}"

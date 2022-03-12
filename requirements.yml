@@ -9,3 +9,5 @@ collections:
   - name: containers.podman
   - name: f5networks.f5_modules
   - name: gluster.gluster
+  - name: robertdebock.bootstrap
+  - name: robertdebock.epel

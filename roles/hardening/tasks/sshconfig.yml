@@ -1,0 +1,136 @@
+---
+- name: sysconfig sshd
+  ansible.builtin.stat:
+    path: /etc/sysconfig/sshd
+  register: sysconfig_sshd
+  tags:
+    - sshd
+    - sshd_config
+    - M1041
+
+- name: sshd system crypto policy
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    dest: /etc/sysconfig/sshd
+    state: absent
+    regexp: ^\s*CRYPTO_POLICY.*$
+  when: sysconfig_sshd.stat.exists
+  tags:
+    - sshd
+    - CCE-80939-2
+    - M1041
+
+- name: check if sshd_config.d exits
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config.d
+  register: sshd_config_d_exists
+  tags:
+    - sshd
+    - sshd_config
+    - M1041
+
+- name: configure sshd
+  become: 'yes'
+  ansible.builtin.template:
+    src: etc/ssh/sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    backup: 'yes'
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - restart sshd
+  tags:
+    - sshd
+    - sshd_config
+    - CCE-80895-6
+    - CCE-80896-4
+    - CCE-80897-2
+    - CCE-80898-0
+    - CCE-80901-2
+    - CCE-80902-0
+    - CCE-80903-8
+    - CCE-80904-6
+    - CCE-80905-3
+    - CCE-80906-1
+    - CCE-82177-7
+    - CCE-82281-7
+    - CCE-83360-8
+    - CIS-UBUNTU2004-5.3.1
+    - CIS-UBUNTU2004-5.3.4
+    - CIS-UBUNTU2004-5.3.5
+    - CIS-UBUNTU2004-5.3.6
+    - CIS-UBUNTU2004-5.3.7
+    - CIS-UBUNTU2004-5.3.8
+    - CIS-UBUNTU2004-5.3.9
+    - CIS-UBUNTU2004-5.3.10
+    - CIS-UBUNTU2004-5.3.11
+    - CIS-UBUNTU2004-5.3.12
+    - CIS-UBUNTU2004-5.3.13
+    - CIS-UBUNTU2004-5.3.14
+    - CIS-UBUNTU2004-5.3.15
+    - CIS-UBUNTU2004-5.3.16
+    - CIS-UBUNTU2004-5.3.17
+    - CIS-UBUNTU2004-5.3.18
+    - CIS-UBUNTU2004-5.3.19
+    - CIS-UBUNTU2004-5.3.20
+    - CIS-UBUNTU2004-5.3.21
+    - CIS-UBUNTU2004-5.3.22
+    - M1041
+    - UBTU-20-010036
+    - UBTU-20-010037
+
+- name: sshd host keys
+  become: 'yes'
+  ansible.builtin.find:
+    paths: /etc/ssh
+    file_type: file
+    patterns: 'ssh_host_*'
+    excludes: '*.pub'
+  register: ssh_host_keys
+  tags:
+    - sshd
+    - M1022
+    - M1041
+
+- name: sshd host key permissions
+  become: 'yes'
+  ansible.builtin.file:
+    owner: root
+    group: root
+    mode: 0600
+    path: "{{ item.path }}"
+  with_items: "{{ ssh_host_keys.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  tags:
+    - sshd
+    - CCE-82424-3
+    - CIS-UBUNTU2004-5.3.2
+    - M1022
+    - M1041
+
+- name: check if ssh_config.d exits
+  ansible.builtin.stat:
+    path: /etc/ssh/ssh_config.d
+  register: ssh_config_d_exists
+  tags:
+    - ssh
+    - ssh_config
+    - M1041
+
+- name: configure ssh client
+  become: 'yes'
+  ansible.builtin.template:
+    src: etc/ssh/ssh_config.j2
+    dest: /etc/ssh/ssh_config
+    backup: 'yes'
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - ssh
+    - ssh_config
+    - CCE-82880-6
+    - M1041
+...

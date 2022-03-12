@@ -1,0 +1,29 @@
+---
+- name: Install LEMP with PHP-FPM 5.6
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - httpd
+    - mod_ssl
+    - mysql
+    - php56w
+    - php56w-mcrypt
+    - php56w-tidy
+    - php56w-mysql
+    - php56w-gd
+    - php56w-imap
+    - php56w-mbstring
+    - php56w-odbc
+    - php56w-pear
+    - php56w-intl
+    - php56w-soap
+    - php56w-xml
+    - php56w-xmlrpc
+    - php56w-pecl-apcu
+    - php56w-pecl-imagick
+    - php56w-fpm
+  when:
+    - php_version == 56
+  notify:
+    - restart php-fpm

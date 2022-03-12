@@ -1,0 +1,5 @@
+---
+# defaults file for release
+
+# Should the machine be rebooted after changes?
+release_reboot: yes

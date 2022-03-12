@@ -1,0 +1,29 @@
+---
+# prometheus/meta/main.yml
+
+galaxy_info:
+    author: buluma
+    description: Install and configure Prometheus
+    license: MIT
+
+    min_ansible_version: 2.2
+
+    platforms:
+        - name: Ubuntu
+          versions:
+              - trusty
+              - xenial
+              - bionic
+        - name: Debian
+          versions:
+              - jessie
+              - wheezy
+        - name: EL
+          versions:
+              - 7
+    galaxy_tags:
+        - system
+        - monitoring
+        - prometheus
+
+dependencies: []

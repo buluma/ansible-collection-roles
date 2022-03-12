@@ -1,0 +1,31 @@
+---
+# tasks file for desktop
+- name: install software
+  package:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ desktop_software }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: desktop_install_software
+  until: desktop_install_software is succeeded
+  retries: 3
+  when:
+    - item.module is not defined or
+      item.module != "command"
+
+- name: install software manually using dnf
+  command: "dnf groupinstall --allowerasing --assumeyes '{{ item.name }}'"
+  args:
+    warn: no
+  loop: "{{ desktop_software }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: desktop_install_software_manually_using_dnf
+  until: desktop_install_software_manually_using_dnf is succeeded
+  retries: 3
+  changed_when: "'Installed:' in desktop_install_software_manually_using_dnf.stdout"
+  when:
+    - ansible_pkg_mgr == "dnf"
+    - item.module is defined
+    - item.module == "command"

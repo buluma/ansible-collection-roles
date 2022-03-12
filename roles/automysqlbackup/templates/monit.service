@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+
+check file automysqlbackup with path {{ automysqlbackup_backup_dir }}/automysqlbackup_status
+    if timestamp > 36 hour then alert

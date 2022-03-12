@@ -1,0 +1,8 @@
+---
+exceptions:
+  - variation: CentOS 8
+    reason: Packages openvas-cli and openvas-scanner are not available.
+  - variation: ArchLinux & Ansible 2.7
+    reason: New-style module did not handle its own exit
+  - variation: OpenSUSE Leap
+    reason: atomic-release Signature verification failed

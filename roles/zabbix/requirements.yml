@@ -1,0 +1,8 @@
+---
+- robertdebock.bootstrap
+- robertdebock.epel
+- robertdebock.mysql
+- robertdebock.php
+- robertdebock.python_pip
+- robertdebock.httpd
+- robertdebock.remi

@@ -1,0 +1,28 @@
+---
+- name: set path
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^PATH="
+    line: 'PATH="/usr/local/bin:/usr/bin:/bin:/snap/bin"'
+    dest: /etc/environment
+    mode: 0644
+    state: present
+    create: 'no'
+    backrefs: 'yes'
+  tags:
+    - path
+    - M1038
+
+- name: path script
+  become: 'yes'
+  ansible.builtin.template:
+    src: etc/profile.d/initpath.sh.j2
+    dest: /etc/profile.d/initpath.sh
+    backup: 'yes'
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - path
+    - M1038
+...

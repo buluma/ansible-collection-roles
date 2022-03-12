@@ -1,0 +1,46 @@
+---
+# vars file for desktop
+
+# Some packages need to be installed using the `command` module, because
+# the `yum` module is missing a parameter `allowerasing`. to install
+# an item with command, add `module: command` to the item.
+_desktop_software:
+  gnome:
+    CentOS-7: &gnome-rhelish-7
+      - name: "@^gnome-desktop-environment"
+      - name: xorg-x11-fonts-Type1
+    CentOS-8: &gnome-rhelish-8
+      - name: Workstation
+        module: command
+    Debian: &gnome-debianish
+      - name: gnome-session
+      - name: gdm3
+      - name: session-migration
+    RedHat-7: *gnome-rhelish-7
+    RedHat-8: *gnome-rhelish-8
+    Fedora:
+      - name: Fedora Workstation
+        module: command
+      - name: "@Fonts"
+      - name: dbus-x11
+    Ubuntu: *gnome-debianish
+  i3:
+    default:
+      - name: i3
+  mate:
+    CentOS: &mate-rhelish
+      - name: "@^Mate Desktop"
+        # module: command
+    Debian: &mate-debianish
+      - name: mate-desktop
+      - name: mate-hud
+      - name: mate-indicator-applet
+      - name: mate-indicator-applet-common
+      - name: mate-menu
+      - name: mate-notification-daemon
+      - name: mate-notification-daemon-common
+    Fedora: *mate-rhelish
+    RedHat: *mate-rhelish
+    Ubuntu: *mate-debianish
+
+desktop_software: "{{ _desktop_software[desktop][ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_desktop_software[desktop][ansible_distribution]) }}"

@@ -1,0 +1,74 @@
+---
+- name: set sysctl dev.tty.ldisc_autoload
+  become: 'yes'
+  ansible.posix.sysctl:
+    name: dev.tty.ldisc_autoload
+    value: "{{ sysctl_dev_tty_ldisc_autoload|int }}"
+    state: present
+    sysctl_set: 'yes'
+  when: ansible_kernel is version("5",">=")
+  tags:
+    - sysctl
+
+- name: set sysctl net.ipv6.conf.accept_ra_rtr_pref
+  become: 'yes'
+  ansible.posix.sysctl:
+    name: net.ipv6.conf.{{ ansible_default_ipv4.interface }}.accept_ra_rtr_pref
+    value: "{{ sysctl_net_ipv6_conf_accept_ra_rtr_pref|int }}"
+    state: present
+    sysctl_set: 'yes'
+  tags:
+    - sysctl
+
+- name: configure sysctl
+  become: 'yes'
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value|int }}"
+    state: present
+    sysctl_set: 'yes'
+  with_dict: "{{ sysctl_settings }}"
+  notify:
+    - restart sysctl
+  tags:
+    - sysctl
+    - CCE-80913-7
+    - CCE-80915-2
+    - CCE-80916-0
+    - CCE-80917-8
+    - CCE-80918-6
+    - CCE-80919-4
+    - CCE-80920-2
+    - CCE-80921-0
+    - CCE-80922-8
+    - CCE-80953-3
+    - CCE-81006-9
+    - CCE-81007-7
+    - CCE-81009-3
+    - CCE-81010-1
+    - CCE-81011-9
+    - CCE-81013-5
+    - CCE-81021-8
+    - CCE-81024-2
+    - CCE-81027-5
+    - CCE-81030-9
+    - CCE-81054-9
+    - CCE-82974-7
+    - CIS-UBUNTU2004-1.5.2
+    - CIS-UBUNTU2004-1.5.4
+    - CIS-UBUNTU2004-3.2.1
+    - CIS-UBUNTU2004-3.2.2
+    - CIS-UBUNTU2004-3.3.1
+    - CIS-UBUNTU2004-3.3.2
+    - CIS-UBUNTU2004-3.3.3
+    - CIS-UBUNTU2004-3.3.4
+    - CIS-UBUNTU2004-3.3.5
+    - CIS-UBUNTU2004-3.3.6
+    - CIS-UBUNTU2004-3.3.7
+    - CIS-UBUNTU2004-3.3.8
+    - CIS-UBUNTU2004-3.3.9
+    - UBTU-20-010412
+    - UBTU-20-010448
+...

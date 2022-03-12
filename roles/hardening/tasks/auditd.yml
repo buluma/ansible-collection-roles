@@ -1,0 +1,181 @@
+---
+- name: set Debian audit grub cmdline
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX {{ grub_audit_cmdline }} {{ grub_audit_backlog_cmdline }}"'
+    dest: /etc/default/grub.d/99-hardening-audit.cfg
+    state: present
+    create: 'yes'
+    mode: 0755
+    owner: root
+    group: root
+  when: ansible_os_family == "Debian"
+  tags:
+    - auditd
+    - grub
+    - CIS-UBUNTU2004-4.1.1.3
+    - CIS-UBUNTU2004-4.1.1.4
+
+- name: set RedHat audit grub cmdline
+  become: 'yes'
+  ansible.builtin.command: 'grubby --update-kernel=ALL --args="{{ grub_audit_cmdline }} {{ grub_audit_backlog_cmdline }}"'
+  register: grubby_update_kernel
+  when: ansible_os_family == "RedHat"
+  changed_when: grubby_update_kernel.rc != 0
+  failed_when: grubby_update_kernel.rc != 0
+  tags:
+    - auditd
+    - grub
+    - CCE-80825-3
+    - CCE-80943-4
+
+- name: set audit action_mail_acct
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^action_mail_acct ="
+    line: "action_mail_acct = {{ auditd_action_mail_acct }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+    - CCE-80678-6
+
+- name: set audit admin_space_left_action
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^admin_space_left_action = "
+    line: "admin_space_left_action = {{ auditd_admin_space_left_action }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+
+- name: set audit disk_error_action
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^disk_error_action ="
+    line: "disk_error_action = {{ auditd_disk_error_action }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+    - CCE-84046-2
+
+- name: set audit disk_full_action
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^disk_full_action ="
+    line: "disk_full_action = {{ auditd_disk_full_action }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+    - CCE-84045-4
+
+- name: set audit max_log_file
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^max_log_file ="
+    line: "max_log_file = {{ auditd_max_log_file }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+    - CIS-UBUNTU2004-4.1.2.1
+
+- name: set audit max_log_file_action
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^max_log_file_action ="
+    line: "max_log_file_action = {{ auditd_max_log_file_action }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+    - CCE-80682-8
+    - CIS-UBUNTU2004-4.1.2.2
+
+- name: set audit num_logs
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^num_logs ="
+    line: "num_logs = {{ auditd_num_logs }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+
+- name: set audit space_left
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^space_left ="
+    line: "space_left = {{ auditd_space_left }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+
+- name: set audit space_left_action
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    regexp: "^space_left_action ="
+    line: "space_left_action = {{ auditd_space_left_action }}"
+    dest: /etc/audit/auditd.conf
+    mode: 0640
+    state: present
+    create: 'no'
+  tags:
+    - auditd
+    - CCE-80684-4
+
+- name: audit.rules
+  become: 'yes'
+  ansible.builtin.template:
+    src: etc/audit/rules.d/hardening.rules.j2
+    dest: /etc/audit/rules.d/hardening.rules
+    backup: 'yes'
+    mode: 0600
+    owner: root
+    group: root
+  when: auditd_apply_audit_rules|bool
+  notify:
+    - generate auditd
+    - restart auditd
+  tags:
+    - auditd
+    - CCE-80708-1
+    - CIS-UBUNTU2004-4.1.1.2
+    - CIS-UBUNTU2004-4.1.3
+    - CIS-UBUNTU2004-4.1.4
+    - CIS-UBUNTU2004-4.1.5
+    - CIS-UBUNTU2004-4.1.6
+    - CIS-UBUNTU2004-4.1.7
+    - CIS-UBUNTU2004-4.1.8
+    - CIS-UBUNTU2004-4.1.9
+    - CIS-UBUNTU2004-4.1.10
+    - CIS-UBUNTU2004-4.1.11
+    - CIS-UBUNTU2004-4.1.12
+    - CIS-UBUNTU2004-4.1.13
+    - CIS-UBUNTU2004-4.1.14
+    - CIS-UBUNTU2004-4.1.15
+    - CIS-UBUNTU2004-4.1.16
+    - CIS-UBUNTU2004-4.1.17
+    - D3-SDM
+    - D3-SFA
+...

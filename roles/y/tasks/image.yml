@@ -1,0 +1,4 @@
+---
+- name: apply presets
+  include_tasks: "{{ item.name }}.yml"
+  loop: "{{ y_presets }}"

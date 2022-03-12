@@ -1,0 +1,126 @@
+---
+- name: stat init.d/rc
+  become: 'yes'
+  ansible.builtin.stat:
+    path: /etc/init.d/rc
+  register: initdrc
+  tags:
+    - umask
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: set default rc umask
+  become: 'yes'
+  ansible.builtin.replace:
+    regexp: 'umask(\s+.*)'
+    replace: "umask 077"
+    dest: /etc/init.d/rc
+    mode: 0755
+  when: initdrc.stat.exists
+  tags:
+    - umask
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: stat bashrc
+  become: 'yes'
+  ansible.builtin.stat:
+    path: /etc/bashrc
+  register: bashrc
+  tags:
+    - bash
+    - umask
+    - CCE-81036-6
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: set default bashrc umask
+  become: 'yes'
+  ansible.builtin.replace:
+    regexp: 'umask(\s+.*)'
+    replace: "umask 077"
+    dest: /etc/bashrc
+    mode: 0644
+  when: bashrc.stat.exists
+  tags:
+    - bash
+    - umask
+    - CCE-81036-6
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: stat csh.cshrc
+  become: 'yes'
+  ansible.builtin.stat:
+    path: /etc/csh.cshrc
+  register: cshrc
+  tags:
+    - csh
+    - umask
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: set default csh.cshrc umask
+  become: 'yes'
+  ansible.builtin.replace:
+    regexp: 'umask(\s+.*)'
+    replace: "umask 077"
+    dest: /etc/csh.cshrc
+    mode: 0644
+  when: cshrc.stat.exists
+  tags:
+    - csh
+    - umask
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: set default profile umask
+  become: 'yes'
+  ansible.builtin.replace:
+    regexp: 'umask(\s+.*)'
+    replace: "umask 077"
+    dest: /etc/profile
+    mode: 0644
+  tags:
+    - umask
+    - CIS-UBUNTU2004-5.5.4
+    - M1022
+
+- name: readonly TMOUT
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    line: "readonly TMOUT"
+    dest: /etc/profile
+    mode: 0644
+    state: present
+    create: 'no'
+    insertbefore: "^export"
+  tags:
+    - tmout
+
+- name: set TMOUT
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    line: "TMOUT=600"
+    dest: /etc/profile
+    mode: 0644
+    state: present
+    create: 'no'
+    insertbefore: "^readonly TMOUT"
+  tags:
+    - tmout
+    - CIS-UBUNTU2004-5.5.5
+    - UBTU-20-010013
+
+- name: export TMOUT
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    line: "export TMOUT"
+    dest: /etc/profile
+    mode: 0644
+    state: present
+    create: 'no'
+    insertafter: "^readonly TMOUT"
+  tags:
+    - tmout
+...

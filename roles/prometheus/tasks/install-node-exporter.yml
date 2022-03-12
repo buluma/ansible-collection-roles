@@ -1,0 +1,110 @@
+---
+# file: tasks/install-node-exporter.yml
+#
+# Install Prometheus node-exporter.
+#
+# @see http://prometheus.io/docs/introduction/getting_started/
+#
+
+- block:
+
+    - name: set internal variables for convenience
+      set_fact:
+        prometheus_node_exporter_tarball_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.{{ prometheus_platform_suffix }}.tar.gz"
+        prometheus_node_exporter_daemon_dir: "{{ prometheus_install_path }}/node_exporter-{{ prometheus_node_exporter_version }}.{{ prometheus_platform_suffix }}"
+
+    - name: download and untar node_exporter tarball
+      unarchive:
+        src: "{{ prometheus_node_exporter_tarball_url }}"
+        dest: "{{ prometheus_install_path }}"
+        copy: no
+
+  when: prometheus_node_exporter_version != "git"
+
+
+- block:
+
+    - name: set internal variables for convenience
+      set_fact:
+        prometheus_node_exporter_git_url: "https://github.com/prometheus/node_exporter.git"
+        prometheus_node_exporter_src_path: "{{ prometheus_goroot }}/src/github.com/prometheus/node_exporter"
+        prometheus_node_exporter_daemon_dir: "{{ prometheus_install_path }}"
+
+    - name: delete the node_exporter build directory, if necessary
+      file: path={{ prometheus_node_exporter_src_path }}  state=absent
+      when: prometheus_rebuild
+
+    - name: mkdir for node_exporter source code
+      file: path={{ prometheus_node_exporter_src_path }}  state=directory
+
+    - name: clone the node_exporter project src
+      git:
+        repo: "{{ prometheus_node_exporter_git_url }}"
+        dest: "{{ prometheus_node_exporter_src_path }}"
+        force: yes
+
+    - name: workaround - clone the necessary go packages
+      git:
+        repo: https://github.com/golang/sys.git
+        dest: "{{ prometheus_gopath }}/src/golang.org/x/sys"
+        depth: 1
+        force: yes
+
+    - name: workaround - clone the necessary go packages
+      git:
+        repo: https://github.com/golang/net.git
+        dest: "{{ prometheus_gopath }}/src/golang.org/x/net"
+        depth: 1
+        force: yes
+
+    - name: build node_exporter source code
+      command: make build
+      args:
+        chdir: "{{ prometheus_node_exporter_src_path }}"
+        creates: node_exporter
+      environment:
+        GO15VENDOREXPERIMENT: 1
+        GOROOT: "{{ prometheus_goroot }}"
+        GOPATH: "{{ prometheus_gopath }}"
+        PATH: "{{ ansible_env.PATH }}:{{ prometheus_goroot }}/bin:{{ prometheus_gopath }}/bin"
+
+    - name: copy the built node_exporter to the install path
+      command: "cp {{ prometheus_node_exporter_src_path }}/node_exporter {{ prometheus_install_path }}"
+      args:
+        creates: "{{ prometheus_install_path }}/node_exporter"
+
+  when: prometheus_node_exporter_version == "git"
+
+
+- name: set permissions, owner and group
+  file: path={{ prometheus_node_exporter_daemon_dir }}/node_exporter owner={{ prometheus_user }} group={{ prometheus_group }} mode="go-w"
+
+- name: mkdir for data
+  file:
+    path: "{{ prometheus_db_path }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: set node_exporter variables
+  copy: src="../files/etc-default-node_exporter"  dest=/etc/default/node_exporter
+  register: node_exporter_config
+
+- debug: var=node_exporter_config
+  notify: reload node_exporter
+  when: node_exporter_config.changed
+
+
+- name: copy INIT script to server
+  template: src="../templates/node_exporter.sysvinit.{{ ansible_os_family|lower }}.sh.j2"  dest="/etc/init.d/node_exporter"  mode="a+x"
+  when: not prometheus_use_systemd|bool
+
+- name: copy systemd config to server
+  template: src="../templates/node_exporter.service.j2"  dest="/etc/systemd/system/node_exporter.service"
+  when: prometheus_use_systemd|bool
+
+
+- name: set INIT status and start
+  service: name=node_exporter enabled=yes state=started
+  when: prometheus_use_service|bool

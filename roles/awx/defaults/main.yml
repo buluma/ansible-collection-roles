@@ -1,0 +1,70 @@
+---
+# defaults file for awx
+
+# The default password for the user `admin`.
+awx_admin_password: password
+
+# The location where PostgreSQL should store its data.
+awx_postgres_data_dir: /var/lib/pgdata
+awx_postgres_database:
+  database: awx
+  username: awx
+  password: awxpass
+  port: 5432
+
+# AWX uses a secret key to encrypt data. This value should be stored in vault.
+awx_secret_key: awxsecret
+
+# The ports AWX should listen to.
+awx_http_port: 80
+awx_https_port: 443
+
+# Details for rabbitmq
+awx_rabbitmq_password: awxpass
+awx_rabbitmq_erlang_cookie: cookiemonster
+
+# When using the API, should the SSL be verified?
+awx_tower_verify_ssl: no
+
+# You can populate AWX using this structure.
+# awx_organizations:
+#  - name: demo
+#    description: Demo organization
+#    users:
+#      - name: demo
+#        password: demo
+#        email: demo@example.com
+#        first_name: De
+#        last_name: Mo
+#        superuser: true
+#    teams:
+#      - name: demo
+#        description: Demo team
+#    credentials:
+#      - name: demo_ssh
+#        description: demo ssh credentials
+#        kind: ssh
+#        username: demo
+#        password: demo
+#      - name: demo_scm
+#        description: demo scm credentials
+#        kind: scm
+#        username: Null
+#        password: Null
+#    projects:
+#      - name: demo
+#        description: demo project
+#        scm_credential: demo_scm
+#        scm_type: git
+#        scm_url: "https://github.com/robertdebock/ansible"
+#    inventories:
+#      - name: demo
+#        description: demo inventory
+#    job_templates:
+#      - name: demo
+#        description: demo_job_template
+#        project: demo
+#        playbook: ping.yml
+#        inventory: demo
+#        credential: demo_ssh
+#        job_type: run

@@ -1,0 +1,6 @@
+---
+roles:
+  - name: buluma.docker
+  - name: buluma.docker_ce
+collections:
+  - name: community.general

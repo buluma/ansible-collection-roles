@@ -1,0 +1,41 @@
+---
+# tasks file for vim
+- name: Install required packages
+  package:
+    name: "{{ install_packages }}"
+    state: present
+  become: yes
+  tags:
+    - install_packages
+
+- name: Ensure .vim/{autoload,bundle} directory exists
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: no
+    mode: 0750
+  loop:
+    - "{{ vim_dir }}"
+    - "{{ vim_dir }}/autoload"
+    - "{{ vim_dir }}/bundle"
+
+- name: Ensure Pathogen is in place
+  get_url:
+    dest: "{{ vim_dir }}/autoload/pathogen.vim"
+    url: https://tpo.pe/pathogen.vim
+
+- name: Deploy plugins
+  git:
+    dest: "{{ vim_dir }}/bundle/{{ item.name }}"
+    repo: "{{ item.url }}"
+    clone: yes
+    update: yes
+    recursive: no
+  loop: "{{ plugins }}"
+
+- name: Ensure .vimrc config in place
+  copy:
+    src: vimrc
+    dest: "{{ vimrc }}"
+    backup: yes
+    mode: 0640

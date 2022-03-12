@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+{% if ssh_config_d_exists.stat.exists and ssh_config_d_exists.stat.isdir %}
+Include /etc/ssh/ssh_config.d/*.conf
+{% endif %}
+
+Host *
+    Ciphers {{ sshd_ciphers }}
+    GSSAPIAuthentication {{ sshd_gssapi_authentication }}
+    HashKnownHosts yes
+    MACs {{ sshd_macs }}
+    RekeyLimit {{ sshd_rekey_limit }}

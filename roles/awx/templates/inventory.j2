@@ -1,0 +1,30 @@
+{{ ansible_managed | comment }}
+localhost ansible_connection=local
+
+[all:vars]
+dockerhub_base=ansible
+
+awx_task_hostname=awx
+awx_web_hostname=awxweb
+
+postgres_data_dir={{ awx_postgres_data_dir }}
+
+host_port={{ awx_http_port }}
+host_port_ssl={{ awx_https_port }}
+
+docker_compose_dir=/tmp/awxcompose
+
+pg_username={{ awx_postgres_database.username }}
+pg_password={{ awx_postgres_database.password }}
+pg_database={{ awx_postgres_database.database }}
+pg_port={{ awx_postgres_database.port }}
+
+rabbitmq_password={{ awx_rabbitmq_password }}
+rabbitmq_erlang_cookie={{ awx_rabbitmq_erlang_cookie }}
+
+admin_user=admin
+admin_password={{ awx_admin_password }}
+
+create_preload_data=False
+
+secret_key={{ awx_secret_key }}
