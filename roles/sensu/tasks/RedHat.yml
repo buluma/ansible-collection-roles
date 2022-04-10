@@ -1,0 +1,22 @@
+---
+- name: ensure sensu.repo is copied
+  ansible.builtin.copy:
+    src: sensu.repo
+    dest: /etc/yum.repos.d/sensu.repo
+
+- name: ensure sensu is installed
+  ansible.builtin.yum:
+    name: sensu-go-backend
+    state: latest
+
+# Add the Sensu repository
+# - name: Add Sensu repository
+#   ansible.builtin.shell: curl -s https://packagecloud.io/install/repositories/sensu/stable/script.deb.sh | sudo bash
+#   args:
+#     warn: no
+
+# - name: Add Sensu repository-RHEL
+#   shell: "set -o pipefail ; curl -s https://packagecloud.io/install/repositories/sensu/stable/script.rpm.sh | sudo bash"
+#   register: sensu_repo
+#   # changed_when: no
+#   # failed_when: no

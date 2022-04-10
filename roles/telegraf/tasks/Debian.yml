@@ -1,0 +1,116 @@
+---
+- name: Install a list of packages
+  ansible.builtin.apt:
+    pkg:
+      - gpg
+
+- name: "Debian | Set name if state != latest"
+  ansible.builtin.set_fact:
+    telegraf_agent_package: telegraf={{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}
+  when:
+    - telegraf_agent_package_state != "latest"
+
+- name: "Debian | Set telegraf_agent_package_arch"
+  ansible.builtin.set_fact:
+    telegraf_agent_package_arch: "{{ ansible_architecture }}"
+
+- name: "Debian | Set telegraf_agent_package_arch specific for x86_64"
+  ansible.builtin.set_fact:
+    telegraf_agent_package_arch: "amd64"
+  when:
+    - ansible_architecture == "x86_64"
+
+- name: "Debian | Set telegraf_agent_package_arch specific for arm64"
+  ansible.builtin.set_fact:
+    telegraf_agent_package_arch: "armhf"
+  when:
+    - ansible_architecture == "arm64"
+
+- name: "Debian | Ensure the system can use the HTTPS transport for APT"
+  ansible.builtin.stat:
+    path: /usr/lib/apt/methods/https
+  register: apt_https_transport
+
+- name: "Debian | Install APT HTTPS transport"
+  ansible.builtin.apt:
+    name: "apt-transport-https"
+    state: present
+  register: are_telegraf_dependencies_packages_installed
+  until: are_telegraf_dependencies_packages_installed is succeeded
+  when:
+    - not apt_https_transport.stat.exists
+  become: yes
+
+- name: "Debian | Download Telegraf apt key"
+  ansible.builtin.apt_key:
+    url: "https://repos.influxdata.com/influxdb.key"
+    id: 2582E0C5
+    state: present
+  register: are_telegraf_dependencies_keys_installed
+  until: are_telegraf_dependencies_keys_installed is succeeded
+  become: yes
+  when:
+    - telegraf_agent_package_method == "repo"
+
+- name: "Debian | Add Telegraf repository (using LSB)"
+  ansible.builtin.apt_repository:
+    repo: "deb https://repos.influxdata.com/{{ ansible_distribution|lower }} {{ ansible_lsb.codename }} stable"
+    filename: "telegraf"
+    state: present
+  become: yes
+  when:
+    - telegraf_agent_package_method == "repo"
+    - ansible_lsb is defined
+    - ansible_lsb.codename is defined
+
+- name: "Debian | Add Telegraf repository"
+  ansible.builtin.apt_repository:
+    repo: "deb https://repos.influxdata.com/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+    filename: "telegraf"
+    state: present
+  become: yes
+  when:
+    - telegraf_agent_package_method == "repo"
+    - ansible_lsb is not defined or ansible_lsb.codename is not defined
+
+- name: "Debian | Download Telegraf package (online)"
+  ansible.builtin.get_url:
+    url: https://dl.influxdata.com/telegraf/releases/{{ telegraf_agent_package_file_deb }}
+    dest: "{{ telegraf_agent_package_path }}/{{ telegraf_agent_package }}"
+    use_proxy: "{{ true if http_proxy is defined and http_proxy else false }}"
+  environment:
+    http_proxy: "{{ http_proxy | default(None) | default(omit) }}"
+    https_proxy: "{{ https_proxy | default(None) | default(omit) }}"
+  when:
+    - telegraf_agent_package_method == "online"
+
+- name: "Debian | Install Telegraf package (repo)"
+  ansible.builtin.apt:
+    name: "{{ telegraf_agent_package }}"
+    state: "{{ telegraf_agent_package_state }}"
+    update_cache: yes
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded
+  notify: "Restart Telegraf"
+  become: yes
+  when:
+    - telegraf_agent_package_method == "repo"
+
+- name: "Debian | Install Telegraf package (online)"
+  ansible.builtin.apt:
+    deb: "{{ telegraf_agent_package_path }}/{{ telegraf_agent_package }}"
+    state: "present"
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded
+  notify: "Restart Telegraf"
+  become: yes
+  when:
+    - telegraf_agent_package_method == "online" or telegraf_agent_package_method == "offline"
+
+- name: "Debian | Remove repository (online/offline install)"
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/telegraf.list"
+    state: absent
+  become: yes
+  when:
+    - telegraf_agent_package_method == "online" or telegraf_agent_package_method == "offline"

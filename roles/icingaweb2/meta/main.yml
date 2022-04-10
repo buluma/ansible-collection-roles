@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  role_name: icingaweb2
+  author: Michael Buluma
+  namespace: buluma
+  description: Installs and configures Icinga Web 2 on Rhel, Debian and Ubuntu
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: 2.8
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+
+  galaxy_tags:
+    - icinga2
+    - monitoring
+    - webinterface
+    - icingaweb2
+    - rhel
+    - debian
+    - ubuntu
+    - centos
+
+dependencies: []

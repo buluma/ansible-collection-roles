@@ -8,6 +8,10 @@ collections:
   - name: community.zabbix
   - name: containers.podman
   - name: f5networks.f5_modules
+  - name: geerlingguy.postgresql
+  - name: geerlingguy.redis
+  - name: geerlingguy.repo-epel
+  - name: geerlingguy.repo-remi
   - name: gluster.gluster
-  - name: robertdebock.bootstrap
-  - name: robertdebock.epel
+  - name: buluma.bootstrap
+  - name: buluma.epel

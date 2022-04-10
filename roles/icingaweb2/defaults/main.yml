@@ -1,0 +1,94 @@
+---
+# Installation Params
+icingaweb2_manage_package: yes
+icingaweb2_manage_centos_scl: yes
+icingaweb2_manage_repository: yes
+icingaweb2_manage_roles: yes
+icingaweb2_manage_director: no
+icingaweb2_config_dir: /etc/icingaweb2
+icingaweb2_modules_path: /usr/share/icingaweb2/modules
+icingaweb2_modules_config: "{{ icingaweb2_config_dir }}/modules"
+icingaweb2_group: icingaweb2
+
+# Director
+icingaweb2_director_home: /var/lib/icingadirector
+icingaweb2_manage_director_service: no
+# icingaweb2_roles:
+#   administrators:
+#     users: icinga
+#     permissions: "*"
+#     groups: Administrators
+
+
+icingaweb2_resources:
+  icinga_ido:
+    type: db
+    db: mysql
+    host: localhost
+    dbname: icinga
+    username: icinga
+    password: icinga
+    use_ssl: 0
+    charset: utf8
+  icingaweb_db:
+    type: db
+    db: mysql
+    host: localhost
+    dbname: icingaweb
+    username: icingaweb
+    password: icingaweb
+    use_ssl: 0
+
+icingaweb2_groups:
+  icingaweb2:
+    backend: db
+    resource: icingaweb_db
+
+icingaweb2_authentication:
+  icingaweb2:
+    backend: db
+    resource: icingaweb_db
+
+icingaweb2_config:
+  global:
+    show_stacktraces: 1
+    show_application_state_messages: 1
+    config_backend: ini
+    module_path: /usr/share/icingaweb2/modules
+  logging:
+    log: syslog
+    level: ERROR
+    application: icingaweb2
+    facility: user
+  themes:
+    default: Icinga
+
+icingaweb2_monitoring_config:
+  security:
+    protected_customvars: "*pw*,*pass*,community"
+icingaweb2_monitoring_backends:
+  icinga:
+    type: ido
+    resource: icinga_ido
+icingaweb2_monitoring_commandtransports:
+  icinga2:
+    transport: api
+    host: localhost
+    port: 5665
+    username: root
+    password: root
+
+icingaweb2_modules:
+  - name: monitoring
+  # - name: director
+  #   git_url: https://github.com/Icinga/icingaweb2-module-director.git
+  #   version: v1.7.2
+  # - name: ipl
+  #   git_url: https://github.com/Icinga/icingaweb2-module-ipl.git
+  #   version: v0.5.0
+  # - name: reactbundle
+  #   git_url: https://github.com/Icinga/icingaweb2-module-reactbundle.git
+  #   version: v0.7.0
+  # - name: incubator
+  #   git_url: https://github.com/Icinga/icingaweb2-module-incubator.git
+  #   version: v0.5.0

@@ -1,0 +1,6 @@
+---
+- name: Ensure pip is installed.
+  ansible.builtin.yum:
+    name: '{{ elasticsearch_curator_pip_package }}'
+    state: present
+    enablerepo: epel

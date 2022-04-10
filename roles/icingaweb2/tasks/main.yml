@@ -1,0 +1,46 @@
+---
+- name: Include OS specific vars
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_os_family }}-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}.yml"
+      paths:
+        - 'vars'
+  tags:
+    - install
+    - config
+
+- name: include icingaweb2 installation
+  include: "icingaweb2_installation_{{ ansible_os_family }}.yml"
+  tags:
+    - install
+
+- name: include icingaweb2 configuration
+  include: icingaweb2_configuration.yml
+  tags:
+    - config
+
+- name: include icingaweb2 modules installation
+  include: icingaweb2_installation_modules.yml
+  when: icingaweb2_modules is defined
+  tags:
+    - install
+
+- name: include managing director
+  include: icingaweb2_manage_director.yml
+  when: icingaweb2_manage_director
+  tags:
+    - install
+    - config
+
+- name: include managing director service
+  include: icingaweb2_manage_director_service.yml
+  when:
+    - icingaweb2_manage_director
+    - icingaweb2_manage_director_service
+  tags:
+    - install

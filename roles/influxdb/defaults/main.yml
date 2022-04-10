@@ -1,0 +1,32 @@
+---
+influxdb_manage_repository: yes
+influxdb_manage_package: yes
+influxdb_config_dir: /etc/influxdb
+influxdb_config_global:
+    reporting-disabled: false
+    bind-address: 127.0.0.1:8088
+influxdb_config_graphite:
+    - enabled: false
+      tags:
+          - region=us
+          - zone=test
+influxdb_config_collectd:
+    - enabled: false
+influxdb_config_udp:
+    - enabled: false
+influxdb_config_meta:
+    dir: /var/lib/influxdb/meta
+    retention-autocreate: true
+    logging-enabled: true
+influxdb_config_http:
+    enabled: true
+    https-enabled: false
+    bind-address: 127.0.0.1:8086
+    auth-enabled: true
+    ping-auth-enabled: true
+influxdb_config_data:
+    dir: /var/lib/influxdb/data
+    wal-dir: /var/lib/influxdb/wal
+    series-id-set-cache-size: 100
+influxdb_admin_username: admin
+influxdb_admin_password: admin

@@ -1,0 +1,69 @@
+---
+- name: create director directory
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ icingaweb2_modules_config }}/director"
+    owner: "{{ icingaweb2_httpd_user }}"
+    group: "{{ icingaweb2_group }}"
+  tags:
+    - config
+    - install
+
+- name: create director config
+  ansible.builtin.copy:
+    dest: "{{ icingaweb2_modules_config }}/director/config.ini"
+    owner: "{{ icingaweb2_httpd_user }}"
+    group: "{{ icingaweb2_group }}"
+    mode: "0660"
+    content: |
+      [db]
+      resource="{{ icingaweb2_director_resource }}"
+  tags:
+    - config
+    - install
+
+- name: create director kickstart config
+  ansible.builtin.copy:
+    dest: "{{ icingaweb2_modules_config }}/director/kickstart.ini"
+    owner: "{{ icingaweb2_httpd_user }}"
+    group: "{{ icingaweb2_group }}"
+    mode: "0660"
+    content: |
+      [config]
+      endpoint="{{ icingaweb2_director_kickstart_endpoint }}"
+      host="{{ icingaweb2_director_kickstart_host | default('localhost') }}"
+      port="{{ icingaweb2_director_kickstart_port | default('5665') }}"
+      username="{{ icingaweb2_director_kickstart_username | default('root') }}"
+      password="{{ icingaweb2_director_kickstart_password | default('root') }}"
+  when: icingaweb2_director_kickstart_endpoint is defined
+  tags:
+    - config
+    - install
+
+- name: check if migration is pending
+  command: /usr/bin/icingacli director migration pending --verbose
+  register: pending
+  changed_when: pending.rc == 0
+  failed_when: "'ERROR' in pending.stdout"
+  tags:
+    - config
+    - install
+
+- name: run migration
+  command: /usr/bin/icingacli director migration run --verbose
+  when:
+    - pending.rc == 0
+    - "'ERROR' not in pending.stdout"
+  tags:
+    - config
+    - install
+
+- name: check if kickstart is required
+  command: /usr/bin/icingacli director kickstart required --verbose || /bin/true
+  register: kickstart
+  changed_when: "'Kickstart has been configured and should be triggered' in kickstart.stdout"
+  failed_when: "'ERROR' in kickstart.stdout"
+  notify: run-kickstart
+  tags:
+    - config
+    - install

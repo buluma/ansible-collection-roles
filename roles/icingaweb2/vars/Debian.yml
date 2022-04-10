@@ -1,0 +1,7 @@
+---
+icingaweb2_httpd_user: www-data
+icingaweb2_apt_url: "deb http://packages.icinga.com/{{ ansible_distribution|lower }} icinga-{{ ansible_distribution_release }} main"
+icingaweb2_apt_key: "https://packages.icinga.com/icinga.key"
+icingaweb2_packages:
+  - icingaweb2
+  - icingacli

@@ -1,0 +1,11 @@
+---
+- name: start-influxdb
+  ansible.builtin.service:
+    name: influxdb
+    state: started
+    enabled: yes
+
+- name: restart-influxdb
+  ansible.builtin.service:
+    name: influxdb
+    state: restarted

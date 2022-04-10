@@ -1,0 +1,21 @@
+---
+
+- name: check log4j files
+  block:
+    - name: find log4j files
+      ansible.builtin.find:
+        paths: "{{ cve_2022_23307_paths_to_check }}"
+        patterns:
+          - "*log4j*"
+      register: cve_2022_23307_files
+
+    - name: see if there are matches
+      ansible.builtin.assert:
+        that:
+          - cve_2022_23307_files.matched == 0
+        quiet: yes
+  rescue:
+    - name: show matched files
+      ansible.builtin.debug:
+        msg: "Potentially vulnerable: {{ item.path }}"
+      loop: "{{ cve_2022_23307_files.files }}"

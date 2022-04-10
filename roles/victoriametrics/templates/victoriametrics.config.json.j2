@@ -1,0 +1,3 @@
+{% if victoriametrics_prometheus_config | length > 0 %}
+{{ victoriametrics_prometheus_config | to_nice_yaml(indent=2) }}
+{% endif %}

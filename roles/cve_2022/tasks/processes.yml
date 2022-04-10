@@ -1,0 +1,25 @@
+---
+
+- name: check processes
+  block:
+    - name: install ps
+      ansible.builtin.package:
+        name: "{{ cve_2022_23307_ps_package }}"
+      notify:
+        - uninstall ps
+
+    - name: get list of processes
+      ansible.builtin.command:
+        cmd: ps -ef
+      register: cve_2022_23307_processes
+      changed_when: no
+
+    - name: check for java processes
+      ansible.builtin.assert:
+        that:
+          - '"java" not in cve_2022_23307_processes'
+        quiet: yes
+  rescue:
+    - name: show matched pids
+      ansible.builtin.debug:
+        msg: "Potentially vulneralble: {{ cve_2022_23307_processes }}"

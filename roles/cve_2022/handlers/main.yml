@@ -1,0 +1,12 @@
+---
+# handlers file for cve_2022_23307
+
+- name: uninstall ps
+  ansible.builtin.package:
+    name: "{{ cve_2022_23307_ps_package }}"
+    state: absent
+
+- name: uninstall unzip
+  ansible.builtin.package:
+    name: unzip
+    state: absent

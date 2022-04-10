@@ -1,0 +1,101 @@
+# {{ ansible_managed }}
+{% import 'toml_parser.j2' as toml_parser %}
+
+[global]
+{% for option, value in influxdb_config_global.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+
+[meta]
+{% for option, value in influxdb_config_meta.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+
+[data]
+{% for option, value in influxdb_config_data.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+
+{% for item in influxdb_config_graphite %}
+[[graphite]]
+{% for option, value in item.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endfor %}
+
+{% for item in influxdb_config_collectd %}
+[[collectd]]
+{% for option, value in item.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endfor %}
+
+{% for item in influxdb_config_udp %}
+[[udp]]
+{% for option, value in item.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endfor %}
+
+{% if influxdb_config_coordinator is defined %}
+[coordinator]
+{% for option, value in influxdb_config_coordinator.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_retention is defined %}
+[retention]
+{% for option, value in influxdb_config_retention.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_shard_precreation is defined %}
+[shard-precreation]
+{% for option, value in influxdb_config_shard_precreation.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_monitor is defined %}
+[monitor]
+{% for option, value in influxdb_config_monitor.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_http is defined %}
+[http]
+{% for option, value in influxdb_config_http.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_logging is defined %}
+[logging]
+{% for option, value in influxdb_config_logging.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_subscriber is defined %}
+[subscriber]
+{% for option, value in influxdb_config_subscriber.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_continuous_queries is defined %}
+[continuous_queries]
+{% for option, value in influxdb_config_continuous_queries.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}
+
+{% if influxdb_config_tls is defined %}
+[tls]
+{% for option, value in influxdb_config_tls.items() %}
+{{ toml_parser.eval_value(option,value) }}
+{% endfor %}
+{% endif %}

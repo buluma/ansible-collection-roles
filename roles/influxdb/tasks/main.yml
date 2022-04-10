@@ -1,0 +1,40 @@
+---
+- name: Include OS specific vars
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_os_family }}-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}.yml"
+      paths:
+        - 'vars'
+  tags:
+    - install
+    - config
+
+- name: include influxdb installation
+  include: "influxdb_installation_{{ ansible_os_family }}.yml"
+  tags:
+    - install
+
+- name: include influxdb configuration
+  include: "influxdb_configuration.yml"
+  tags:
+    - config
+    - install
+
+- name: include influxdb authorization
+  include: "influxdb_authorization.yml"
+  when: ( influxdb_admin_username and influxdb_admin_password )
+  tags:
+    - config
+    - install
+    - manage-content
+
+- name: include influxdb database creation
+  include: "influxdb_manage_databases.yml"
+  tags:
+    - install
+    - manage-content

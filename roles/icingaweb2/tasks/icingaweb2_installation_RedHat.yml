@@ -1,0 +1,34 @@
+---
+- name: RedHat - Add Icinga 2 repository
+  become: yes
+  ansible.builtin.yum_repository:
+    name: ICINGA-release
+    description: Icinga packages for EL
+    baseurl: "{{ icingaweb2_yum_url }}"
+    gpgkey: "{{ icingaweb2_yum_key }}"
+    gpgcheck: yes
+  when: icingaweb2_manage_repository
+
+- name: RedHat - Ensure EPEL is enabled
+  become: yes
+  ansible.builtin.yum:
+    name: epel-release
+    state: present
+  when: icingaweb2_manage_centos_epel
+
+- name: RedHat - Ensure SCL is enabled
+  become: yes
+  ansible.builtin.yum:
+    name: centos-release-scl-rh.noarch
+    state: present
+  when: icingaweb2_manage_centos_scl
+
+- name: RedHat - Ensure Icinga Web 2 is installed
+  become: yes
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+  when: icingaweb2_manage_package
+  loop:
+    - icingaweb2
+    - icingacli

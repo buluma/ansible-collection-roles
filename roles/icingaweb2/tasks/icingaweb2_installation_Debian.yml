@@ -1,0 +1,31 @@
+---
+- name: Debian - Install apt-transport-https
+  become: yes
+  ansible.builtin.apt:
+    name: apt-transport-https
+    update_cache: yes
+    state: present
+  when: icingaweb2_manage_repository
+
+- name: Debian - Add Icinga Web 2 repository key
+  become: yes
+  ansible.builtin.apt_key:
+    url: "{{ icingaweb2_apt_key }}"
+    state: present
+  when: icingaweb2_manage_repository and icingaweb2_apt_key
+
+- name: Debian - Add Icinga Web 2 repository
+  become: yes
+  ansible.builtin.apt_repository:
+    repo: "{{ icingaweb2_apt_url }}"
+    state: present
+  when: icingaweb2_manage_repository
+
+- name: Debian - Ensure Icinga Web 2 is installed
+  become: yes
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ icingaweb2_packages }}"
+  when: icingaweb2_manage_package

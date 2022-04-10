@@ -1,0 +1,4 @@
+---
+roles:
+  - name: buluma.elasticsearch_curator
+  - name: geerlingguy.repo-epel

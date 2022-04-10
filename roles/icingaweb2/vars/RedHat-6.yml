@@ -1,0 +1,5 @@
+---
+icingaweb2_httpd_user: apache
+icingaweb2_yum_url: "http://packages.icinga.com/epel/$releasever/release/"
+icingaweb2_yum_key: "https://packages.icinga.com/icinga.key"
+icingaweb2_manage_centos_epel: yes

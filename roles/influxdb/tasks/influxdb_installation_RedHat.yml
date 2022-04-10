@@ -1,0 +1,22 @@
+---
+- name: RedHat - Add InfluxDB repository
+  ansible.builtin.yum_repository:
+    name: InfluxDB
+    description: InfluxDB Repository - RHEL \$releasever
+    baseurl: "{{ influxdb_yum_url }}"
+    gpgkey: "{{ influxdb_yum_key }}"
+    gpgcheck: yes
+  when: influxdb_manage_repository
+
+- name: RedHat - Ensure InfluxDB is installed
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+  when: influxdb_manage_package
+  notify: start-influxdb
+  loop:
+    - influxdb
+
+- name: RedHat - Ensure python influxdb library
+  ansible.builtin.pip:
+    name: influxdb

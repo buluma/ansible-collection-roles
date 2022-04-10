@@ -1,0 +1,13 @@
+{% macro eval_value(key,val) %}
+{%- if val is iterable and val is not string %}
+{{ key }} = [ "{{ val | map('quote') | join('", "') }}" ]
+{%- elif val | bool == False and val | string | lower == "false" %}
+{{ key }} = {{ val | string | lower }}
+{%- elif val | bool == True and val | string | lower == "true" %}
+{{ key }} = {{ val | string | lower }}
+{%- elif val is number %}
+{{ key }} = {{ val }}
+{%- else %}
+{{ key }} = "{{ val | quote }}"
+{%- endif %}
+{% endmacro %}

@@ -1,0 +1,17 @@
+---
+sentry_config_yml:
+  mail.backend: '{{ sentry_mail_backend }}'
+  mail.host: '{{ sentry_mail_host }}'
+  mail.port: '{{ sentry_mail_port }}'
+  mail.username: '{{ sentry_mail_username }}'
+  mail.password: '{{ sentry_mail_password }}'
+  mail.use-tls: '{{ sentry_mail_use_tls }}'
+  mail.from: '{{ sentry_mail_from }}'
+  mail.enable-replies: '{{ sentry_mail_enable_replies }}'
+  mail.reply-hostname: '{{ sentry_mail_reply_hostname }}'
+  mail.mailgun-api-key: '{{ sentry_mail_mailgun_api_key }}'
+  system.secret-key: '{{ sentry_secret_key }}'
+  system.url-prefix: '{{ sentry_url_prefix }}'
+  redis.clusters: '{{ sentry_redis_clusters }}'
+  filestore.backend: '{{ sentry_filestore_backend }}'
+  filestore.options: '{{ sentry_filestore_options }}'

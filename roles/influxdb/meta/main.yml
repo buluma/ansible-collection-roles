@@ -1,0 +1,32 @@
+---
+galaxy_info:
+  role_name: influxdb
+  author: buluma
+  description: Install and configures InfluDB on Rhel, Debian and Ubuntu
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: 2.10
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+
+  galaxy_tags:
+    - rhel
+    - debian
+    - ubuntu
+    - centos
+    - influxdb
+    - performance
+    - metrics
+    - collector
+    - icinga2
+    - monitoring
+
+dependencies: []

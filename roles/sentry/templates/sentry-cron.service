@@ -1,0 +1,14 @@
+[Unit]
+Description=Sentry Beat Service
+After=network.target
+
+[Service]
+Type=simple
+User={{ sentry_system_user }}
+Group={{ sentry_system_user }}
+WorkingDirectory={{ sentry_install_dir }}
+Environment=SENTRY_CONF={{ sentry_install_dir }}/etc
+ExecStart={{ sentry_install_dir }}/bin/sentry run cron
+
+[Install]
+WantedBy=multi-user.target

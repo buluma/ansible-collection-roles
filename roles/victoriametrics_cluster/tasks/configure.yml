@@ -1,0 +1,30 @@
+---
+- name: Create systemd unit file for vminsert nodes
+  ansible.builtin.template:
+    src: victoriametrics-vminsert.service.j2
+    dest: /etc/systemd/system/victoriametrics-vminsert.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart victoriametrics-vminsert service
+  when: inventory_hostname in groups['vminsert']
+
+- name: Create systemd unit file for vmselect nodes
+  ansible.builtin.template:
+    src: victoriametrics-vmselect.service.j2
+    dest: /etc/systemd/system/victoriametrics-vmselect.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart victoriametrics-vmselect service
+  when: inventory_hostname in groups['vmselect']
+
+- name: Create systemd unit file for vmstorage nodes
+  ansible.builtin.template:
+    src: victoriametrics-storage.service.j2
+    dest: /etc/systemd/system/victoriametrics-storage.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart victoriametrics-storage service
+  when: inventory_hostname in groups['vmstorage']

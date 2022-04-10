@@ -1,0 +1,36 @@
+---
+
+- name: test if cve_2022_23307_check_processes is set correctly
+  ansible.builtin.assert:
+    that:
+      - cve_2022_23307_check_processes is defined
+      - cve_2022_23307_check_processes is boolean
+    quiet: yes
+
+- name: test if cve_2022_23307_check_packages is set correctly
+  ansible.builtin.assert:
+    that:
+      - cve_2022_23307_check_packages is defined
+      - cve_2022_23307_check_packages is boolean
+    quiet: yes
+
+- name: test if cve_2022_23307_check_files is set correctly
+  ansible.builtin.assert:
+    that:
+      - cve_2022_23307_check_files is defined
+      - cve_2022_23307_check_files is boolean
+    quiet: yes
+
+- name: test if cve_2022_23307_check_archives s set correctly
+  ansible.builtin.assert:
+    that:
+      - cve_2022_23307_check_archives is defined
+      - cve_2022_23307_check_archives is boolean
+    quiet: yes
+
+- name: test if cve_2022_23307_paths_to_check is set correctly
+  ansible.builtin.assert:
+    that:
+      - cve_2022_23307_paths_to_check is defined
+      - cve_2022_23307_paths_to_check is iterable
+    quiet: yes

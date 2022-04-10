@@ -1,0 +1,14 @@
+---
+# vars file for cve_2022_23307
+
+_cve_2022_23307_ps_package:
+  default: psmisc
+  Amazon-2: procps-ng
+  Amazon-2018: procps
+
+cve_2022_23307_ps_package: "{{ _cve_2022_23307_ps_package[ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_cve_2022_23307_ps_package[ansible_os_family] | default(_cve_2022_23307_ps_package['default'] )) }}"
+
+cve_2022_23307_vulnerable_packages:
+  - solr
+  - elastic
+  - log4j

@@ -1,0 +1,182 @@
+---
+- name: create system group
+  ansible.builtin.group:
+    name: "{{ victoriametrics_system_group }}"
+    system: true
+    state: present
+  when: victoriametrics_system_group != "root"
+  become: true
+  tags: victoriametrics
+
+- name: create system user
+  ansible.builtin.user:
+    name: "{{ victoriametrics_system_user }}"
+    system: true
+    shell: "/sbin/nologin"
+    group: "{{ victoriametrics_system_group }}"
+    createhome: false
+  when: victoriametrics_system_user != "root"
+  become: true
+  tags: victoriametrics
+
+- name: create data directory
+  ansible.builtin.file:
+    path: "{{ victoriametrics_data_dir }}"
+    state: directory
+    owner: "{{ victoriametrics_system_user }}"
+    group: "{{ victoriametrics_system_group }}"
+    mode: "0755"
+  become: true
+  tags: victoriametrics
+
+- name: check if victoriametrics is installed
+  ansible.builtin.stat:
+    path: "/usr/local/bin/victoriametrics"
+  register: __victoriametrics_is_installed
+  become: true
+  tags: victoriametrics
+
+- name: gather currently installed version (if any)
+  command: "/usr/local/bin/victoriametrics -version"
+  args:
+    warn: false
+  changed_when: false
+  register: __victoriametrics_current_version_output
+  when: __victoriametrics_is_installed.stat.exists
+  become: true
+  tags: victoriametrics
+
+- block:
+    - name: get latest release
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/VictoriaMetrics/VictoriaMetrics/releases/latest"
+        method: GET
+        return_content: true
+        status_code: 200
+        body_format: json
+        validate_certs: false
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      environment: "{{ proxy_env }}"
+      no_log: "{{ not lookup('env', 'MOLECULE_DEBUG') | bool }}"
+      register: _latest_release
+      until: _latest_release.status == 200
+      tags: victoriametrics
+      retries: 5
+
+    - name: "set victoriametrics version to {{ _latest_release.json.tag_name[1:] }}"
+      ansible.builtin.set_fact:
+        victoriametrics_version: "{{ _latest_release.json.tag_name[1:] }}"
+      delegate_to: localhost
+      run_once: true
+      become: true
+      tags: victoriametrics
+      when: victoriametrics_version == "latest"
+
+# - name: set fact for version split
+#   set_fact:
+#     victoriametrics_version2: "{{ __victoriametrics_current_version_output.stdout_lines[0].split('-')[5]|regex_search('[0-9.]+') }}"
+#   tags: victoriametrics
+#
+# - name: defined version
+#   tags: victoriametrics
+#   debug:
+#     msg: "{{ victoriametrics_version2 }}"
+
+- block:
+    - name: get checksum list from github
+      ansible.builtin.set_fact:
+        _checksums: "{{ lookup('url', 'https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v' + victoriametrics_version + '/victoria-metrics-' + go_arch + '-v' + victoriametrics_version + '_checksums.txt', wantlist=True) | list }}"
+      environment: "{{ proxy_env }}"
+      run_once: true
+      become: true
+      tags: victoriametrics
+
+    - name: "get checksum for {{ go_arch }} architecture"
+      ansible.builtin.set_fact:
+        victoriametrics_checksum: "{{ item.split(' ')[0] }}"
+      with_items: "{{ _checksums }}"
+      when: "('victoria-metrics-v' + victoriametrics_version + '.tar.gz') in item"
+      become: true
+      tags: victoriametrics
+
+    - name: download binary to local folder
+      ansible.builtin.get_url:
+        url: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v{{ victoriametrics_version }}/victoria-metrics-{{ go_arch }}-v{{ victoriametrics_version }}.tar.gz"
+        dest: "/tmp/victoriametrics-{{ victoriametrics_version }}.linux-{{ go_arch }}.tar.gz"
+        checksum: "sha256:{{ victoriametrics_checksum }}"
+      environment: "{{ proxy_env }}"
+      register: _download_binary
+      until: _download_binary is succeeded
+      retries: 5
+      delay: 2
+      delegate_to: localhost
+      check_mode: false
+      become: true
+      tags: victoriametrics
+
+    - name: unpack binary
+      ansible.builtin.unarchive:
+        src: "/tmp/victoriametrics-{{ victoriametrics_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "/tmp"
+        creates: "/tmp/victoriametrics-{{ victoriametrics_version }}.linux-{{ go_arch }}/victoriametrics"
+      delegate_to: localhost
+      check_mode: false
+      become: true
+      tags: victoriametrics
+
+    - name: propagate binaries
+      ansible.builtin.copy:
+        src: "/tmp/victoria-metrics-prod"
+        dest: "{{ victoriametrics_binary_install_dir }}/victoriametrics"
+        mode: 0755
+        owner: root
+        group: root
+      notify: restart victoriametrics
+      # when: not ansible_check_mode  # duplicate
+      become: true
+      tags: victoriametrics
+      when: (not __victoriametrics_is_installed.stat.exists) or (__victoriametrics_current_version_output.stdout_lines[0].split("-")[5]|regex_search('[0-9.]+') != victoriametrics_version)
+
+- block:
+    - name: create config directory
+      ansible.builtin.file:
+        path: "{{ victoriametrics_config_dir }}"
+        state: directory
+        owner: "{{ victoriametrics_system_user }}"
+        group: "{{ victoriametrics_system_group }}"
+        mode: 0755
+      become: true
+      tags: victoriametrics
+
+    - name: create config file
+      ansible.builtin.template:
+        src: victoriametrics.config.json.j2
+        dest: "{{ victoriametrics_config_dir }}/config.yml"
+        owner: "{{ victoriametrics_system_user }}"
+        group: "{{ victoriametrics_system_group }}"
+        mode: 0644
+      notify: restart victoriametrics
+      become: true
+      tags: victoriametrics
+      when: victoriametrics_prometheus_config | length > 0
+
+- name: create systemd service unit
+  ansible.builtin.template:
+    src: victoriametrics.service.j2
+    dest: /etc/systemd/system/victoriametrics.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart victoriametrics
+  become: true
+  tags: victoriametrics
+
+- name: start and enable victoriametrics
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: victoriametrics
+    enabled: true
+    state: started
+  become: true
+  tags: victoriametrics

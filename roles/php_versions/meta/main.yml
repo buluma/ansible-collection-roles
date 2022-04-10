@@ -1,0 +1,28 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: php_versions
+  author: buluma
+  description: Allows different PHP versions to be installed.
+  company: "ShadowNet"
+  license: "Apache-2.0"
+  issue_tracker_url: https://github.com/buluma/ansible-role-php-versions/issues
+  min_ansible_version: 2.4
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - php
+    - web
+    - drupal
+    - vm
+    - magento
+    - wordpress

@@ -1,0 +1,16 @@
+---
+proxy_env: {}
+victoriametrics_version: 1.57.1
+victoriametrics_web_listen_address: 0.0.0.0
+victoriametrics_web_listen_port: 8428
+victoriametrics_binary_install_dir: /usr/local/bin
+victoriametrics_system_user: "{{ victoriametrics_user | default('prometheus') }}"
+victoriametrics_system_group: "{{ victoriametrics_group | default('prometheus') }}"
+victoriametrics_data_dir: /var/lib/victoriametrics
+victoriametrics_config_dir: /etc/victoriametrics
+victoriametrics_log_level: warn
+victoriametrics_log_format: json
+victoriametrics_prometheus_config: {}
+victoriametrics_limit_nofile: 16384
+victoriametrics_config:
+  storageDataPath: "{{ victoriametrics_data_dir }}"
