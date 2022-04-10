@@ -5,7 +5,7 @@ galaxy_info:
   role_name: powertop
   description: Install powertop on your system and optimize at boot.
   license: Apache-2.0
-  company: none
+  company: ShadowNet
   min_ansible_version: "2.10"
 
   platforms:

@@ -5,7 +5,7 @@ galaxy_info:
   role_name: facts
   description: Place custom facts for Ansible on a system.
   license: Apache-2.0
-  company: none
+  company: ShadowNet
   min_ansible_version: "2.10"
 
   platforms:

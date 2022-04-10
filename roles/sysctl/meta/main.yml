@@ -5,7 +5,7 @@ galaxy_info:
   role_name: sysctl
   description: Configure sysctl on your system.
   license: Apache-2.0
-  company: none
+  company: ShadowNet
   min_ansible_version: "2.10"
 
   platforms:
