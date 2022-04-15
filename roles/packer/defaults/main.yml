@@ -1,5 +1,4 @@
 ---
-# defaults file for packer
-
-# The version of Packer to install.
-packer_version: "1.7.8"
+packer_version: "1.0.0"
+packer_arch: "amd64"
+packer_bin_path: /usr/local/bin

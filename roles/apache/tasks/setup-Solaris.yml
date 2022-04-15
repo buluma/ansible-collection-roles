@@ -1,5 +1,5 @@
 ---
 - name: Ensure Apache is installed on Solaris.
-  pkg5:
+  community.general.pkg5:
     name: "{{ apache_packages }}"
     state: "{{ apache_packages_state }}"

@@ -2,9 +2,9 @@
 
 Install and configure a certificate authority on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-ca/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-ca/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ca)|[![quality](https://img.shields.io/ansible/quality/35543)](https://galaxy.ansible.com/buluma/ca)|[![downloads](https://img.shields.io/ansible/role/d/35543)](https://galaxy.ansible.com/buluma/ca)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-ca.svg)](https://github.com/buluma/ansible-role-ca/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-ca/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-ca/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ca)|[![quality](https://img.shields.io/ansible/quality/58348)](https://galaxy.ansible.com/buluma/ca)|[![downloads](https://img.shields.io/ansible/role/d/58348)](https://galaxy.ansible.com/buluma/ca)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-ca.svg)](https://github.com/buluma/ansible-role-ca/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-ca.svg)](https://github.com/buluma/ansible-role-ca/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr/buluma/ansible-role-ca.svg)](https://github.com/buluma/ansible-role-ca/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -40,7 +40,6 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
     - role: buluma.httpd
 ```
 
-Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -64,7 +63,7 @@ ca_common_name: example.com
 
 # Other details for the CA.
 ca_country_name: NL
-ca_email_address: me@buluma.co.ke
+ca_email_address: robert@meinit.nl
 ca_organization_name: Very little
 ca_organizational_unit_name: Even less
 ca_state_or_province_name: Utrecht
@@ -88,7 +87,7 @@ ca_locality_name: Utrecht
 
 # Where to publish the certificates, normally a webserver location.
 # If not specified, certificates will not be published.
-# {{ httpd_data_directory }} is inheritted from the role buluma.httpd.
+# {{ httpd_data_directory }} is inheritted from the role robertdebock.httpd.
 ca_publication_location: "{{ httpd_data_directory | default('/tmp') }}/pub"
 
 # Where do the certificates need to be stored? By default the distribution
@@ -100,7 +99,7 @@ ca_openssl_path: "{{ _ca_openssl_path[ansible_os_family] | default(_ca_openssl_p
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-ca/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-ca/blob/main/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -120,6 +119,7 @@ The following roles are used to prepare a system. You can prepare your system in
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
+
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-ca/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
@@ -157,6 +157,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.co.ke/)
-
-Please consider [sponsoring me](https://github.com/sponsors/buluma).
+[Michael Buluma](https://buluma.github.io/)

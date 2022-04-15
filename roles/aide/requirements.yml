@@ -4,4 +4,3 @@ roles:
   - name: buluma.cron
   - name: buluma.postfix
 collections:
-  - name: community.general

@@ -1,127 +1,137 @@
-# Ansible Role: Varnish
+# [varnish](#varnish)
 
-[![CI](https://github.com/geerlingguy/ansible-role-varnish/workflows/CI/badge.svg?event=push)](https://github.com/geerlingguy/ansible-role-varnish/actions?query=workflow%3ACI) ![Ansible Role](https://img.shields.io/ansible/role/d/54985?color=blue)
+Varnish for Linux.
 
-Installs the [Varnish HTTP Cache](https://varnish-cache.org/) on RedHat/CentOS or Debian/Ubuntu Linux.
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-varnish/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-varnish/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-varnish/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-varnish)|[![quality](https://img.shields.io/ansible/quality/54985)](https://galaxy.ansible.com/buluma/varnish)|[![downloads](https://img.shields.io/ansible/role/d/54985)](https://galaxy.ansible.com/buluma/varnish)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-varnish.svg)](https://github.com/buluma/ansible-role-varnish/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-varnish.svg)](https://github.com/buluma/ansible-role-varnish/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-varnish.svg)](https://github.com/buluma/ansible-role-varnish/pulls/)|
 
-## Requirements
+## [Example Playbook](#example-playbook)
 
-Requires the EPEL repository on RedHat/CentOS (you can install it using the `geerlingguy.repo-epel` role).
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
 
-## Role Variables
+  pre_tasks:
+    - import_tasks: setup.yml
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
+  roles:
+    - role: buluma.varnish
 
-    varnish_package_name: "varnish"
+  post_tasks:
+    - name: Check the installed Varnish version.
+      command: varnishd -V
+      register: varnish_version_output
+      failed_when: "varnish_version not in varnish_version_output.stderr"
+      changed_when: false
+      tags: ['skip_ansible_lint']
 
-Varnish package name you want to install. See `apt-cache policy varnish` or `yum list varnish` for a listing of available candidates.
+    - name: Verify Varnish is running on port 80.
+      shell: 'curl -sI localhost:80 | grep -q "Via: .* varnish"'
+      args:
+        warn: false
+      changed_when: false
+      tags: ['skip_ansible_lint']
+```
 
-    varnish_version: "6.4"
 
-Varnish version that should be installed. See the [Varnish Cache packagecloud.io repositories](https://packagecloud.io/varnishcache) for a listing of available versions. Some examples include: `6.4`, `6.3`, `6.1`, `4.1`, `3.0`, and `2.1`.
+## [Role Variables](#role-variables)
 
-    varnish_config_path: /etc/varnish
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+varnish_package_name: "varnish"
+varnish_version: "6.4"
 
-The path in which Varnish configuration files will be stored.
+varnish_use_default_vcl: true
+varnish_default_vcl_template_path: default.vcl.j2
 
-    varnish_use_default_vcl: true
+varnish_default_backend_host: "127.0.0.1"
+varnish_default_backend_port: "8080"
 
-Whether to use the included (simplistic) default Varnish VCL, using the backend host/port defined with the next two variables. Set this to `false` and copy your own `default.vcl` file into the `varnish_config_path` if you'd like to use a more complicated setup. If this variable is set to `true`, all other configuration will be taken from Varnish's own [default VCL](https://www.varnish-cache.org/trac/browser/bin/varnishd/default.vcl?rev=3.0).
+varnish_listen_address: ""
+varnish_listen_port: "80"
+varnish_secret: "14bac2e6-1e34-4770-8078-974373b76c90"
+varnish_config_path: /etc/varnish
+varnish_limit_nofile: 131072
 
-    varnish_default_vcl_template_path: default.vcl.j2
+varnish_admin_listen_host: "127.0.0.1"
+varnish_admin_listen_port: "6082"
 
-The default VCL file to be copied (if `varnish_use_default_vcl` is `true`). Defaults the the simple template inside `templates/default.vcl.j2`. This path should be relative to the directory from which you run your playbook.
+varnish_storage: "file,/var/lib/varnish/varnish_storage.bin,256M"
+varnish_pidfile: /run/varnishd.pid
 
-    varnish_listen_address: ""
-    varnish_listen_port: "80"
+varnishd_extra_options: ""
 
-The address and port on which Varnish will listen. The defaults tell Varnish to listen on all interfaces on port 80, but you can specify an address and/or alternate port if desired.
+varnish_enabled_services:
+  - varnish
 
-    varnish_default_backend_host: "127.0.0.1"
-    varnish_default_backend_port: "8080"
+# Make sure Packagecloud repo is used on RHEL/CentOS.
+varnish_packagecloud_repo_yum_repository_priority: "1"
 
-Some settings for the default "default.vcl" template that will be copied to the `varnish_config_path` folder. The default backend host/port could be Apache or Nginx (or some other HTTP server) running on the same host or some other host (in which case, you might use port 80 instead).
+# Only used on RedHat / CentOS.
+varnish_yum_repo_baseurl: https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/el/{{ ansible_distribution_major_version|int }}/$basearch
 
-    varnish_limit_nofile: 131072
+# Only used on Debian / Ubuntu.
+varnish_apt_repo: deb https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main
 
-The `nofiles` PAM limit Varnish will attempt to set for open files. The normal default is 1024 which is much too low for Varnish usage.
+# Optionally define additional backends.
+# varnish_backends:
+#   apache:
+#     host: 10.0.2.2
+#     port: 80
+#   nodejs:
+#     host: 10.0.2.3
+#     port: 80
 
-    varnish_secret: "14bac2e6-1e34-4770-8078-974373b76c90"
+# Optionally define vhosts pointed at different backends.
+# varnish_vhosts:
+#   example.com:
+#     backend: apache
+#   nodejs.example.com:
+#     backend: nodejs
+```
 
-The secret/key to be used for connecting to Varnish's admin backend (for purge requests, etc.).
+## [Requirements](#requirements)
 
-    varnish_admin_listen_host: "127.0.0.1"
-    varnish_admin_listen_port: "6082"
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-varnish/blob/main/requirements.txt).
 
-The host and port through which Varnish will accept admin requests (like purge and status requests).
 
-    varnish_storage: "file,/var/lib/varnish/varnish_storage.bin,256M"
+## [Context](#context)
 
-How Varnish stores cache entries (this is passed in as the argument for `-s`). If you want to use in-memory storage, change to something like `malloc,256M`. Please read Varnish's [Getting Started guide](http://book.varnish-software.com/4.0/chapters/Getting_Started.html) for more information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
-    varnish_pidfile: /run/varnishd.pid
+Here is an overview of related roles:
 
-Varnish PID file path. Set to an empty string if you don't want to use a PID file.
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-varnish/png/requirements.png "Dependencies")
 
-    varnishd_extra_options: ""
+## [Compatibility](#compatibility)
 
-Extra options or flags to pass to the Varnish daemon when it starts (e.g. `-p http_max_hdr=128`).
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-    varnish_enabled_services:
-      - varnish
+|container|tags|
+|---------|----|
+|el|all|
+|ubuntu|all|
+|debian|all|
 
-Services that will be started at boot and should be running after this role is complete. You might need to add additional services if required, e.g. `varnishncsa` and `varnishlog`. If set to an empty array, no services will be enabled at startup.
+The minimum version of Ansible required is 2.5, tests have been done to:
 
-    varnish_packagecloud_repo_yum_repository_priority: "1"
+- The previous version.
+- The current version.
+- The development version.
 
-(RedHat/CentOS only) The `yum` priority for the Packagecloud repository used to install Varnish. Setting this explicitly forces yum to use the Packagecloud repositories to install Varnish even in environments (e.g. Amazon Linux) where other repositories may have higher priorities than the default.
 
-    varnish_apt_repo: deb https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main
 
-(Debian/Ubuntu only) The `repo` for the apt repository.
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-varnish/issues)
 
-    varnish_yum_repo_baseurl: https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/el/{{ ansible_distribution_major_version|int }}/$basearch
+## [License](#license)
 
-(RedHat/CentOS only) The `baseurl` for the yum repository.
+Apache-2.0
 
-    varnish_backends:
-      apache:
-        host: 10.0.2.2
-        port: 80
-      nodejs:
-        host: 10.0.2.3
-        port: 80
-    
-    varnish_vhosts:
-      example.com:
-        backend: apache
-      nodejs.example.com:
-        backend: nodejs
+## [Author Information](#author-information)
 
-You can configure multiple backends (and direct traffic from multiple virtual hosts to different backends) using the `varnish_backends` and `varnish_vhosts` variables. If you only use one backend (defined via `varnish_default_backend_host` and `varnish_default_backend_port`), then you do not need to define these variables. Do not add a `www` to the `vhosts` keys; it is added automatically by the `default.vcl.j2` VCL template.
-
-## Dependencies
-
-None.
-
-## Example Playbook
-
-    - hosts: webservers
-      vars_files:
-        - vars/main.yml
-      roles:
-        - geerlingguy.varnish
-
-*Inside `vars/main.yml`*:
-
-    varnish_secret: "[secret generated by uuidgen]"
-    varnish_default_backend_port: 81
-    ... etc ...
-
-## License
-
-MIT / BSD
-
-## Author Information
-
-This role was created in 2014 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+[Michael Buluma](https://buluma.github.io/)

@@ -1,13 +1,8 @@
 ---
-# defaults file for sudo-pair
+# defaults file for sudo
 
-# The version to install.
-sudo_pair_version: sudo_pair-v1.0.0
+# Do you want to wait for the host to be available?
+sudo_wait_for_host: no
 
-# The userids that are exempted
-# sudo_pair_gids_exempted:
-#   - 123
-
-# The userids that are enforced
-# sudo_pair_gids_enforced:
-#   - 321
+# The number of seconds you want to wait during connection test before failing.
+sudo_timeout: 3

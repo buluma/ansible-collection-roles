@@ -8,4 +8,3 @@ roles:
   - name: buluma.service
 collections:
   - name: ansible.posix
-  - name: community.general

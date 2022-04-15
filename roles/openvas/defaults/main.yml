@@ -1,8 +1,0 @@
----
-# defaults file for openvas
-
-# The username for the openvas webinterface.
-openvas_administrator_username: admin
-
-# The password for the openvas webinterface.
-openvas_administrator_password: password

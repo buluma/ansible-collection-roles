@@ -1,8 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.cron
-  - name: buluma.update
-collections:
-  - name: ansible.posix
-  - name: community.general

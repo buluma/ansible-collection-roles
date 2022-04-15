@@ -4,4 +4,3 @@ roles:
   - name: buluma.epel
 collections:
   - name: ansible.posix
-  - name: community.general

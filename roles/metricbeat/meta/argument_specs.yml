@@ -4,7 +4,7 @@ argument_specs:
   main:
     short_description: Install and configure Metricbeat on your system.
     description: Install and configure Metric on your system.
-    author: Michael Buluma
+    author: Robert de Bock
     options:
       metricbeat_version:
         type: "str"
@@ -21,11 +21,11 @@ argument_specs:
       metricbeat_elasticsearch_username:
         type: "str"
         default: elastic
-        description: "The username for elasicsearch."
+        description: "The username for elasticsearch."
       metricbeat_elasticsearch_password:
         type: "str"
         default: ""
-        description: "The password for elasicsearch."
+        description: "The password for elasticsearch."
       metricbeat_kibana_host:
         type: "str"
         default: "http://localhost:5601"

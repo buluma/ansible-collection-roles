@@ -40,5 +40,5 @@ argument_specs:
         description: "A list of NTP servers and their options."
       ntp_timezone:
         type: "str"
-        default: "Europe/Amsterdam"
+        default: "Africa/Nairobi"
         description: "The timezone."

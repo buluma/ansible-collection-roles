@@ -1,55 +1,38 @@
 ---
-# tasks file for phpmyadmin
+# Include variables and define needed variables.
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
 
-- name: import assert.yml
-  ansible.builtin.import_tasks: assert.yml
-  run_once: yes
-  delegate_to: localhost
+- name: Define phpmyadmin_config_file.
+  set_fact:
+    phpmyadmin_config_file: "{{ __phpmyadmin_config_file }}"
+  when: phpmyadmin_config_file is not defined
 
-- name: install requirements
-  ansible.builtin.package:
-    name: "{{ phpmyadmin_requirements }}"
-    state: present
-  notify:
-    - restart httpd
+# Setup/install tasks.
+- include: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
 
-- name: modify selinux settings
-  ansible.posix.seboolean:
-    name: httpd_unified
-    state: yes
-    persistent: yes
-  when:
-    - ansible_selinux.status is defined
-    - ansible_selinux.status == "enabled"
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
 
-- name: create directory
-  ansible.builtin.file:
-    path: "{{ phpmyadmin_httpd_directory }}/phpmyadmin"
-    state: directory
-    owner: "{{ phpmyadmin_httpd_user }}"
-    group: "{{ phpmyadmin_httpd_group }}"
-    mode: "755"
-
-- name: download and unpack software
-  ansible.builtin.unarchive:
-    src: "{{ phpmyadmin_archive }}"
-    dest: "{{ phpmyadmin_httpd_directory }}/phpmyadmin/"
-    remote_src: yes
-    extra_opts: ['--strip-components=1']
-    mode: "0755"
-
-- name: create directories
-  ansible.builtin.file:
-    path: "{{ phpmyadmin_httpd_directory }}/phpmyadmin/tmp"
-    state: directory
-    owner: "{{ phpmyadmin_httpd_user }}"
-    group: "{{ phpmyadmin_httpd_group }}"
-    mode: "0750"
-
-- name: configure software
-  ansible.builtin.template:
-    src: config.inc.php.j2
-    dest: "{{ phpmyadmin_httpd_directory }}/phpmyadmin/config.inc.php"
-    owner: "{{ phpmyadmin_httpd_user }}"
-    group: "{{ phpmyadmin_httpd_group }}"
-    mode: "640"
+- name: Add default username and password for MySQL connection.
+  lineinfile: >
+    dest={{ phpmyadmin_config_file }}
+    state=present
+    regexp="^.+\['{{ item.key }}'\].+$"
+    line="$cfg['Servers'][$i]['{{ item.key }}'] = '{{ item.value }}';"
+    insertbefore="^\?>"
+    mode=0644
+  with_items:
+    - key: host
+      value: "{{ phpmyadmin_mysql_host }}"
+    - key: port
+      value: "{{ phpmyadmin_mysql_port }}"
+    - key: socket
+      value: "{{ phpmyadmin_mysql_socket }}"
+    - key: connect_type
+      value: "{{ phpmyadmin_mysql_connect_type }}"
+    - key: user
+      value: "{{ phpmyadmin_mysql_user }}"
+    - key: password
+      value: "{{ phpmyadmin_mysql_password }}"

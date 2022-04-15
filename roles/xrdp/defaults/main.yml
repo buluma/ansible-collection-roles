@@ -1,7 +1,0 @@
----
-# defaults file for xrdp
-
-xrdp_configuration:
-  - option: encrypt_level
-    section: Globals
-    value: high

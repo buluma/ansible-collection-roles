@@ -10,7 +10,7 @@
     - ansible_distribution_major_version == "NA"
 
 - name: Define apache_packages.
-  set_fact:
+  ansible.builtin.set_fact:
     apache_packages: "{{ __apache_packages | list }}"
   when: apache_packages is not defined
 
@@ -25,7 +25,7 @@
   register: _apache_version
 
 - name: Create apache_version variable.
-  set_fact:
+  ansible.builtin.set_fact:
     apache_version: "{{ _apache_version.stdout.split()[2].split('/')[1] }}"
 
 - name: Include Apache 2.2 variables.
@@ -41,7 +41,7 @@
   include_tasks: "configure-{{ ansible_os_family }}.yml"
 
 - name: Ensure Apache has selected state and enabled on boot.
-  service:
+  ansible.builtin.service:
     name: "{{ apache_service }}"
     state: "{{ apache_state }}"
     enabled: "{{ apache_enabled }}"

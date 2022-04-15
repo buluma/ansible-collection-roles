@@ -1,16 +1,11 @@
 ---
-# tasks file for packer
+- name: Ensure unzip is installed.
+  package: name=unzip state=present
 
-- name: import assert.yml
-  ansible.builtin.import_tasks: assert.yml
-  run_once: yes
-  delegate_to: localhost
-
-- name: download and install software
-  ansible.builtin.unarchive:
-    src: "https://releases.hashicorp.com/packer/{{ packer_version }}/packer_{{ packer_version }}_linux_amd64.zip"
-    dest: /usr/bin
-    remote_src: yes
-    mode: "755"
-    owner: root
-    group: root
+- name: Download and unarchive Packer.
+  unarchive:
+    src: https://releases.hashicorp.com/packer/{{ packer_version }}/packer_{{ packer_version }}_linux_{{ packer_arch }}.zip
+    dest: "{{ packer_bin_path }}"
+    remote_src: true
+    creates: "{{ packer_bin_path }}/packer"
+    mode: 0755

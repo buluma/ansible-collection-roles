@@ -7,5 +7,5 @@ roles:
   - name: buluma.service
   - name: buluma.users
 collections:
-  - name: community.general
   - name: ansible.posix
+  - name: community.general

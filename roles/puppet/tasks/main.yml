@@ -6,7 +6,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: Install Puppet.
-  package:
+  ansible.builtin.package:
     name: "{{ puppet_package }}"
     state: present
 
@@ -20,7 +20,7 @@
     mode=0644
 
 - name: Ensure Puppet service is started and enabled at boot.
-  service:
+  ansible.builtin.service:
     name: "{{ puppet_service }}"
     state: "{{ puppet_service_state }}"
     enabled: "{{ puppet_service_enabled }}"

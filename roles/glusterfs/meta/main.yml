@@ -1,7 +1,7 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: Robert de Bock
+  namespace: robertdebock
   role_name: glusterfs
   description: Install and configure glusterfs on your system.
   license: Apache-2.0
@@ -14,7 +14,8 @@ galaxy_info:
         - bullseye
     - name: Fedora
       versions:
-        - all
+        - 34
+        - 35
     - name: Ubuntu
       versions:
         - all

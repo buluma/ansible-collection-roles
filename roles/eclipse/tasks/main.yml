@@ -28,3 +28,4 @@
   loop: "{{ eclipse_plugins }}"
   loop_control:
     label: "{{ item.name }}"
+  when: eclipse_plugins_state | bool

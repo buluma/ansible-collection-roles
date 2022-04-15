@@ -1,6 +1,6 @@
 ---
 - name: Configure Apache.
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ apache_server_root }}/listen.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -15,7 +15,7 @@
   with_items: "{{ apache_vhosts_ssl }}"
 
 - name: Add apache vhosts configuration.
-  template:
+  ansible.builtin.template:
     src: "{{ apache_vhosts_template }}"
     dest: "{{ apache_conf_path }}/{{ apache_vhosts_filename }}"
     owner: root

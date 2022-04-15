@@ -1,0 +1,50 @@
+---
+- name: look for existing install in {{ nancy_install_dir }}
+  become: "{{ nancy_privilege_escalate }}"
+  become_user: root
+  changed_when: False
+  ansible.builtin.stat:
+    path: "{{ nancy_install_dir }}"
+  register: nancy_binary
+- when: not nancy_binary.stat.exists
+  block:
+    - name: download nancy "{{ nancy_ver }}" from "{{ nancy_url }}"
+      become: "{{ nancy_privilege_escalate }}"
+      become_user: root
+      ansible.builtin.get_url:
+        url: "{{ nancy_url }}"
+        checksum: "{{ nancy_checksum }}"
+        dest: "{{ nancy_tmp_archive }}"
+        mode: 0644
+    - name: make versioned directory to hold nancy {{ nancy_ver }} at {{ nancy_install_dir }}
+      become: "{{ nancy_privilege_escalate }}"
+      become_user: root
+      ansible.builtin.file:
+        path: "{{ nancy_install_dir }}"
+        state: directory
+        mode: 0755
+    - name: unarchive nancy {{ nancy_ver }} from {{ nancy_tmp_archive }}
+      become: "{{ nancy_privilege_escalate }}"
+      become_user: root
+      ansible.builtin.unarchive:
+        remote_src: yes
+        src: "{{ nancy_tmp_archive }}"
+        dest: "{{ nancy_install_dir }}"
+        creates: "{{ nancy_install_exe }}"
+  always:
+    - name: rm {{ nancy_tmp_archive }}
+      become: "{{ nancy_privilege_escalate }}"
+      become_user: root
+      ansible.builtin.file:
+        path: "{{ nancy_tmp_archive }}"
+        state: absent
+- name: link nancy and nancy-{{ nancy_ver }}
+  become: "{{ nancy_privilege_escalate }}"
+  become_user: root
+  with_items:
+    - "{{ nancy_link }}"
+    - "{{ nancy_ver_link }}"
+  ansible.builtin.file:
+    src: "{{ nancy_install_exe }}"
+    dest: "{{ item }}"
+    state: link

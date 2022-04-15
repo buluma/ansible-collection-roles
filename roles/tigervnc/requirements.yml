@@ -1,9 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.core_dependencies
-  - name: buluma.gnome
-  - name: buluma.users
-collections:
-  - name: ansible.posix
-  - name: community.general

@@ -1,0 +1,5 @@
+---
+- name: install brew package
+  community.general.homebrew:
+    name: sonatype-nexus-community/homebrew-nancy-tap/nancy
+    state: present

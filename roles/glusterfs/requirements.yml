@@ -4,5 +4,5 @@ roles:
   - name: buluma.bootstrap
 collections:
   - name: ansible.posix
-  - name: community.general
   - name: gluster.gluster
+  - name: community.general

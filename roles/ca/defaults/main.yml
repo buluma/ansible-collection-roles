@@ -16,7 +16,7 @@ ca_common_name: example.com
 
 # Other details for the CA.
 ca_country_name: NL
-ca_email_address: me@buluma.co.ke
+ca_email_address: robert@meinit.nl
 ca_organization_name: Very little
 ca_organizational_unit_name: Even less
 ca_state_or_province_name: Utrecht
@@ -40,7 +40,7 @@ ca_locality_name: Utrecht
 
 # Where to publish the certificates, normally a webserver location.
 # If not specified, certificates will not be published.
-# {{ httpd_data_directory }} is inheritted from the role buluma.httpd.
+# {{ httpd_data_directory }} is inheritted from the role robertdebock.httpd.
 ca_publication_location: "{{ httpd_data_directory | default('/tmp') }}/pub"
 
 # Where do the certificates need to be stored? By default the distribution

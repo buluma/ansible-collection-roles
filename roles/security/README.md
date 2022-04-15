@@ -1,126 +1,171 @@
-# Ansible Role: Security (Basics)
+# [security](#security)
 
-[![CI](https://github.com/geerlingguy/ansible-role-security/workflows/CI/badge.svg?event=push)](https://github.com/geerlingguy/ansible-role-security/actions?query=workflow%3ACI)
+Security software installation and configuration.
 
-**First, a major, MAJOR caveat**: the security of your servers is YOUR responsibility. If you think simply including this role and adding a firewall makes a server secure, then you're mistaken. Read up on Linux, network, and application security, and know that no matter how much you know, you can always make every part of your stack more secure.
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-security/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-security/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-security/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-security)|[![quality](https://img.shields.io/ansible/quality/58018)](https://galaxy.ansible.com/buluma/security)|[![downloads](https://img.shields.io/ansible/role/d/58018)](https://galaxy.ansible.com/buluma/security)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-security.svg)](https://github.com/buluma/ansible-role-security/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-security.svg)](https://github.com/buluma/ansible-role-security/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-security.svg)](https://github.com/buluma/ansible-role-security/pulls/)|
 
-That being said, this role performs some basic security configuration on RedHat and Debian-based linux systems. It attempts to:
+## [Example Playbook](#example-playbook)
 
-  - Install software to monitor bad SSH access (fail2ban)
-  - Configure SSH to be more secure (disabling root login, requiring key-based authentication, and allowing a custom SSH port to be set)
-  - Set up automatic updates (if configured to do so)
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
 
-There are a few other things you may or may not want to do (which are not included in this role) to make sure your servers are more secure, like:
+  pre_tasks:
+    - name: Update apt cache.
+      ansible.builtin.package:
+        update_cache: true
+        cache_valid_time: 600
+      when: ansible_os_family == 'Debian'
 
-  - Use logwatch or a centralized logging server to analyze and monitor log files
-  - Securely configure user accounts and SSH keys (this role assumes you're not using password authentication or logging in as root)
-  - Have a well-configured firewall (check out the `geerlingguy.firewall` role on Ansible Galaxy for a flexible example)
+    - name: Ensure build dependencies are installed (RedHat).
+      ansible.builtin.package:
+        name:
+          - openssh-server
+          - openssh-clients
+        state: present
+      when: ansible_os_family == 'RedHat'
 
-Again: Your servers' security is *your* responsibility.
+    - name: Ensure build dependencies are installed (Fedora).
+      ansible.builtin.package:
+        name: procps
+        state: present
+      when: ansible_distribution == 'Fedora'
 
-## Requirements
+    - name: Ensure build dependencies are installed (Debian).
+      ansible.builtin.package:
+        name:
+          - openssh-server
+          - openssh-client
+        state: present
+      when: ansible_os_family == 'Debian'
 
-For obvious reasons, `sudo` must be installed if you want to manage the sudoers file with this role.
+    - name: Ensure auth.log file is present.
+      ansible.builtin.copy:
+        dest: /var/log/auth.log
+        content: ""
+        force: false
+        mode: 0644
+      when: ansible_distribution == 'Debian'
 
-On RedHat/CentOS systems, make sure you have the EPEL repository installed (you can include the `geerlingguy.repo-epel` role to get it installed).
+  roles:
+    - role: buluma.security
+      security_autoupdate_enabled: false
+```
 
-No special requirements for Debian/Ubuntu systems.
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: Prepare
+  hosts: all
+  become: yes
+  gather_facts: no
 
-## Role Variables
+  roles:
+    - role: buluma.bootstrap
+    - role: buluma.epel
+    - role: buluma.repo_epel
+      when:
+        - (ansible_distribution == "Amazon" and
+          ansible_distribution_major_version == "2") or
+          (ansible_os_family == "RedHat" and
+          ansible_distribution_major_version in [ "7", "8" ])
+```
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
 
-    security_ssh_port: 22
+## [Role Variables](#role-variables)
 
-The port through which you'd like SSH to be accessible. The default is port 22, but if you're operating a server on the open internet, and have no firewall blocking access to port 22, you'll quickly find that thousands of login attempts per day are not uncommon. You can change the port to a nonstandard port (e.g. 2849) if you want to avoid these thousands of automated penetration attempts.
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+security_ssh_port: 22
+security_ssh_password_authentication: "no"
+security_ssh_permit_root_login: "no"
+security_ssh_usedns: "no"
+security_ssh_permit_empty_password: "no"
+security_ssh_challenge_response_auth: "no"
+security_ssh_gss_api_authentication: "no"
+security_ssh_x11_forwarding: "no"
+security_sshd_state: started
+security_ssh_restart_handler_state: restarted
+security_ssh_allowed_users: []
+security_ssh_allowed_groups: []
 
-    security_ssh_password_authentication: "no"
-    security_ssh_permit_root_login: "no"
-    security_ssh_usedns: "no"
-    security_ssh_permit_empty_password: "no"
-    security_ssh_challenge_response_auth: "no"
-    security_ssh_gss_api_authentication: "no"
-    security_ssh_x11_forwarding: "no"
+security_sudoers_passwordless: []
+security_sudoers_passworded: []
 
-Security settings for SSH authentication. It's best to leave these set to `"no"`, but there are times (especially during initial server configuration or when you don't have key-based authentication in place) when one or all may be safely set to `'yes'`. **NOTE: It is _very_ important that you quote the 'yes' or 'no' values. Failure to do so may lock you out of your server.**
+security_autoupdate_enabled: false
+security_autoupdate_blacklist: []
+security_autoupdate_secpkgs_only: false
 
-    security_ssh_allowed_users: []
-    # - alice
-    # - bob
-    # - charlie
+# Autoupdate mail settings used on Debian/Ubuntu only.
+security_autoupdate_reboot: "false"
+security_autoupdate_reboot_time: "03:00"
+security_autoupdate_mail_to: ""
+security_autoupdate_mail_on_error: true
 
-A list of users allowed to connect to the host over SSH.  If no user is defined in the list, the task will be skipped.
+security_fail2ban_enabled: true
+security_fail2ban_custom_configuration_template: "jail.local.j2"
+```
 
-    security_ssh_allowed_groups: []
-    # - admins
-    # - devs
+## [Requirements](#requirements)
 
-A list of groups allowed to connect to the host over SSH.  If no group is defined in the list, the task will be skipped.
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-security/blob/main/requirements.txt).
 
-    security_sshd_state: started
+## [Status of used roles](#status-of-requirements)
 
-The state of the SSH daemon. Typically this should remain `started`.
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-    security_ssh_restart_handler_state: restarted
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.repo_epel](https://galaxy.ansible.com/buluma/repo_epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-repo_epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-repo_epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-repo_epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-repo_epel)|
 
-The state of the `restart ssh` handler. Typically this should remain `restarted`.
+## [Context](#context)
 
-    security_sudoers_passwordless: []
-    security_sudoers_passworded: []
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
-A list of users who should be added to the sudoers file so they can run any command as root (via `sudo`) either without a password or requiring a password for each command, respectively.
+Here is an overview of related roles:
 
-    security_autoupdate_enabled: true
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-security/png/requirements.png "Dependencies")
 
-Whether to install/enable `yum-cron` (RedHat-based systems) or `unattended-upgrades` (Debian-based systems). System restarts will not happen automatically in any case, and automatic upgrades are no excuse for sloppy patch and package management, but automatic updates can be helpful as yet another security measure.
+## [Compatibility](#compatibility)
 
-    security_autoupdate_blacklist: []
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-(Debian/Ubuntu only) A listing of packages that should not be automatically updated.
+|container|tags|
+|---------|----|
+|el|all|
+|fedora|rawhide, latest|
+|debian|bookworm, buster, bullseye, stretch, sid, jessie|
+|ubuntu|impish, focal, bionic, hirsute, jammy|
 
-    security_autoupdate_reboot: false
+The minimum version of Ansible required is 2.4, tests have been done to:
 
-(Debian/Ubuntu only) Whether to reboot when needed during unattended upgrades.
+- The previous version.
+- The current version.
+- The development version.
 
-    security_autoupdate_reboot_time: "03:00"
+## [Exceptions](#exceptions)
 
-(Debian/Ubuntu only) The time to trigger a reboot, when needed, if `security_autoupdate_reboot` is set to `true`. In 24h "hh:mm" clock format.
+Some roles can't run on a specific distribution or version. Here are some exceptions.
 
-    security_autoupdate_mail_to: ""
-    security_autoupdate_mail_on_error: true
+| variation                 | reason                 |
+|---------------------------|------------------------|
+| Ubuntu:trusty | ansible-core requires a minimum of Python2 version 2.6 or Python3 version 3.5. |
 
-(Debian/Ubuntu only) If `security_autoupdate_mail_to` is set to an non empty value, unattended upgrades will send an e-mail to that address when some error occurs. You may either set this to a full email: `ops@example.com` or to something like `root`, which will use `/etc/aliases` to route the message. If you set `security_autoupdate_mail_on_error` to `false` you'll get an email after every package install.
 
-    security_fail2ban_enabled: true
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-security/issues)
 
-Whether to install/enable `fail2ban`. You might not want to use fail2ban if you're already using some other service for login and intrusion detection (e.g. [ConfigServer](http://configserver.com/cp/csf.html)).
+## [License](#license)
 
-    security_fail2ban_custom_configuration_template: "jail.local.j2"
+Apache-2.0
 
-The name of the template file used to generate `fail2ban`'s configuration.
+## [Author Information](#author-information)
 
-## Dependencies
-
-None.
-
-## Example Playbook
-
-    - hosts: servers
-      vars_files:
-        - vars/main.yml
-      roles:
-        - geerlingguy.security
-
-*Inside `vars/main.yml`*:
-
-    security_sudoers_passworded:
-      - johndoe
-      - deployacct
-
-## License
-
-MIT (Expat) / BSD
-
-## Author Information
-
-This role was created in 2014 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+[Michael Buluma](https://buluma.github.io/)

@@ -1,0 +1,11 @@
+---
+# vars file for nancy
+nancy_platform: '{{ nancy_os }}-{{ nancy_arch }}'
+nancy_archive: nancy-{{ nancy_ver }}-{{ nancy_platform }}.{{ nancy_archive_type | default("tar.gz") }}
+nancy_tmp_archive: /tmp/{{ nancy_archive }}
+nancy_url: '{{ nancy_mirror }}/{{ nancy_ver }}/{{ nancy_archive }}'
+nancy_checksum: '{{ nancy_checksums[nancy_ver][nancy_platform] }}'
+nancy_install_dir: '{{ nancy_parent_install_dir }}/nancy-{{ nancy_ver }}'
+nancy_install_exe: '{{ nancy_install_dir }}/nancy'
+nancy_link: '{{ nancy_parent_install_dir }}/bin/nancy'
+nancy_ver_link: '{{ nancy_parent_install_dir }}/bin/nancy-{{ nancy_ver }}'

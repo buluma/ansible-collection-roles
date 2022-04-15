@@ -1,5 +1,5 @@
 ---
-# tasks file for cve_2022_44228
+# tasks file for cve_2021_44228
 
 - name: include assert.yml
   ansible.builtin.import_tasks: assert.yml
@@ -12,19 +12,19 @@
 - name: include process checks
   include_tasks: processes.yml
   when:
-    - cve_2022_44228_check_processes
+    - cve_2021_44228_check_processes
 
 - name: include package checks
   include_tasks: packages.yml
   when:
-    - cve_2022_44228_check_packages
+    - cve_2021_44228_check_packages
 
 - name: include log4j file checks
   include_tasks: log4jfiles.yml
   when:
-    - cve_2022_44228_check_files
+    - cve_2021_44228_check_files
 
 - name: include archives checks
   include_tasks: archives.yml
   when:
-    - cve_2022_44228_check_archives
+    - cve_2021_44228_check_archives

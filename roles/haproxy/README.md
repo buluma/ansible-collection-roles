@@ -4,7 +4,7 @@ Install and configure haproxy on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-haproxy/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-haproxy/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-haproxy/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-haproxy)|[![quality](https://img.shields.io/ansible/quality/28674)](https://galaxy.ansible.com/buluma/haproxy)|[![downloads](https://img.shields.io/ansible/role/d/28674)](https://galaxy.ansible.com/buluma/haproxy)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-haproxy.svg)](https://github.com/buluma/ansible-role-haproxy/releases/)|
+|[![github](https://github.com/buluma/ansible-role-haproxy/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-haproxy/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-haproxy/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-haproxy)|[![quality](https://img.shields.io/ansible/quality/54369)](https://galaxy.ansible.com/buluma/haproxy)|[![downloads](https://img.shields.io/ansible/role/d/54369)](https://galaxy.ansible.com/buluma/haproxy)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-haproxy.svg)](https://github.com/buluma/ansible-role-haproxy/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -30,13 +30,34 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
           ssl: yes
           crts:
             - /tmp/haproxy.keycrt
+        - name: smtp
+          address: "*"
+          port: 25
+          default_backend: smtp
+          mode: tcp
       haproxy_backend_default_balance: roundrobin
       haproxy_backends:
         - name: backend
           httpcheck: yes
           balance: roundrobin
+          # You can refer to hosts in an Ansible group.
+          # The `ansible_default_ipv4` will be used as an address to connect to.
           servers: "{{ groups['all'] }}"
           port: 8080
+          options:
+            - check
+        - name: smtp
+          httpcheck: yes
+          balance: roundrobin
+          # You can also refer to a list of servers.
+          servers:
+            - name: first
+              address: "127.0.0.1"
+              port: 25
+            - name: second
+              address: "127.0.0.2"
+              port: 25
+          port: 25
           options:
             - check
 ```
@@ -65,7 +86,6 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
       httpd_port: 8080
 ```
 
-Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -87,37 +107,11 @@ haproxy_timeout_server: 1m
 haproxy_timeout_http_keep_alive: 10s
 haproxy_timeout_check: 10s
 haproxy_maxconn: 3000
-
-# A list of frontends and their properties.
-# haproxy_frontends:
-#   - name: http
-#     address: "*"
-#     port: 80
-#     default_backend: backend
-#   - name: https
-#     address: "*"
-#     port: 443
-#     default_backend: backend
-#     ssl: yes
-#     crts:
-#       - /tmp/haproxy.keycrt
-# haproxy_backend_default_balance: roundrobin
-# haproxy_backends:
-#   - name: backend
-#     httpcheck: yes
-#     httpcheck_method: OPTIONS / HTTP/1.0
-#     balance: roundrobin
-#     servers: "{{ groups['all'] }}"
-#     port: 8443
-#     options:
-#       - check
-#       - ssl
-#       - verify none
 ```
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-haproxy/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-haproxy/blob/main/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -125,19 +119,20 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
-|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
-|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
-|[buluma.httpd](https://galaxy.ansible.com/buluma/httpd)|[![Build Status GitHub](https://github.com/buluma/ansible-role-httpd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-httpd/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-httpd/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-httpd)|
-|[buluma.openssl](https://galaxy.ansible.com/buluma/openssl)|[![Build Status GitHub](https://github.com/buluma/ansible-role-openssl/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-openssl/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-openssl/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-openssl)|
-|[buluma.python_pip](https://galaxy.ansible.com/buluma/python_pip)|[![Build Status GitHub](https://github.com/buluma/ansible-role-python_pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-python_pip/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-python_pip/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-python_pip)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
+|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.httpd](https://galaxy.ansible.com/buluma/httpd)|[![Build Status GitHub](https://github.com/buluma/ansible-role-httpd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-httpd/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-httpd/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-httpd)|
+|[buluma.openssl](https://galaxy.ansible.com/buluma/openssl)|[![Build Status GitHub](https://github.com/buluma/ansible-role-openssl/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-openssl/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-openssl/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-openssl)|
+|[buluma.python_pip](https://galaxy.ansible.com/buluma/python_pip)|[![Build Status GitHub](https://github.com/buluma/ansible-role-python_pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-python_pip/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-python_pip/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-python_pip)|
 
 ## [Context](#context)
 
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
+
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-haproxy/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
@@ -176,6 +171,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.co.ke/)
-
-Please consider [sponsoring me](https://github.com/sponsors/buluma).
+[Michael Buluma](https://buluma.github.io/)

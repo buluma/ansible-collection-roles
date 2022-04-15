@@ -4,7 +4,7 @@ argument_specs:
   main:
     short_description: Install and configure Elasticsearch on your system.
     description: Install and configure Elasticsearch on your system.
-    author: Michael Buluma
+    author: Robert de Bock
     options:
       elasticsearch_type:
         type: "str"

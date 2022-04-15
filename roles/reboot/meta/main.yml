@@ -3,7 +3,7 @@ galaxy_info:
   author: Michael Buluma
   namespace: buluma
   role_name: reboot
-  description: The purpose of this role is to reboot your system.
+  description: The purpose of this role is to well, reboot your system.
   license: Apache-2.0
   company: ShadowNet
   min_ansible_version: "2.10"

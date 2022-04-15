@@ -1,10 +1,11 @@
 ---
 galaxy_info:
-  author: Robert de Bock
+  author: Michael Buluma
+  namespace: buluma
   role_name: desktop
   description: Install one of the many desktop environments.
   license: Apache-2.0
-  company: ShadowNet
+  company: none
   min_ansible_version: 2.7
 
   platforms:

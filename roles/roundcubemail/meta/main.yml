@@ -25,4 +25,5 @@ galaxy_info:
   galaxy_tags:
     - roundcubemail
 
-dependencies: []
+dependencies:
+  - buluma.httpd

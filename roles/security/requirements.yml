@@ -1,0 +1,6 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.repo_epel
+collections:

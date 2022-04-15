@@ -2,7 +2,9 @@
 # prometheus/meta/main.yml
 
 galaxy_info:
-    author: buluma
+    author: Michael Buluma
+    role_name: prometheus
+    namespace: buluma
     description: Install and configure Prometheus
     license: MIT
 
@@ -11,13 +13,10 @@ galaxy_info:
     platforms:
         - name: Ubuntu
           versions:
-              - trusty
-              - xenial
-              - bionic
+              - all
         - name: Debian
           versions:
-              - jessie
-              - wheezy
+              - all
         - name: EL
           versions:
               - 7

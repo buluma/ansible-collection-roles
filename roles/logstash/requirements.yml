@@ -1,5 +1,6 @@
 ---
 roles:
-  - name: buluma.bootstrap
-  - name: buluma.core_dependencies
-  - name: buluma.elastic_repo
+  - name: buluma.java
+  - name: buluma.elasticsearch
+  - name: buluma.logstash
+collections:

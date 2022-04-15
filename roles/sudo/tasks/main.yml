@@ -1,53 +1,52 @@
 ---
-# tasks file for sudo-pair
+# tasks file for sudo
 
 - name: import assert.yml
   ansible.builtin.import_tasks: assert.yml
   run_once: yes
   delegate_to: localhost
 
-- name: install requirements
-  ansible.builtin.package:
-    name: "{{ sudo_pair_requirements }}"
-    state: present
-  environment:
-    ANSIBLE_SQUASH_ACTIONS: unset
+- name: wait for port to be available
+  ansible.builtin.wait_for:
+    port: "{{ ansible_port | default('22') }}"
+    timeout: "{{ sudo_timeout }}"
+  become: no
+  when:
+    - ansible_connection is defined
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
+    - sudo_wait_for_host | bool
 
-- name: download and unpack sudo_pair
-  ansible.builtin.unarchive:
-    src: "{{ sudo_pair_url }}"
-    dest: /tmp
-    remote_src: yes
-    mode: "0755"
+- name: prepare system
+  block:
+    - name: test connection
+      ansible.builtin.wait_for_connection:
+        timeout: "{{ sudo_timeout }}"
+      register: sudo_connect
+      changed_when: no
+  rescue:
+    - name: gather sudo facts
+      ansible.builtin.include_tasks:
+        file: gather_facts.yml
 
-- name: build sudo_pair
-  ansible.builtin.command:
-    cmd: cargo build --release
-    chdir: "{{ sudo_pair_unpack_directory }}"
-    creates: "{{ sudo_pair_unpack_directory }}/target/release/libsudo_pair.so"
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    - name: install sudo packages (raw)
+      ansible.builtin.raw: "{{ sudo_install.raw }}"
+      register: sudo_install_packages
+      changed_when:
+        - (sudo_install.stdout_regex in sudo_install_packages.stdout and
+           sudo_os_family in [ "Alpine", "Archlinux", "Gentoo" ]) or
+          (sudo_install.stdout_regex not in sudo_install_packages.stdout and
+           sudo_os_family in [ "Debian", "RedHat", "Rocky", "Suse" ])
+  become: no
 
-- name: install sudo_pair
-  ansible.builtin.copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: "{{ item.mode }}"
-    remote_src: yes
-  loop: "{{ sudo_pair_files }}"
 
-- name: create directories
-  ansible.builtin.file:
-    path: "{{ sudo_pair_directories }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "644"
+- name: ensure system is prepared
+  block:
+    - name: gather ansible facts
+      ansible.builtin.setup:
 
-- name: configure sudo
-  ansible.builtin.template:
-    src: sudo.conf.j2
-    dest: /etc/sudo.conf
-    owner: root
-    group: root
-    mode: "644"
+    - name: install sudo packages (package)
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ sudo_facts_packages.split() }}"
+  become: no

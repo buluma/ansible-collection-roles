@@ -1,2 +1,4 @@
 ---
-- robertdebock.bootstrap
+roles:
+  - name: buluma.bootstrap
+collections:

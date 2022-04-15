@@ -1,72 +1,106 @@
-# Ansible Role: Fathom
+# [fathom](#fathom)
 
-[![CI](https://github.com/buluma/ansible-role-fathom/workflows/CI/badge.svg?event=push)](https://github.com/buluma/ansible-role-fathom/actions?query=workflow%3ACI) [![Release](https://github.com/buluma/ansible-role-fathom/actions/workflows/release.yml/badge.svg)](https://github.com/buluma/ansible-role-fathom/actions/workflows/release.yml) ![Ansible Role](https://img.shields.io/ansible/role/d/54560?color=blue)
+Fathom web analytics
 
-Installs [Fathom](https://github.com/usefathom/fathom), a Go-based website analytics system.
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-fathom/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-fathom/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-fathom/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-fathom)|[![quality](https://img.shields.io/ansible/quality/54560)](https://galaxy.ansible.com/buluma/fathom)|[![downloads](https://img.shields.io/ansible/role/d/54560)](https://galaxy.ansible.com/buluma/fathom)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-fathom.svg)](https://github.com/buluma/ansible-role-fathom/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-fathom.svg)](https://github.com/buluma/ansible-role-fathom/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-fathom.svg)](https://github.com/buluma/ansible-role-fathom/pulls/)|
 
-After the playbook is finished, visit the fathom interface (on port 9000 by default), and you can see instructions for configuring websites to send analytics to your Fathom server.
+## [Example Playbook](#example-playbook)
 
-## Requirements
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
 
-N/A, though you may wish to also install and configure Nginx as a proxy for security and stability reasons, and Certbot to acquire and use a valid TLS certificate for HTTPS (recommended roles: `geerlingguy.nginx` and `geerlingguy.certbot`).
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+      changed_when: false
 
-## Role Variables
+  roles:
+    - role: buluma.fathom
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
+  post_tasks:
+    - name: Ensure Fathom is responding on the specified port.
+      uri:
+        url: "http://127.0.0.1:{{ fathom_http_port }}"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 60
+      delay: 1
+```
 
-    fathom_binary_url: https://github.com/usefathom/fathom/releases/download/v1.2.1/fathom_1.2.1_linux_amd64.tar.gz
 
-The URL from which Fathom will be downloaded. Override for a newer or different version, or to lock in a specific version.
+## [Role Variables](#role-variables)
 
-    fathom_force_update: false
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+# defaults file for fathom
+fathom_binary_url: https://github.com/usefathom/fathom/releases/download/v1.2.1/fathom_1.2.1_linux_amd64.tar.gz
+fathom_force_update: false
 
-If changing versions, use this flag to force Ansible to change Fathom versions on the server.
+fathom_manage_service: true
+fathom_service_state: started
+fathom_service_enabled: true
+fathom_service_user: root
 
-    fathom_manage_service: true
-    fathom_service_state: started
-    fathom_service_enabled: true
-    fathom_service_user: root
+fathom_directory: /opt/fathom
+fathom_http_port: "9000"
+fathom_database_name: fathom.db
+fathom_secret: secret-string-here
+```
 
-Fathom service controls; useful if you want to stop the service, not have it enabled at boot, or are running Fathom inside a container where the service configuration is not helpful.
+## [Requirements](#requirements)
 
-    fathom_directory: /opt/fathom
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-fathom/blob/main/requirements.txt).
 
-The directory inside which Fathom configuration and the default SQLite database are stored.
+## [Status of used roles](#status-of-requirements)
 
-    fathom_http_port: "9000"
-    fathom_database_name: fathom.db
-    fathom_secret: secret-string-here
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-Fathom configuration options. Make sure you override `fathom_secret` in your playbook for better security!
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.repo_epel](https://galaxy.ansible.com/buluma/repo_epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-repo_epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-repo_epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-repo_epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-repo_epel)|
+|[buluma.nginx](https://galaxy.ansible.com/buluma/nginx)|[![Build Status GitHub](https://github.com/buluma/ansible-role-nginx/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-nginx/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-nginx/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-nginx)|
 
-## Dependencies
+## [Context](#context)
 
-None.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
-## Example Playbook
+Here is an overview of related roles:
 
-    - hosts: analytics
-    
-      vars_files:
-        - vars/main.yml
-    
-      roles:
-        - buluma.fathom
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-fathom/png/requirements.png "Dependencies")
 
-*Inside `vars/main.yml`*:
+## [Compatibility](#compatibility)
 
-    fathom_secret: insert-a-secret-string-here
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-## Use with Nginx as a proxy
+|container|tags|
+|---------|----|
+|el|7|
+|ubuntu|all|
+|debian|all|
 
-**See**: [Fathom playbook example using Nginx as a proxy](molecule/default/playbook-nginx.yml).
+The minimum version of Ansible required is 2.4, tests have been done to:
 
-Note that you can also add the role `geerlingguy.certbot` if you want to install certbot and configure a default certificate to work with the Nginx server configuration for HTTPS on your Fathom installation.
+- The previous version.
+- The current version.
+- The development version.
 
-## License
 
-MIT / BSD
 
-## Author Information
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-fathom/issues)
 
-This role was created in 2019 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+## [License](#license)
+
+license (Apache-2.0)
+
+## [Author Information](#author-information)
+
+[Michael Buluma](https://buluma.github.io/)

@@ -3,7 +3,7 @@
 
 # The release to install.
 # See https://www.eclipse.org/downloads/packages/release
-eclipse_release: 2022-09
+eclipse_release: 2022-03
 
 # The release version to install, either: R, RC1, M3, M2 or M1.
 eclipse_release_version: R
@@ -21,5 +21,8 @@ eclipse_plugins:
   # is initialized.
   # - name: org.tigris.subversion.subclipse.feature.group
   #   repository: "http://subclipse.tigris.org/update_1.10.x"
+  # Causes issues on CI
   - name: org.sonatype.m2e.egit.feature.feature.group
-    repository: "https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/0.15.1.201806191431"
+    repository: "https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST"
+
+eclipse_plugins_state: no

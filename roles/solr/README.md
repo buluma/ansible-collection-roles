@@ -4,7 +4,7 @@ Apache Solr for Linux.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-solr/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-solr/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-solr/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-solr)|[![quality](https://img.shields.io/ansible/quality/54760)](https://galaxy.ansible.com/buluma/solr)|[![downloads](https://img.shields.io/ansible/role/d/54760)](https://galaxy.ansible.com/buluma/solr)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-solr.svg)](https://github.com/buluma/ansible-role-solr/releases/)|
+|[![github](https://github.com/buluma/ansible-role-solr/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-solr/actions)|[![pipeline status](https://gitlab.com/buluma/ansible-role-solr-v2/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-solr-v2/-/commits/main)|[![quality](https://img.shields.io/ansible/quality/54760)](https://galaxy.ansible.com/buluma/solr)|[![downloads](https://img.shields.io/ansible/role/d/54760)](https://galaxy.ansible.com/buluma/solr)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-solr.svg)](https://github.com/buluma/ansible-role-solr/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -106,7 +106,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.java](https://galaxy.ansible.com/buluma/java)|[![Build Status GitHub](https://github.com/buluma/ansible-role-java/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-java/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-java/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-java)|
+|[buluma.java](https://galaxy.ansible.com/buluma/java)|[![Build Status GitHub](https://github.com/buluma/ansible-role-java/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-java/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-java/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-java)|
 
 ## [Context](#context)
 

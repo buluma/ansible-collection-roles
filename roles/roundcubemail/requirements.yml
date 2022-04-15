@@ -5,6 +5,7 @@ roles:
   - name: buluma.epel
   - name: buluma.httpd
   - name: buluma.mysql
+  - name: buluma.ca_certificates
   - name: buluma.openssl
   - name: buluma.php
   - name: buluma.python_pip

@@ -1,76 +1,96 @@
-# Ansible Role: Pip (for Python)
+# [pip](#pip)
 
-[![CI](https://github.com/buluma/ansible-role-pip/workflows/CI/badge.svg?event=push)](https://github.com/buluma/ansible-role-pip/actions?query=workflow%3ACI) ![Ansible Role](https://img.shields.io/ansible/role/d/54591?color=blue)
+Pip (Python package manager) for Linux.
 
-An Ansible Role that installs [Pip](https://pip.pypa.io) on Linux.
+|GitHub|GitLab|Quality|Downloads|Version|
+|------|------|-------|---------|-------|
+|[![github](https://github.com/buluma/ansible-role-pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-pip/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-pip/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-pip)|[![quality](https://img.shields.io/ansible/quality/54591)](https://galaxy.ansible.com/buluma/pip)|[![downloads](https://img.shields.io/ansible/role/d/54591)](https://galaxy.ansible.com/buluma/pip)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-pip.svg)](https://github.com/buluma/ansible-role-pip/releases/)|
 
-## Requirements
+## [Example Playbook](#example-playbook)
 
-On RedHat/CentOS, you may need to have EPEL installed before running this role. You can use the `buluma.repo-epel` role if you need a simple way to ensure it's installed.
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
 
-## Role Variables
-
-Available variables are listed below, along with default values (see `defaults/main.yml`):
-
-    pip_package: python3-pip
-
-The name of the packge to install to get `pip` on the system. For older systems that don't have Python 3 available, you can set this to `python-pip`.
-
-    pip_executable: pip3
-
-The role will try to autodetect the pip executable based on the `pip_package` (e.g. `pip` for Python 2 and `pip3` for Python 3). You can also override this explicitly, e.g. `pip_executable: pip3.6`.
-
-    pip_install_packages: []
-
-A list of packages to install with pip. Examples below:
-
+  vars:
     pip_install_packages:
-      # Specify names and versions.
-      - name: docker
-        version: "1.2.3"
-      - name: awscli
-        version: "1.11.91"
-    
-      # Or specify bare packages to get the latest release.
-      - docker
-      - awscli
-    
-      # Or uninstall a package.
-      - name: docker
-        state: absent
-    
-      # Or update a package to the latest version.
-      - name: docker
-        state: latest
-    
-      # Or force a reinstall.
-      - name: docker
-        state: forcereinstall
-    
-      # Or install a package in a particular virtualenv.
-      - name: docker
-        virtualenv: /my_app/venv
+      # Test installing a specific version of a package.
+      - name: ipaddress
+        version: "1.0.18"
+      # Test installing a package by name.
+      - colorama
 
-## Dependencies
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
 
-None.
+    - name: Set package name for older OSes.
+      set_fact:
+        pip_package: python-pip
+      when: >
+        (ansible_os_family == 'RedHat') and (ansible_distribution_major_version | int < 8)
+        or (ansible_distribution == 'Debian') and (ansible_distribution_major_version | int < 10)
+        or (ansible_distribution == 'Ubuntu') and (ansible_distribution_major_version | int < 18)
+  roles:
+    - role: buluma.pip
+```
 
-## Example Playbook
 
-    - hosts: all
-    
-      vars:
-        pip_install_packages:
-          - name: docker
-          - name: awscli
-    
-      roles:
-        - buluma.pip
+## [Role Variables](#role-variables)
 
-## License
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+# defaults file for ansible-role-pip
+# For Python 3, use python3-pip.
+pip_package: python3-pip
+pip_executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
 
-MIT / BSD
+pip_install_packages: []
+```
 
-## Author Information
+## [Requirements](#requirements)
 
-This role was created in 2017 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-pip/blob/main/requirements.txt).
+
+
+## [Context](#context)
+
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+
+Here is an overview of related roles:
+
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-pip/png/requirements.png "Dependencies")
+
+## [Compatibility](#compatibility)
+
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
+
+|container|tags|
+|---------|----|
+|el|all|
+|fedora|all|
+|debian|all|
+|ubuntu|all|
+
+The minimum version of Ansible required is 2.4, tests have been done to:
+
+- The previous version.
+- The current version.
+- The development version.
+
+
+
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-pip/issues)
+
+## [License](#license)
+
+Apache-2.0
+
+## [Author Information](#author-information)
+
+[Michael Buluma](https://buluma.github.io/)

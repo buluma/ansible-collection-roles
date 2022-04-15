@@ -6,4 +6,3 @@ roles:
   - name: buluma.python_pip
 collections:
   - name: community.postgresql
-  - name: community.general

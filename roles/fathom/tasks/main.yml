@@ -13,20 +13,20 @@
 - include_tasks: install.yml
 
 - name: Create Fathom directory.
-  file:
+  ansible.builtin.file:
     path: "{{ fathom_directory }}"
     state: directory
     mode: 0755
 
 - name: Copy Fathom config into place.
-  template:
+  ansible.builtin.template:
     src: fathom-config.j2
     dest: "{{ fathom_directory }}/.env"
     mode: 0644
   notify: restart fathom
 
 - name: Copy Fathom systemd unit file into place (for systemd systems).
-  template:
+  ansible.builtin.template:
     src: fathom.unit.j2
     dest: /etc/systemd/system/fathom.service
     owner: root
@@ -36,7 +36,7 @@
   when: "ansible_service_mgr == 'systemd'"
 
 - name: Ensure Fathom service is in the correct state.
-  service:
+  ansible.builtin.service:
     name: fathom
     state: "{{ fathom_service_state }}"
     enabled: "{{ fathom_service_enabled }}"

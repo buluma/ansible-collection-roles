@@ -1,8 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.ca_certificates
-  - name: buluma.core_dependencies
-  - name: buluma.microsoft_repository_keys
-collections:
-  - name: community.general

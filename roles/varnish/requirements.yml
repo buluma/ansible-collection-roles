@@ -1,0 +1,5 @@
+---
+roles:
+  - name: buluma.varnish
+collections:
+  - name: community.general

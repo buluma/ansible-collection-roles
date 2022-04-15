@@ -6,4 +6,3 @@ roles:
   - name: buluma.logrotate
   - name: buluma.rsyslog
 collections:
-  - name: community.general

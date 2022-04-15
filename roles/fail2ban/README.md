@@ -4,7 +4,7 @@ Install and configure fail2ban on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-fail2ban/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-fail2ban/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-fail2ban/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-fail2ban)|[![quality](https://img.shields.io/ansible/quality/22987)](https://galaxy.ansible.com/buluma/fail2ban)|[![downloads](https://img.shields.io/ansible/role/d/22987)](https://galaxy.ansible.com/buluma/fail2ban)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-fail2ban.svg)](https://github.com/buluma/ansible-role-fail2ban/releases/)|
+|[![github](https://github.com/buluma/ansible-role-fail2ban/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-fail2ban/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-fail2ban/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-fail2ban)|[![quality](https://img.shields.io/ansible/quality/57895)](https://galaxy.ansible.com/buluma/fail2ban)|[![downloads](https://img.shields.io/ansible/role/d/57895)](https://galaxy.ansible.com/buluma/fail2ban)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-fail2ban.svg)](https://github.com/buluma/ansible-role-fail2ban/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -33,7 +33,6 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
     - role: buluma.epel
 ```
 
-Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -72,7 +71,7 @@ fail2ban_jail_configuration: []
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-fail2ban/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-fail2ban/blob/main/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -80,14 +79,15 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
 
 ## [Context](#context)
 
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
+
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-fail2ban/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
@@ -115,7 +115,7 @@ Some roles can't run on a specific distribution or version. Here are some except
 | variation                 | reason                 |
 |---------------------------|------------------------|
 | alpine | Service `fail2ban' needs non existent service `logger' |
-| amazonlinux:1 | Based on EL6, not supported since 2020Q4. |
+| amazonlinux:1 | Based on EL6, not supported since 2020 Q4. |
 | opensuse | The package fail2ban depends on python2, we switched to python3. |
 
 
@@ -127,6 +127,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.co.ke/)
-
-Please consider [sponsoring me](https://github.com/sponsors/buluma).
+[Michael Buluma](https://buluma.github.io/)

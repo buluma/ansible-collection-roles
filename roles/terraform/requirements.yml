@@ -4,4 +4,3 @@ roles:
   - name: buluma.ca_certificates
   - name: buluma.core_dependencies
 collections:
-  - name: community.general

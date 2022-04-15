@@ -1,56 +1,95 @@
-# Ansible Role: Puppet
+# [puppet](#puppet)
 
-[![CI](https://github.com/buluma/ansible-role-puppet/workflows/CI/badge.svg?event=push)](https://github.com/buluma/ansible-role-puppet/actions?query=workflow%3ACI)
+Install Puppet on your system (Linux).
 
-An Ansible Role that installs [Puppet](https://www.docker.com) on Linux.
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-puppet/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-puppet/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-puppet/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-puppet)|[![quality](https://img.shields.io/ansible/quality/55008)](https://galaxy.ansible.com/buluma/puppet)|[![downloads](https://img.shields.io/ansible/role/d/55008)](https://galaxy.ansible.com/buluma/puppet)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-puppet.svg)](https://github.com/buluma/ansible-role-puppet/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-puppet.svg)](https://github.com/buluma/ansible-role-puppet/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-puppet.svg)](https://github.com/buluma/ansible-role-puppet/pulls/)|
 
-## Requirements
+## [Example Playbook](#example-playbook)
 
-Requires Java 7 or later to be installed on the server (you can use the `buluma.java` role to install Java if needed; see the test playbook in `tests/` for an example).
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
 
-## Role Variables
+  roles:
+    - role: buluma.java
+      when: ansible_os_family == 'Debian'
+    - role: buluma.puppet
+```
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
 
-    puppet_package: puppetserver
+## [Role Variables](#role-variables)
 
-The package to be installed.
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+puppet_package: puppetserver
 
-    puppet_service: puppetserver
-    puppet_service_state: started
-    puppet_service_enabled: false
-    puppet_service_manage: false
+puppet_service: puppetserver
+puppet_service_state: started
+puppet_service_enabled: false
+puppet_service_manage: false
 
-The service that should be run on this server. By default, this role will not manage a Puppet service, and will not enable it at boot time.
+puppet_bin_path: /opt/puppetlabs/bin
 
-    puppet_bin_path: /opt/puppetlabs/bin
+# Used only for Debian/Ubuntu.
+puppet_apt_deb: "https://apt.puppetlabs.com/puppet6-release-{{ ansible_distribution_release }}.deb"
 
-The path to all the Puppet Labs binaries (after the package is installed).
+# Used only for RedHat/CentOS.
+puppet_yum_rpm: "https://yum.puppet.com/puppet6-release-el-{{ ansible_distribution_major_version }}.noarch.rpm"
+```
 
-    # Used only for Debian/Ubuntu.
-    puppet_apt_deb: "https://apt.puppetlabs.com/puppet6-release-{{ ansible_distribution_release }}.deb"
+## [Requirements](#requirements)
 
-The .deb file for installation on Debian-based OSes.
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-puppet/blob/main/requirements.txt).
 
-    # Used only for RedHat/CentOS.
-    puppet_yum_rpm: "https://yum.puppet.com/puppet6-release-el-{{ ansible_distribution_major_version }}.noarch.rpm"
+## [Status of used roles](#status-of-requirements)
 
-The .rpm file for installation on RedHat-based OSes.
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-## Dependencies
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.java](https://galaxy.ansible.com/buluma/java)|[![Build Status GitHub](https://github.com/buluma/ansible-role-java/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-java/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-java/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-java)|
 
-None.
+## [Context](#context)
 
-## Example Playbook
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
-    - hosts: all
-      roles:
-        - buluma.puppet
+Here is an overview of related roles:
 
-## License
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-puppet/png/requirements.png "Dependencies")
 
-MIT / BSD
+## [Compatibility](#compatibility)
 
-## Author Information
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-This role was created in 2017 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+|container|tags|
+|---------|----|
+|alpine|all|
+|debian|all|
+|el|8|
+|fedora|all|
+|opensuse|all|
+|ubuntu|all|
+
+The minimum version of Ansible required is 2.10, tests have been done to:
+
+- The previous version.
+- The current version.
+- The development version.
+
+
+
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-puppet/issues)
+
+## [License](#license)
+
+Apache-2.0
+
+## [Author Information](#author-information)
+
+[Michael Buluma](https://buluma.github.io/)

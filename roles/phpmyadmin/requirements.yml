@@ -1,17 +1,11 @@
 ---
 roles:
-  - name: buluma.bootstrap
-  - name: buluma.buildtools
-  - name: buluma.core_dependencies
-  - name: buluma.epel
-  - name: buluma.httpd
+  - name: geerlingguy.repo-remi
+    when: ansible_os_family == 'RedHat'
+  - name: buluma.apache
   - name: buluma.mysql
-  - name: buluma.openssl
+  - name: buluma.php_versions
   - name: buluma.php
-  - name: buluma.python_pip
-  - name: buluma.selinux
-collections:
-  - name: ansible.posix
-  - name: community.crypto
-  - name: community.mysql
-  - name: community.general
+  - name: geerlingguy.php-mysql
+  - name: buluma.phpmyadmin
+collections: []

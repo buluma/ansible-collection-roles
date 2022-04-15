@@ -10,7 +10,9 @@ _image_builder_packages:
     - composer-cli
   Fedora-33: *old
 
-image_builder_packages: "{{ _image_builder_packages[ansible_distribution ~ '-' ~ ansible_distribution_major_version | default(_image_builder_packages['default']) }}"
+# image_builder_packages: "{{ _image_builder_packages[ansible_distribution ~ '-' ~ ansible_distribution_major_version | default(_image_builder_packages['default']) }}"
+# image_builder_packages: "{{ _image_builder_packages[ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_image_builder_packages[ansible_distribution]) }}"
+image_builder_packages: "{{ _image_builder_packages[ansible_os_family] | default(_image_builder_packages['default'] ) }}"
 
 image_builder_services:
   - lorax-composer

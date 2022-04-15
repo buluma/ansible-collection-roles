@@ -24,7 +24,7 @@ php_short_open_tag: no
 php_track_errors: no
 php_variables_order: GPCS
 php_engine: yes
-php_date_timezone: Europe/Amsterdam
+php_date_timezone: Africa/Nairobi
 php_memory_limit: 128M
 php_upload_max_filesize: 2M
 php_post_max_size: 8M

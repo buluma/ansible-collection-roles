@@ -1,140 +1,120 @@
-# Ansible Role: Homebrew (MOVED)
+# [homebrew](#homebrew)
 
-**MOVED**: This role has been moved into the `geerlingguy.mac` collection. Please see [this issue](https://github.com/geerlingguy/ansible-role-homebrew/issues/166) for a migration guide and more information.
+Homebrew for macOS
 
-[![MIT licensed][badge-license]][link-license]
-[![Galaxy Role][badge-role]][link-galaxy]
-[![Downloads][badge-downloads]][link-galaxy]
-[![CI][badge-gh-actions]][link-gh-actions]
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-homebrew/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-homebrew/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-homebrew/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-homebrew)|[![quality](https://img.shields.io/ansible/quality/54862)](https://galaxy.ansible.com/buluma/homebrew)|[![downloads](https://img.shields.io/ansible/role/d/54862)](https://galaxy.ansible.com/buluma/homebrew)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-homebrew.svg)](https://github.com/buluma/ansible-role-homebrew/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-homebrew.svg)](https://github.com/buluma/ansible-role-homebrew/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-homebrew.svg)](https://github.com/buluma/ansible-role-homebrew/pulls/)|
 
-Installs [Homebrew][homebrew] on MacOS, and configures packages, taps, and cask apps according to supplied variables.
+## [Example Playbook](#example-playbook)
 
-## Requirements
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: converge
+  hosts: all
+  become: yes
+  gather_facts: yes
 
-None.
+  roles:
+    - role: buluma.homebrew
+```
 
-## Role Variables
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: prepare
+  hosts: all
+  become: yes
+  gather_facts: no
 
-Available variables are listed below, along with default values (see [`defaults/main.yml`](defaults/main.yml)):
+  roles:
+    - role: elliotweiser.osx-command-line-tools
+```
 
-    homebrew_repo: https://github.com/Homebrew/brew
 
-The GitHub repository for Homebrew core.
+## [Role Variables](#role-variables)
 
-    homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
-    homebrew_install_path: "{{ homebrew_prefix }}/Homebrew"
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+homebrew_repo: https://github.com/Homebrew/brew
 
-The path where Homebrew will be installed (`homebrew_prefix` is the parent directory). It is recommended you stick to the default, otherwise Homebrew might have some weird issues. If you change this variable, you should also manually create a symlink back to /usr/local so things work as Homebrew expects.
+homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
+homebrew_install_path: "{{ homebrew_prefix }}/Homebrew"
+homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
 
-    homebrew_brew_bin_path: /usr/local/bin
+homebrew_installed_packages: []
 
-The path where `brew` will be installed.
+homebrew_uninstalled_packages: []
 
-    homebrew_installed_packages:
-      - ssh-copy-id
-      - pv
-      - { name: vim, install_options: "with-luajit,override-system-vi" }
+homebrew_upgrade_all_packages: false
 
-Packages you would like to make sure are installed via `brew install`. You can optionally add flags to the install by setting an `install_options` property, and if used, you need to explicitly set the `name` for the package as well. By default, no packages are installed (`homebrew_installed_packages: []`).
+homebrew_taps:
+  - homebrew/core
 
-    homebrew_uninstalled_packages: []
+homebrew_cask_apps: []
 
-Packages you would like to make sure are _uninstalled_.
+homebrew_cask_uninstalled_apps: []
 
-    homebrew_upgrade_all_packages: false
+homebrew_cask_appdir: /Applications
+homebrew_cask_accept_external_apps: false
 
-Whether to upgrade homebrew and all packages installed by homebrew. If you prefer to manually update packages via `brew` commands, leave this set to `false`.
+homebrew_use_brewfile: true
+homebrew_brewfile_dir: '~'
 
-    homebrew_taps:
-      - homebrew/core
-      - { name: my_company/internal_tap, url: 'https://example.com/path/to/tap.git' }
+homebrew_clear_cache: false
 
-Taps you would like to make sure Homebrew has tapped.
+homebrew_folders_additional: []
+```
 
-    homebrew_cask_apps:
-      - firefox
-      - { name: virtualbox, install_options:"debug,appdir=/Applications" }
+## [Requirements](#requirements)
 
-Apps you would like to have installed via `cask`. [Search][caskroom] for popular apps to see if they're available for install via Cask. Cask will not be used if it is not included in the list of taps in the `homebrew_taps` variable. You can optionally add flags to the install by setting an `install_options` property, and if used, you need to explicitly set the `name` for the package as well. By default, no Cask apps will be installed (`homebrew_cask_apps: []`).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-homebrew/blob/main/requirements.txt).
 
-    homebrew_cask_accept_external_apps: true
+## [Status of used roles](#status-of-requirements)
 
-Default value is `false` and would result in interruption of further processing of the whole role (and ansible play) in case any app given in `homebrew_cask_apps` is already installed without `cask`. Good for a tightly managed system.
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-Specify as `true` instead if you prefer to silently continue if any App is already installed without `cask`. Generally good for a system that is managed with `cask` / `Ansible` as well as other install methods (like manually) at the same time.
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[elliotweiser.osx-command-line-tools](https://galaxy.ansible.com/buluma/elliotweiser.osx-command-line-tools)|[![Build Status GitHub](https://github.com/buluma/elliotweiser.osx-command-line-tools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/elliotweiser.osx-command-line-tools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/elliotweiser.osx-command-line-tools/badges/master/pipeline.svg)](https://gitlab.com/buluma/elliotweiser.osx-command-line-tools)|
 
-    homebrew_cask_uninstalled_apps:
-      - google-chrome
+## [Dependencies](#dependencies)
 
-Apps you would like to make sure are _uninstalled_.
+Most roles require some kind of preparation, this is done in `molecule/default/prepare.yml`. This role has a "hard" dependency on the following roles:
 
-    homebrew_cask_appdir: /Applications
+- elliotweiser.osx-command-line-tools
+## [Context](#context)
 
-Directory where applications installed via `cask` should be installed.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
-    homebrew_use_brewfile: true
+Here is an overview of related roles:
 
-Whether to install via a Brewfile. If so, you will need to install the `homebrew/bundle` tap, which could be done within `homebrew_taps`.
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-homebrew/png/requirements.png "Dependencies")
 
-    homebrew_brewfile_dir: '~'
+## [Compatibility](#compatibility)
 
-The directory where your Brewfile is located.
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-    homebrew_clear_cache: false
+|container|tags|
+|---------|----|
+|macosx|all, any|
 
-Set to `true` to remove the Hombrew cache after any new software is installed.
+The minimum version of Ansible required is 2.5, tests have been done to:
 
-    homebrew_user: "{{ ansible_user_id }}"
+- The previous version.
+- The current version.
+- The development version.
 
-The user that you would like to install Homebrew as.
 
-    homebrew_group: "{{ ansible_user_gid }}"
 
-The group that you would like to use while installing Homebrew.
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-homebrew/issues)
 
-    homebrew_folders_additional: []
+## [License](#license)
 
-Any additional folders inside `homebrew_prefix` for which to ensure homebrew user/group ownership.
+Apache-2.0
 
-## Dependencies
+## [Author Information](#author-information)
 
-  - [elliotweiser.osx-command-line-tools][dep-osx-clt-role]
-
-## Example Playbook
-
-    - hosts: localhost
-      vars:
-        homebrew_installed_packages:
-          - mysql
-      roles:
-        - buluma.homebrew
-
-See the `tests/local-testing` directory for an example of running this role over
-Ansible's `local` connection. See also:
-[Mac Development Ansible Playbook][mac-dev-playbook].
-
-## License
-
-[MIT][link-license]
-
-## Author Information
-
-This role was created in 2014 by [Michael Buluma][author-website].
-
-#### Maintainer(s)
-
-- [Michael Buluma](https://github.com/buluma)
-
-[ansible-for-devops]: https://www.ansiblefordevops.com/
-[author-website]: https://www.github.com/buluma
-[badge-downloads]: https://img.shields.io/ansible/role/d/54862.svg
-[badge-license]: https://img.shields.io/github/license/buluma/ansible-role-homebrew.svg
-[badge-role]: https://img.shields.io/ansible/role/54862.svg
-[badge-gh-actions]: https://github.com/buluma/ansible-role-homebrew/workflows/CI/badge.svg?event=push
-[caskroom]: https://caskroom.github.io/search
-[homebrew]: http://brew.sh/
-[dep-osx-clt-role]: https://galaxy.ansible.com/elliotweiser/osx-command-line-tools/
-[link-galaxy]: https://galaxy.ansible.com/buluma/homebrew/
-[link-license]: https://raw.githubusercontent.com/buluma/ansible-role-homebrew/master/LICENSE
-[link-gh-actions]: https://github.com/buluma/ansible-role-homebrew/actions?query=workflow%3ACI
-[mac-dev-playbook]: https://github.com/buluma/mac-dev-playbook
+[Michael Buluma](https://buluma.github.io/)

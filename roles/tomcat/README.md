@@ -4,7 +4,7 @@ Install and configure tomcat on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-tomcat/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-tomcat/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-tomcat/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-tomcat)|[![quality](https://img.shields.io/ansible/quality/22945)](https://galaxy.ansible.com/buluma/tomcat)|[![downloads](https://img.shields.io/ansible/role/d/22945)](https://galaxy.ansible.com/buluma/tomcat)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-tomcat.svg)](https://github.com/buluma/ansible-role-tomcat/releases/)|
+|[![github](https://github.com/buluma/ansible-role-tomcat/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-tomcat/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-tomcat/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-tomcat)|[![quality](https://img.shields.io/ansible/quality/57966)](https://galaxy.ansible.com/buluma/tomcat)|[![downloads](https://img.shields.io/ansible/role/d/57966)](https://galaxy.ansible.com/buluma/tomcat)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-tomcat.svg)](https://github.com/buluma/ansible-role-tomcat/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -110,7 +110,6 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
     - role: buluma.java
 ```
 
-Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -205,7 +204,7 @@ tomcat_unarchive_url: "{{ _tomcat_unarchive_urls[tomcat_version].url }}"
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-tomcat/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-tomcat/blob/main/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -213,16 +212,17 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
 |[buluma.java](https://galaxy.ansible.com/buluma/java)|[![Build Status GitHub](https://github.com/buluma/ansible-role-java/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-java/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-java/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-java)|
-|[buluma.service](https://galaxy.ansible.com/buluma/service)|[![Build Status GitHub](https://github.com/buluma/ansible-role-service/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-service/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-service/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-service)|
+|[buluma.service](https://galaxy.ansible.com/buluma/service)|[![Build Status GitHub](https://github.com/buluma/ansible-role-service/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-service/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-service/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-service)|
 
 ## [Context](#context)
 
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
+
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-tomcat/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
@@ -258,6 +258,7 @@ This role [refers to a version](https://github.com/buluma/ansible-role-tomcat/bl
 - [Tomcat version 7](https://tomcat.apache.org/download-70.cgi).
 - [Tomcat version 8](https://tomcat.apache.org/download-80.cgi).
 - [Tomcat version 9](https://tomcat.apache.org/download-90.cgi).
+- [Tomcat version 10](https://tomcat.apache.org/download-10.cgi).
 
 This version reference means a role may get outdated. Monthly tests occur to see if [bit-rot](https://en.wikipedia.org/wiki/Software_rot) occured. If you however find a problem, please create an issue, I'll get on it as soon as possible.
 
@@ -269,6 +270,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.co.ke/)
-
-Please consider [sponsoring me](https://github.com/sponsors/buluma).
+[Michael Buluma](https://buluma.github.io/)

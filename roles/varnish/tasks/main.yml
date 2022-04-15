@@ -3,7 +3,7 @@
   include_vars: "{{ ansible_os_family }}.yml"
 
 - name: Set the packagecloud repository name based on the version.
-  set_fact:
+  ansible.builtin.set_fact:
     varnish_packagecloud_repo: "varnish{{ varnish_version|replace('.', '') }}"
 
 - include_tasks: setup-RedHat.yml
@@ -13,13 +13,13 @@
   when: ansible_os_family == 'Debian'
 
 - name: Ensure Varnish config path exists.
-  file:
+  ansible.builtin.file:
     path: "{{ varnish_config_path }}"
     state: directory
     mode: 0755
 
 - name: Copy Varnish configuration (sysvinit).
-  template:
+  ansible.builtin.template:
     src: varnish.j2
     dest: "{{ varnish_sysvinit_config_path }}/varnish"
     owner: root
@@ -31,7 +31,7 @@
   notify: restart varnish
 
 - name: Copy Debian Jessie/Xenial specific Varnish configs (systemd).
-  template:
+  ansible.builtin.template:
     src: varnish.service.j2
     dest: "{{ varnish_systemd_config_path }}/varnish.service"
     owner: root
@@ -46,7 +46,7 @@
     - restart varnish
 
 - name: Copy Varnish configuration (systemd).
-  template:
+  ansible.builtin.template:
     src: varnish.params.j2
     dest: "{{ varnish_config_path }}/varnish.params"
     owner: root
@@ -57,7 +57,7 @@
     (ansible_os_family == 'Debian' and ansible_distribution_release == "xenial")
 
 - name: Copy Varnish default VCL.
-  template:
+  ansible.builtin.template:
     src: "{{ varnish_default_vcl_template_path }}"
     dest: "{{ varnish_config_path }}/default.vcl"
     owner: root
@@ -67,7 +67,7 @@
   notify: restart varnish
 
 - name: Copy varnish secret.
-  template:
+  ansible.builtin.template:
     src: secret.j2
     dest: "{{ varnish_config_path }}/secret"
     owner: root
@@ -76,7 +76,7 @@
   notify: restart varnish
 
 - name: Ensure Varnish services are started and enabled on startup.
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: started
     enabled: true
@@ -87,7 +87,7 @@
 
 # See: https://github.com/ansible/ansible/issues/22303
 - name: Ensure Varnish services are started and enabled on startup (Xenial specific)
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: started
     enabled: true

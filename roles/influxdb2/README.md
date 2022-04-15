@@ -13,36 +13,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 ---
 - name: Converge
   hosts: all
-  gather_facts: true
-  become: yes
-  vars:
-    apt_autostart_state: enabled
-    pip_package: python3-pip
-    pip_executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
-    pip_install_packages:
-      # Test installing a specific version of a package.
-      - name: ipaddress
-        version: "1.0.18"
-      # Install setuptools
-      - name: setuptools
-      # Test installing a package by name.
-      - name: requests
-
-  pre_tasks:
-    - name: Update apt cache.
-      apt: update_cache=true cache_valid_time=600
-      when: ansible_os_family == 'Debian'
-
-    - name: Set package name for older OSes.
-      set_fact:
-        pip_package: python-pip
-      when: >
-        (ansible_os_family == 'RedHat') and (ansible_distribution_major_version | int < 8)
-        or (ansible_distribution == 'Debian') and (ansible_distribution_major_version | int < 10)
-        or (ansible_distribution == 'Ubuntu') and (ansible_distribution_major_version | int < 18)
   roles:
-    - role: buluma.bootstrap
-    - role: buluma.pip
     - role: buluma.influxdb2
 
       influxdb_orgs:
@@ -73,22 +44,9 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
 - name: prepare container
   hosts: all
   gather_facts: true
-  become: yes
-  serial: 30%
-  vars:
-    apt_autostart_state: enabled
-
   roles:
     - role: buluma.bootstrap
-    - role: buluma.apt_autostart
-    - role: buluma.pip
-
-  post_tasks:
-    - name: place /environmentfile.txt
-      ansible.builtin.copy:
-        content: "value=influxdb"
-        dest: /environmentfile.txt
-        mode: "0644"
+    - role: buluma.influxdb2
 ```
 
 
@@ -163,10 +121,8 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.influxdb2](https://galaxy.ansible.com/buluma/influxdb2)|[![Build Status GitHub](https://github.com/buluma/ansible-role-influxdb2/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-influxdb2/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-influxdb2/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-influxdb2)|
-|[buluma.apt_autostart](https://galaxy.ansible.com/buluma/apt_autostart)|[![Build Status GitHub](https://github.com/buluma/ansible-role-apt_autostart/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-apt_autostart/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-apt_autostart/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-apt_autostart)|
 |[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.pip](https://galaxy.ansible.com/buluma/pip)|[![Build Status GitHub](https://github.com/buluma/ansible-role-pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-pip/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-pip/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-pip)|
+|[buluma.influxdb2](https://galaxy.ansible.com/buluma/influxdb2)|[![Build Status GitHub](https://github.com/buluma/ansible-role-influxdb2/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-influxdb2/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-influxdb2/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-influxdb2)|
 
 ## [Context](#context)
 
@@ -182,8 +138,12 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|el|all|
+|amazon|Candidate|
+|el|7, 8|
 |debian|all|
+|fedora|all|
+|opensuse|all|
+|ubuntu|all|
 
 The minimum version of Ansible required is 2.7, tests have been done to:
 

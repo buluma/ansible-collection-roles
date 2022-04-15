@@ -1,22 +1,13 @@
 ---
-# defaults file for phpmyadmin
+# Pass in a comma-separated list of repos to use (e.g. "remi,epel"). Used only
+# for RHEL/CentOS.
+phpmyadmin_enablerepo: epel
 
-# The version of PHPMyAdmin to install
-phpmyadmin_version: "5.1.1"
-
-# Where to connect to for the database.
-phpmyadmin_database_host: localhost
-
-# To authenticate to the database using a user/pass requested in the browser,
-# ensure you set phpmyadmin_blowfish_secret.
-phpmyadmin_blowfish_secret: "x7GD9DBEE32bAWd2sTHKBfYiqOfnj82neaPD3wrDTs0K"
-
-# Only set these (and unset phpmyadmin_blowfish_secret) to save the login
-# credentials in the configuration file.
-# This role does not setup a MySQL user and/or password, it just uses these
-# settings.
-phpmyadmin_database_user: admin
-phpmyadmin_database_pass: "P@s5-W0rd"
-
-phpmyadmin_database_compress: no
-phpmyadmin_database_allownopassword: no
+# Override if needed. This is set platform-specific in the vars dir if not set.
+# phpmyadmin_config_file: /etc/phpmyadmin/config.inc.php
+phpmyadmin_mysql_host: localhost
+phpmyadmin_mysql_port: ""
+phpmyadmin_mysql_socket: ""
+phpmyadmin_mysql_connect_type: tcp
+phpmyadmin_mysql_user: root
+phpmyadmin_mysql_password: "{{ mysql_root_password }}"

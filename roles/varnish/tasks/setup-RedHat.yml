@@ -1,17 +1,17 @@
 ---
 - name: Ensure Varnish dependency is installed.
-  yum:
+  ansible.builtin.yum:
     name: yum-utils
     state: present
 
 - name: Ensure extra Varnish dependency on older RHEL versions is installed.
-  yum:
+  ansible.builtin.yum:
     name: pygpgme
     state: present
   when: ansible_distribution_major_version | int < 8
 
 - name: Add Varnish packagecloud.io yum repo.
-  yum_repository:
+  ansible.builtin.yum_repository:
     name: varnishcache_{{ varnish_packagecloud_repo }}
     description: Varnish Cache packagecloud.io repository.
     baseurl: "{{ varnish_yum_repo_baseurl }}"
@@ -42,6 +42,6 @@
   tags: ['skip_ansible_lint']
 
 - name: Ensure Varnish is installed.
-  yum:
+  ansible.builtin.yum:
     name: "{{ varnish_package_name }}"
     state: present

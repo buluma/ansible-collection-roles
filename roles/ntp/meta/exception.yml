@@ -6,3 +6,5 @@ exceptions:
     reason: "ConditionVirtualization=!container was not met"
   - variation: debian:buster
     reason: "Unable to restart service ntp: Job for ntp.service failed because the control process exited with error code."
+  - variation: fedora:rawhide
+    reason: "Failed to find required executable \"hwclock\" in paths: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/snapd/snap/bin"

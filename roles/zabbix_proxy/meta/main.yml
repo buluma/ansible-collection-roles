@@ -1,7 +1,7 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: Robert de Bock
+  namespace: robertdebock
   role_name: zabbix_proxy
   description: Install and configure zabbix-proxy on your system.
   license: Apache-2.0

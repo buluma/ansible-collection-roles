@@ -1,44 +1,72 @@
 ---
-# vars file for sudo-pair
+# vars file for sudo
 
-sudo_pair_url: "https://github.com/square/sudo_pair/archive/{{ sudo_pair_version }}.zip"
-sudo_pair_unpack_directory: /tmp/sudo_pair-{{ sudo_pair_version }}
+_sudo_packages:
+  Alpine: sudo
+  Archlinux: sudo
+  Debian: sudo
+  Gentoo: sudo
+  RedHat: &redhat_packages sudo
+  Suse: sudo
+  Amazon: sudo
+  CentOS_7: sudo
+  Debian_8: sudo
+  Debian_9: sudo
+  RedHat_7: sudo
 
-_sudo_pair_requirements:
-  default:
-    - clang
+# Map the right set of packages, based on gathered sudo facts.
+sudo_packages: "{{ _sudo_packages[sudo_distribution ~'_'~ sudo_distribution_major_version]|default(
+                     _sudo_packages[sudo_distribution] )|default(
+                     _sudo_packages[sudo_os_family] ) }}"
+
+_sudo_install:
+  Alpine:
+    raw: "LANG=C apk update ; apk add {{ sudo_packages }}"
+    stdout_regex: 'Installing'
+  Archlinux:
+    raw: "LANG=C pacman -Sy --noconfirm {{ sudo_packages }}"
+    stdout_regex: ' installing sudo'
   Debian:
-    - libclang-dev
-  CentOS-7:
-    - clang-devel
-  Ubuntu:
-    - libclang-dev
-  Fedora:
-    - clang-devel
+    raw: "LANG=C apt-get update && apt-get install -y {{ sudo_packages }}"
+    stdout_regex: ' 0 newly installed'
+  Gentoo:
+    raw: "LANG=C equery l {{ sudo_packages }} ||
+          (emaint -a sync ; emerge -qkv {{ sudo_packages }} ; echo 'changed')"
+    stdout_regex: 'changed'
+  RedHat:
+    raw: "LANG=C yum -y install {{ sudo_packages }}"
+    stdout_regex: 'Nothing'
+  Suse:
+    raw: "LANG=C zypper -n install {{ sudo_packages }}"
+    stdout_regex: 'Nothing'
 
-sudo_pair_requirements: "{{ _sudo_pair_requirements[ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_sudo_pair_requirements[ansible_distribution] | default(_sudo_pair_requirements['default'] )) }}"
+# Map the right install command, based on gathered sudo facts.
+sudo_install: "{{ _sudo_install[sudo_distribution ~'_'~ sudo_distribution_major_version]|default(
+                    _sudo_install[sudo_distribution] )|default(
+                    _sudo_install[sudo_os_family] ) }}"
 
-_sudo_pair_lib_directory:
-  default: /usr/libexec/sudo
-  Amazon: /usr/libexec
-  Debian: /usr/lib/sudo
-  Suse: /usr/lib/sudo
+# See URL for available OS families and search queries
+# https://github.com/ansible/ansible/blob/devel/lib/ansible/module_utils/facts/system/distribution.py
+sudo_os_family_map:
+  Alpine: [Alpine]
+  Archlinux: [Archlinux, Antergos, Manjaro]
+  Debian: [Debian, Ubuntu, Raspbian, Neon, KDE neon,
+           Linux Mint, SteamOS, Devuan, Kali, Cumulus Linux,
+           'Pop!_OS', Parrot, Pardus GNU/Linux]
+  Gentoo: [Gentoo, Funtoo]
+  RedHat: [RedHat, Fedora, CentOS, Scientific, SLC,
+           Ascendos, CloudLinux, PSBM, Rocky, OracleLinux,
+           OVS, OEL, Amazon, Virtuozzo, XenServer, Alibaba,
+           EulerOS, openEuler, AlmaLinux]
+  Suse: [SLED, openSUSE Tumbleweed, openSUSE Leap,
+         SLES_SAP, SUSE_LINUX, SLES, openSUSE, SuSE]
 
-sudo_pair_lib_directory: "{{ _sudo_pair_lib_directory[ansible_distribution] | default(_sudo_pair_lib_directory[ansible_os_family] | default(_sudo_pair_lib_directory['default'] )) }}"
+sudo_search:
+  Archlinux: 'Arch Linux'
+  OracleLinux: 'Oracle Linux'
+  RedHat: 'Red Hat'
 
-sudo_pair_files:
-  - src: "{{ sudo_pair_unpack_directory }}/sample/bin/sudo_approve"
-    dest: /usr/bin/sudo_approve
-    mode: "755"
-  - src: "{{ sudo_pair_unpack_directory }}/sample/etc/sudo.prompt.user"
-    dest: /etc/sudo.prompt.user
-    mode: "644"
-  - src: "{{ sudo_pair_unpack_directory }}/sample/etc/sudo.prompt.pair"
-    dest: /etc/sudo.prompt.pair
-    mode: "644"
-  - src: "{{ sudo_pair_unpack_directory }}/target/release/libsudo_pair.so"
-    dest: "{{ sudo_pair_lib_directory }}"
-    mode: "644"
-
-sudo_pair_directories:
-  - /var/run/sudo_pair
+# Map the right set of packages, based on gathered ansible_facts.
+sudo_facts_packages: "{{ _sudo_packages[ansible_distribution ~'_'~ ansible_distribution_major_version]|default(
+                           _sudo_packages[ansible_distribution] )|default(
+                           _sudo_packages[ansible_os_family] ) }}"

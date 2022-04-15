@@ -1,0 +1,4 @@
+---
+exceptions:
+  - variation: Ubuntu:trusty
+    reason: "ansible-core requires a minimum of Python2 version 2.6 or Python3 version 3.5."

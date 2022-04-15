@@ -6,4 +6,3 @@ roles:
   - name: buluma.npm
   - name: buluma.service
 collections:
-  - name: community.general

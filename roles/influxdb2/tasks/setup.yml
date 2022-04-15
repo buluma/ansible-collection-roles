@@ -1,30 +1,30 @@
 ---
 - name: Install dependencies
-  ansible.builtin.apt:
+  apt:
     name: "{{ influxdb_dependencies }}"
     state: present
     update_cache: true
 
 - name: Add InfluxData's key
-  ansible.builtin.apt_key:
+  apt_key:
     state: present
     url: "{{ influxdb_signing_key }}"
 
 - name: Manage InfluxData APT repositories
-  ansible.builtin.apt_repository:
+  apt_repository:
     repo: "{{ item }}"
     state: present
   loop: "{{ influxdb_repositories }}"
 
 - name: Ensure InfluxDB packages are installed
-  ansible.builtin.apt:
+  apt:
     name: "{{ item }}"
     state: "{{ influxdb_package_state }}"
     update_cache: true
   loop: "{{ influxdb_packages }}"
 
 - name: Setup InfluxDB default file
-  ansible.builtin.template:
+  template:
     dest: /etc/default/influxdb2
     group: root
     mode: 0644
@@ -33,7 +33,7 @@
   notify: Restart InfluxDB
 
 - name: Ensure InfluxDB directories exist
-  ansible.builtin.file:
+  file:
     group: influxdb
     mode: 0750
     owner: influxdb
@@ -45,7 +45,7 @@
     - "{{ influxdb_engine_path }}"
 
 - name: Remove any previous InfluxDB configuration file
-  ansible.builtin.file:
+  file:
     path: "{{ influxdb_config_path }}/{{ item }}"
     state: absent
   loop:
@@ -54,7 +54,7 @@
   notify: Restart InfluxDB
 
 - name: Setup InfluxDB configuration file
-  ansible.builtin.template:
+  template:
     dest: "{{ influxdb_config_path }}/config.yml"
     group: influxdb
     mode: 0644

@@ -54,6 +54,36 @@
     name: jenkins
     state: present
 
+# Install default plugins (suggested plugins) #14
+- name: Install default plugins when choice 'install suggested plugins'
+  jenkins_plugin:
+    name: "{{ item }}"
+    url: http://localhost:8080
+    url_username: "admin"
+    url_password: "{{ adminpwd['stdout'] }}"
+  register: plugin_result
+  until: plugin_result is success
+  loop:
+    - cloudbees-folder
+    - antisamy-markup-formatter
+    - build-timeout
+    - credentials-binding
+    - timestamper
+    - ws-cleanup
+    - ant
+    - gradle
+    - workflow-aggregator
+    - github-branch-source
+    - pipeline-github-lib
+    - pipeline-stage-view
+    - git
+    - ssh-slaves
+    - matrix-auth
+    - pam-auth
+    - ldap
+    - email-ext
+    - mailer
+
 - name: configure jenkins
   ansible.builtin.template:
     src: jenkins.j2
@@ -62,8 +92,12 @@
   notify:
     - restart jenkins
 
-- name: start and enable jenkins
-  ansible.builtin.service:
-    name: jenkins
-    state: started
-    enabled: yes
+- name: start jenkins
+  block:
+    - name: start and enable jenkins
+      ansible.builtin.service:
+        name: jenkins
+        state: started
+        enabled: yes
+  when: ansible_facts['distribution'] == 'RedHat'
+  ignore_errors: yes

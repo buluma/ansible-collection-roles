@@ -4,7 +4,7 @@ Make filesystems.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-filesystem/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-filesystem/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-filesystem/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-filesystem)|[![quality](https://img.shields.io/ansible/quality/52776)](https://galaxy.ansible.com/buluma/filesystem)|[![downloads](https://img.shields.io/ansible/role/d/52776)](https://galaxy.ansible.com/buluma/filesystem)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-filesystem.svg)](https://github.com/buluma/ansible-role-filesystem/releases/)|
+|[![github](https://github.com/buluma/ansible-role-filesystem/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-filesystem/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-filesystem/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-filesystem)|[![quality](https://img.shields.io/ansible/quality/57857)](https://galaxy.ansible.com/buluma/filesystem)|[![downloads](https://img.shields.io/ansible/role/d/57857)](https://galaxy.ansible.com/buluma/filesystem)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-filesystem.svg)](https://github.com/buluma/ansible-role-filesystem/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -50,7 +50,6 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
         - disk_3
 ```
 
-Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -78,7 +77,7 @@ filesystem_list: []
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-filesystem/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-filesystem/blob/main/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -86,13 +85,14 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
 
 ## [Context](#context)
 
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
+
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-filesystem/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
@@ -125,6 +125,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.co.ke/)
-
-Please consider [sponsoring me](https://github.com/sponsors/buluma).
+[Michael Buluma](https://buluma.github.io/)

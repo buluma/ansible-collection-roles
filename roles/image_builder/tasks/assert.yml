@@ -1,27 +1,27 @@
 ---
 - name: test if image_builder_product is set correctly
-  assert:
+  ansible.builtin.assert:
     that:
       - image_builder_product is defined
       - image_builder_product | length > 0
     quiet: yes
 
 - name: test if image_builder_description is set correctly
-  assert:
+  ansible.builtin.assert:
     that:
       - image_builder_description is defined
       - image_builder_description | length > 0
     quiet: yes
 
 - name: test if image_builder_version is set correctly
-  assert:
+  ansible.builtin.assert:
     that:
       - image_builder_version is defined
       - image_builder_version | length > 0
     quiet: yes
 
 - name: test if image_builder_installed_packages is set correctly
-  assert:
+  ansible.builtin.assert:
     that:
       - image_builder_installed_packages | length > 0
       - image_builder_installed_packages is iterable
@@ -30,7 +30,7 @@
     - image_builder_installed_packages is defined
 
 - name: test if item of image_builder_installed_packages is set correctly
-  assert:
+  ansible.builtin.assert:
     that:
       - item.name is defined
       - item.name | length > 0
@@ -44,7 +44,7 @@
     - image_builder_installed_packages is defined
 
 - name: test if image_builder_type is set correctly
-  assert:
+  ansible.builtin.assert:
     that:
       - image_builder_type is defined
       - image_builder_type | length > 0

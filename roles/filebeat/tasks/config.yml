@@ -1,6 +1,6 @@
 ---
 - name: Copy Filebeat configuration.
-  template:
+  ansible.builtin.template:
     src: "{{ filebeat_template }}"
     dest: "/etc/filebeat/filebeat.yml"
     owner: root
@@ -9,14 +9,14 @@
   notify: restart filebeat
 
 - name: Ensure Filebeat SSL key pair directory exists.
-  file:
+  ansible.builtin.file:
     path: "{{ filebeat_ssl_dir }}"
     state: directory
     mode: 0755
   when: filebeat_ssl_key_file | default(false)
 
 - name: Copy SSL key and cert for filebeat.
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ filebeat_ssl_dir }}/{{ item | basename }}"
     mode: 0644

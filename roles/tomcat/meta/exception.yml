@@ -4,3 +4,5 @@ exceptions:
     reason: "Not idempotent."
   - variation: alpine
     reason: "Restart fails."
+  - variation: debian:bookworm
+    reason: "Package 'netcat' has no installation candidate"

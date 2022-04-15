@@ -4,4 +4,3 @@ roles:
   - name: buluma.buildtools
   - name: buluma.core_dependencies
 collections:
-  - name: community.general

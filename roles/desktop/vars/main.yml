@@ -30,7 +30,7 @@ _desktop_software:
   mate:
     CentOS: &mate-rhelish
       - name: "@^Mate Desktop"
-        # module: command
+      # module: command
     Debian: &mate-debianish
       - name: mate-desktop
       - name: mate-hud

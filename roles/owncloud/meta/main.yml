@@ -17,13 +17,15 @@ galaxy_info:
         - bullseye
     - name: Fedora
       versions:
-        - all
+        - 32
+        - 33
+        - 34
     - name: OpenSUSE
       versions:
         - all
     - name: Ubuntu
       versions:
-        - bionic
+        - focal
 
   galaxy_tags:
     - owncloud

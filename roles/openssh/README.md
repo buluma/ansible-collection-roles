@@ -4,7 +4,7 @@ Install and configure openssh on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-openssh/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-openssh/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-openssh/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-openssh)|[![quality](https://img.shields.io/ansible/quality/30937)](https://galaxy.ansible.com/buluma/openssh)|[![downloads](https://img.shields.io/ansible/role/d/30937)](https://galaxy.ansible.com/buluma/openssh)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-openssh.svg)](https://github.com/buluma/ansible-role-openssh/releases/)|
+|[![github](https://github.com/buluma/ansible-role-openssh/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-openssh/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-openssh/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-openssh)|[![quality](https://img.shields.io/ansible/quality/58009)](https://galaxy.ansible.com/buluma/openssh)|[![downloads](https://img.shields.io/ansible/role/d/58009)](https://galaxy.ansible.com/buluma/openssh)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-openssh.svg)](https://github.com/buluma/ansible-role-openssh/releases/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -19,6 +19,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
   roles:
     - role: buluma.openssh
       openssh_allow_users: root
+      openssh_allow_groups: root
 ```
 
 The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
@@ -34,7 +35,6 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
     - role: buluma.selinux
 ```
 
-Also see a [full explanation and example](https://buluma.co.ke/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
@@ -140,14 +140,21 @@ openssh_accept_envs:
 
 openssh_subsystem: sftp {{ openssh_sftp_server }}
 
-# Restrict access to this (space separated list) of users.
+# Restrict access to this (space separated list) of users or groups.
 # For example: "openssh_allow_users: root my_user"
 # openssh_allow_users: root
+
+# For example: "openssh_allow_groups: wheel my_group"
+# openssh_allow_groups: wheel
+
+# Whether to restart openssh immediately or after
+# all other Ansible tasks have been completed.
+openssh_restart_immediately: no
 ```
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-openssh/blob/master/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-openssh/blob/main/requirements.txt).
 
 ## [Status of used roles](#status-of-requirements)
 
@@ -155,14 +162,15 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.selinux](https://galaxy.ansible.com/buluma/selinux)|[![Build Status GitHub](https://github.com/buluma/ansible-role-selinux/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-selinux/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-selinux/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-selinux)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.selinux](https://galaxy.ansible.com/buluma/selinux)|[![Build Status GitHub](https://github.com/buluma/ansible-role-selinux/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-selinux/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-selinux/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-selinux)|
 
 ## [Context](#context)
 
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
+
 ![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-openssh/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
@@ -195,6 +203,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.co.ke/)
-
-Please consider [sponsoring me](https://github.com/sponsors/buluma).
+[Michael Buluma](https://buluma.github.io/)

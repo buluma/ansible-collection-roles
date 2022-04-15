@@ -2,5 +2,5 @@
 roles:
   - name: buluma.bootstrap
 collections:
-  - name: community.general
   - name: community.mysql
+  - name: community.general

@@ -4,22 +4,22 @@
   block:
     - name: install ps
       ansible.builtin.package:
-        name: "{{ cve_2022_44228_ps_package }}"
+        name: "{{ cve_2021_44228_ps_package }}"
       notify:
         - uninstall ps
 
     - name: get list of processes
       ansible.builtin.command:
         cmd: ps -ef
-      register: cve_2022_44228_processes
+      register: cve_2021_44228_processes
       changed_when: no
 
     - name: check for java processes
       ansible.builtin.assert:
         that:
-          - '"java" not in cve_2022_44228_processes'
+          - '"java" not in cve_2021_44228_processes'
         quiet: yes
   rescue:
     - name: show matched pids
       ansible.builtin.debug:
-        msg: "Potentially vulneralble: {{ cve_2022_44228_processes }}"
+        msg: "Potentially vulneralble: {{ cve_2021_44228_processes }}"

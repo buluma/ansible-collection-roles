@@ -1,18 +1,13 @@
 ---
-# tasks file for logstash
+- name: Include OS Specific setup tasks
+  include: setup-{{ ansible_os_family }}.yml
 
-- name: include assert.yml
-  ansible.builtin.import_tasks: assert.yml
-  run_once: yes
-  delegate_to: localhost
+- include: config.yml
+- include: ssl.yml
+- include: plugins.yml
 
-- name: install logstash
-  ansible.builtin.package:
-    name: "{{ logstash_package }}"
-    state: present
-
-- name: start logstash
-  ansible.builtin.service:
+- name: Ensure Logstash is started and enabled on boot.
+  service:
     name: logstash
     state: started
-    enabled: yes
+    enabled: "{{ logstash_enabled_on_boot }}"

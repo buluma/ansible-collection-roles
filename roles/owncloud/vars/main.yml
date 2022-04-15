@@ -3,19 +3,19 @@
 
 _owncloud_requirements:
   default:
-    - php-curl
-    - php-fpm
-    - php-gd
-    - php-intl
-    - php-json
-    - php-ldap
-    - php-mbstring
-    - php-mysqlnd
-    - php-pecl-apcu
-    - php-pecl-redis
-    - php-process
-    - php-xml
-    - php-zip
+    - php7-curl
+    - php7-fpm
+    - php7-gd
+    - php7-intl
+    - php7-json
+    - php7-ldap
+    - php7-mbstring
+    - php7-mysqlnd
+    - php7-pecl-apcu
+    - php7-pecl-redis
+    - php7-process
+    - php7-xml
+    - php7-zip
   Alpine:
     - php7-apcu
     - php7-ctype
@@ -49,7 +49,7 @@ _owncloud_requirements:
     - php-mysql
     - php-xml
     - php-zip
-  RedHat: &redhat_requirements
+  RedHat:  # Fedora 34
     - php-curl
     - php-fpm
     - php-gd
@@ -62,7 +62,6 @@ _owncloud_requirements:
     - php-process
     - php-xml
     - php-zip
-  Rocky: *redhat_requirements
   Suse:
     - php-posix
     - php7-ctype

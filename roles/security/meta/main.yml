@@ -3,10 +3,11 @@ dependencies: []
 
 galaxy_info:
   role_name: security
-  author: buluma
+  author: Michael Buluma
+  namespace: buluma
   description: Security software installation and configuration.
-  company: "Midwestern Mac, LLC"
-  license: "license (BSD, MIT)"
+  company: "ShadowNet"
+  license: "Apache-2.0"
   min_ansible_version: 2.4
   platforms:
     - name: EL
@@ -17,7 +18,12 @@ galaxy_info:
         - all
     - name: Debian
       versions:
-        - all
+        - bookworm
+        - buster
+        - bullseye
+        - stretch
+        - sid
+        - jessie
     - name: Ubuntu
       versions:
         - all

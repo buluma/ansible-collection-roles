@@ -4,4 +4,3 @@ roles:
   - name: buluma.core_dependencies
 collections:
   - name: ansible.posix
-  - name: community.general

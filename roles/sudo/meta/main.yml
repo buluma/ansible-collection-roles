@@ -2,8 +2,8 @@
 galaxy_info:
   author: Michael Buluma
   namespace: buluma
-  role_name: sudo_pair
-  description: Install and configure sudo-pair on your system.
+  role_name: sudo
+  description: Install sudo on your system.
   license: Apache-2.0
   company: ShadowNet
   min_ansible_version: "2.10"
@@ -14,6 +14,7 @@ galaxy_info:
         - Candidate
     - name: EL
       versions:
+        - 7
         - 8
     - name: Debian
       versions:
@@ -29,7 +30,6 @@ galaxy_info:
         - all
 
   galaxy_tags:
-    - sudopair
     - sudo
 
 dependencies: []

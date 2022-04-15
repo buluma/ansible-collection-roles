@@ -4,8 +4,7 @@
 _ara_binary_location:
   default: /usr/bin
   Debian: /usr/local/bin
-  RedHat: &redhat_binary_location /usr/local/bin
-  Rocky: *redhat_binary_location
+  RedHat: /usr/local/bin
 
 ara_binary_location: "{{ _ara_binary_location[ansible_os_family] | default(_ara_binary_location['default'] ) }}"
 

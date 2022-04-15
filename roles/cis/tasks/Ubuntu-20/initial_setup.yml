@@ -1,4 +1,0 @@
----
-- name: Just a debug message.
-  ansible.builtin.debug:
-    msg: "Not defined."

@@ -1,11 +1,11 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: Robert de Bock
+  namespace: robertdebock
   role_name: obsproject
   description: Install obsproject on your system.
   license: Apache-2.0
-  company: ShadowNet
+  company: none
   min_ansible_version: "2.10"
 
   platforms:

@@ -1,18 +1,17 @@
 ---
-dependencies: []
-
 galaxy_info:
+  author: Michael Buluma
+  namespace: buluma
   role_name: pip
-  author: buluma
-  description: Pip (Python package manager) for Linux.
-  issue_tracker_url: https://github.com/buluma/ansible-role-pip/issues
-  company: "Midwestern Mac, LLC"
-  license: "MIT"
-  min_ansible_version: 2.4
+  description: Install Pip (Python package manager) for Linux.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.10"
+
   platforms:
     - name: EL
       versions:
-        - all
+        - 8
     - name: Fedora
       versions:
         - all

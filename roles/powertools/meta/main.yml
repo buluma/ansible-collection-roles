@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
+  author: RMichael Buluma
   namespace: buluma
   role_name: powertools
   description: Enable powertools repository on your system.

@@ -2,13 +2,13 @@
 
 Allow your system to use Lorax, the image builder.
 
-|Travis|GitHub|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![travis](https://travis-ci.com/robertdebock/ansible-role-image_builder.svg?branch=master)](https://travis-ci.com/robertdebock/ansible-role-image_builder)|[![github](https://github.com/robertdebock/ansible-role-image_builder/workflows/Ansible%20Molecule/badge.svg)](https://github.com/robertdebock/ansible-role-image_builder/actions)|[![quality](https://img.shields.io/ansible/quality/48596)](https://galaxy.ansible.com/robertdebock/image_builder)|[![downloads](https://img.shields.io/ansible/role/d/48596)](https://galaxy.ansible.com/robertdebock/image_builder)|[![Version](https://img.shields.io/github/release/robertdebock/ansible-role-image_builder.svg)](https://github.com/robertdebock/ansible-role-image_builder/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-image_builder/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-image_builder/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-image_builder/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-image_builder)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/image_builder)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/image_builder)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-image_builder.svg)](https://github.com/buluma/ansible-role-image_builder/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-image_builder.svg)](https://github.com/buluma/ansible-role-image_builder/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-image_builder.svg)](https://github.com/buluma/ansible-role-image_builder/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
-This example is taken from `molecule/resources/converge.yml` and is tested on each push, pull request and release.
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
 ```yaml
 ---
 - name: converge
@@ -17,10 +17,10 @@ This example is taken from `molecule/resources/converge.yml` and is tested on ea
   gather_facts: yes
 
   roles:
-    - role: robertdebock.image_builder
+    - role: buluma.image_builder
 ```
 
-The machine may need to be prepared using `molecule/resources/prepare.yml`:
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
 ```yaml
 ---
 - name: prepare
@@ -29,27 +29,13 @@ The machine may need to be prepared using `molecule/resources/prepare.yml`:
   gather_facts: no
 
   roles:
-    - role: robertdebock.bootstrap
+    - role: buluma.bootstrap
 ```
 
-For verification `molecule/resources/verify.yml` runs after the role has been applied.
-```yaml
----
-- name: Verify
-  hosts: all
-  become: yes
-  gather_facts: no
-
-  tasks:
-    - name: check if connection still works
-      ping:
-```
-
-Also see a [full explanation and example](https://robertdebock.nl/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
-These variables are set in `defaults/main.yml`:
+The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
 # defaults file for image_builder
@@ -71,27 +57,27 @@ image_builder_type: tar
 
 ## [Requirements](#requirements)
 
-- Access to a repository containing packages, likely on the internet.
-- A recent version of Ansible. (Tests run on the current, previous and next release of Ansible.)
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-image_builder/blob/main/requirements.txt).
 
-The following roles can be installed to ensure all requirements are met, using `ansible-galaxy install -r requirements.yml`:
+## [Status of used roles](#status-of-requirements)
 
-```yaml
----
-- robertdebock.bootstrap
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-```
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://robertdebock.nl/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
 
 Here is an overview of related roles:
-![dependencies](https://raw.githubusercontent.com/robertdebock/drawings/artifacts/image_builder.png "Dependency")
+
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-image_builder/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
 
-This role has been tested on these [container images](https://hub.docker.com/u/robertdebock):
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
 |container|tags|
 |---------|----|
@@ -106,47 +92,12 @@ The minimum version of Ansible required is 2.9, tests have been done to:
 
 
 
-## [Testing](#testing)
-
-[Unit tests](https://travis-ci.com/robertdebock/ansible-role-image_builder) are done on every commit, pull request, release and periodically.
-
-If you find issues, please register them in [GitHub](https://github.com/robertdebock/ansible-role-image_builder/issues)
-
-Testing is done using [Tox](https://tox.readthedocs.io/en/latest/) and [Molecule](https://github.com/ansible/molecule):
-
-[Tox](https://tox.readthedocs.io/en/latest/) tests multiple ansible versions.
-[Molecule](https://github.com/ansible/molecule) tests multiple distributions.
-
-To test using the defaults (any installed ansible version, namespace: `robertdebock`, image: `fedora`, tag: `latest`):
-
-```
-molecule test
-
-# Or select a specific image:
-image=ubuntu molecule test
-# Or select a specific image and a specific tag:
-image="debian" tag="stable" tox
-```
-
-Or you can test multiple versions of Ansible, and select images:
-Tox allows multiple versions of Ansible to be tested. To run the default (namespace: `robertdebock`, image: `fedora`, tag: `latest`) tests:
-
-```
-tox
-
-# To run CentOS (namespace: `robertdebock`, tag: `latest`)
-image="centos" tox
-# Or customize more:
-image="debian" tag="stable" tox
-```
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-image_builder/issues)
 
 ## [License](#license)
 
 Apache-2.0
 
-
 ## [Author Information](#author-information)
 
-[Robert de Bock](https://robertdebock.nl/)
-
-Please consider [sponsoring me](https://github.com/sponsors/robertdebock).
+[Michael Buluma](https://buluma.github.io/)

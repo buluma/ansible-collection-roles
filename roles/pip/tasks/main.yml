@@ -1,4 +1,5 @@
 ---
+# tasks file for ansible-role-pip
 - name: Ensure Pip is installed.
   package:
     name: "{{ pip_package }}"

@@ -1,0 +1,6 @@
+---
+roles:
+  - name: buluma.repo_epel
+  - name: buluma.nginx
+collections:
+  - name: community.general

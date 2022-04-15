@@ -68,7 +68,7 @@ The default values for the variables are set in `defaults/main.yml`:
 ---
 telegraf_enabled: True
 
-telegraf_agent_version: 1.22.0
+telegraf_agent_version: 1.22.1
 telegraf_agent_version_patch: 1
 telegraf_agent_package: telegraf
 telegraf_agent_package_file_deb: telegraf_{{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}_{{ telegraf_agent_package_arch }}.deb

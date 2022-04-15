@@ -1,343 +1,295 @@
+# [prometheus](#prometheus)
 
-prometheus for Ansible Galaxy
-============
+Install and configure Prometheus
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-prometheus/actions/workflows/test.yaml/badge.svg)](https://github.com/buluma/ansible-role-prometheus/actions/workflows/test.yaml)|[![gitlab](https://gitlab.com/buluma/ansible-role-prometheus/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-prometheus)|[![quality](https://img.shields.io/ansible/quality/57842)](https://galaxy.ansible.com/buluma/prometheus)|[![downloads](https://img.shields.io/ansible/role/d/57842)](https://galaxy.ansible.com/buluma/anaconda)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-prometheus.svg)](https://github.com/buluma/ansible-role-prometheus/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-prometheus/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-prometheus/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-prometheus/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-prometheus)|[![quality](https://img.shields.io/ansible/quality/57842)](https://galaxy.ansible.com/buluma/prometheus)|[![downloads](https://img.shields.io/ansible/role/d/57842)](https://galaxy.ansible.com/buluma/prometheus)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-prometheus.svg)](https://github.com/buluma/ansible-role-prometheus/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-prometheus.svg)](https://github.com/buluma/ansible-role-prometheus/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-prometheus.svg)](https://github.com/buluma/ansible-role-prometheus/pulls/)|
 
-## Summary
+## [Example Playbook](#example-playbook)
 
-Role name in Ansible Galaxy: **[buluma.prometheus](https://galaxy.ansible.com/buluma/prometheus)**
-
-This Ansible role has the following features for [Prometheus](http://prometheus.io/):
-
- - Install specific versions of [Prometheus server](https://github.com/prometheus/prometheus), [Node exporter](https://github.com/prometheus/node_exporter), [Alertmanager](https://github.com/prometheus/alertmanager).
- - Handlers for restart/reload/stop events;
- - Bare bone configuration (*real* configuration should be left to user's template files; see **Usage** section below).
-
-
-To keep this role simple, this role only installs 3 components: Prometheus server, Node exporter, and Alertmanager. Use the following roles if you want to install other Prometheus exporters:
-
-- Consul: **[william-yeh.consul_exporter](https://galaxy.ansible.com/william-yeh/consul_exporter/)**
-- Elasticsearch: **[william-yeh.es_cluster_exporter](https://galaxy.ansible.com/william-yeh/es_cluster_exporter/)**
-- MongoDB: **[williamyeh.mongodb_exporter](https://galaxy.ansible.com/williamyeh/mongodb_exporter/)**
-
-
-Supports for Ubuntu 12.04 (Precise) and CentOS 6 have been ended since Nov 2018.
-
-
-
-## Role Variables
-
-
-### Mandatory variables
-
-The components to be installed:
-
-```yaml
-# Supported components:
-#
-#   [Server components]
-#     - "prometheus"
-#     - "alertmanager"
-#
-#   [Exporter components]
-#     - "node_exporter"
-#
-prometheus_components
-```
-
-
-
-### Optional variables: general settings
-
-
-User-configurable defaults:
-
-```yaml
-# user and group
-prometheus_user:   prometheus
-prometheus_group:  prometheus
-
-
-# directory for executable files
-prometheus_install_path:   /opt/prometheus
-
-# directory for configuration files
-prometheus_config_path:    /etc/prometheus
-
-# directory for logs
-prometheus_log_path:       /var/log/prometheus
-
-# directory for PID files
-prometheus_pid_path:       /var/run/prometheus
-
-
-
-# directory for temporary files
-prometheus_download_path:  /tmp
-
-
-# version of helper utility "gosu"
-gosu_version:  "1.11"
-```
-
-
-### Optional variables: systemd or not
-
-
-If the Linux distributions are equipped with systemd, this role will use this mechanism accordingly. You can disable this (i.e., use traditional SysV-style init script) by defining the following variable(s) to `false`:
-
-```yaml
-prometheus_use_systemd
-```
-
-
-
-### Optional variables: Prometheus server
-
-User-configurable defaults:
-
-```yaml
-# which version?
-prometheus_version:  2.5.0
-
-
-
-# directory for rule files
-prometheus_rule_path:  {{ prometheus_config_path }}/rules
-
-# directory for file_sd files
-prometheus_file_sd_config_path:  {{ prometheus_config_path }}/tgroups
-
-# directory for runtime database
-prometheus_db_path:   /var/lib/prometheus
-```
-
-
-
-
-
-
-User-installable configuration file (see [doc](http://prometheus.io/docs/operating/configuration/) for details):
-
-
-```yaml
-# main conf template relative to `playbook_dir`;
-# to be installed to "{{ prometheus_config_path }}/prometheus.yml"
-prometheus_conf_main
-```
-
-
-User-installable rule files (see [doc](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/) for details):
-
-
-```yaml
-# rule files to be installed to "{{ prometheus_rule_path }}" directory;
-# dict fields:
-#   - key: memo for this rule
-#   - value:
-#     - src:  file relative to `playbook_dir`
-#     - dest: target file relative to `{{ prometheus_rule_path }}`
-prometheus_rule_files
-```
-
-
-Alertmanager to be triggered:
-
-```yaml
-prometheus_alertmanager_hostport
-```
-
-
-Additional command-line arguments, if any (use `prometheus --help` to see the full list of arguments):
-
-```yaml
-prometheus_opts
-```
-
-
-### Optional variables: Node exporter
-
-
-User-configurable defaults:
-
-```yaml
-# which version?
-prometheus_node_exporter_version:  0.16.0
-```
-
-Additional command-line arguments, if any (use `node_exporter --help` to see the full list of arguments):
-
-```yaml
-prometheus_node_exporter_opts
-```
-
-
-### Optional variables: Alertmanager
-
-
-User-configurable defaults:
-
-```yaml
-# which version?
-prometheus_alertmanager_version:  0.15.3
-
-# directory for runtime database (currently for `silences.json`)
-prometheus_alertmanager_db_path: /var/lib/alertmanager
-```
-
-User-installable alertmanager conf file (see [doc](http://prometheus.io/docs/alerting/alertmanager/) for details):
-
-```yaml
-# main conf template relative to `playbook_dir`;
-# to be installed to "{{ prometheus_config_path }}/alertmanager.yml"
-prometheus_alertmanager_conf
-```
-
-Additional command-line arguments, if any (use `alertmanager --help` to see the full list of arguments):
-
-```yaml
-prometheus_alertmanager_opts
-```
-
-
-### Optional: building from source tree
-
-(Credit: [Robbie Trencheny](https://github.com/robbiet480))
-
-For aforementioned `prometheus_components`, you can optionally download/compile from the *master* branch of [Prometheus repositories](https://github.com/prometheus) by setting the respective version to `git`.
-
-It will install a temporary Golang compiler in the `prometheus_workdir` directory (defined in `defaults/main.yml`).
-
-For example, get the latest code for all components by assigning all `*_version` variables to `git`:
-
-```yaml
-prometheus_version: git
-prometheus_node_exporter_version: git
-prometheus_alertmanager_version: git
-```
-
-If you'd like to force rebuild each time, enable the following variable (default is `false`):
-
-```yaml
-prometheus_rebuild: true
-```
-
-
-
-## Handlers
-
-Prometheus server:
-
-- `restart prometheus`
-
-- `reload prometheus`
-
-- `stop prometheus`
-
-
-Node exporter:
-
-- `restart node_exporter`
-
-- `reload node_exporter` (actually, the same as `restart`)
-
-- `stop node_exporter`
-
-
-Alertmanager:
-
-- `restart alertmanager`
-
-- `reload alertmanager`
-
-- `stop alertmanager`
-
-
-
-## Usage
-
-
-### Step 1: add role
-
-Add role name `buluma.prometheus` to your playbook file.
-
-
-### Step 2: add variables
-
-Set vars in your playbook file, if necessary.
-
-Simple example:
-
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
 ```yaml
 ---
-# file: simple-playbook.yml
-
-- hosts: all
-  become: True
+- name: Converge
+  hosts: all
+  any_errors_fatal: true
   roles:
     - buluma.prometheus
-
-  vars:
-    prometheus_components: [ "prometheus", "alertmanager" ]
-
-    prometheus_alertmanager_hostport: "localhost:9093"
 ```
 
-
-### Step 3: copy user's config files, if necessary
-
-
-More practical example:
-
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
 ```yaml
 ---
-# file: complex-playbook.yml
-
-- hosts: all
-  become: True
-  roles:
-    - buluma.prometheus
-
-  vars:
-    prometheus_components:
-      - prometheus
-      - node_exporter
-      - alertmanager
-
-    prometheus_rule_files:
-      this_is_rule_1_InstanceDown:
-        src:  some/path/basic.rules
-        dest: basic.rules
-
-    prometheus_alertmanager_conf: some/path/alertmanager.yml.j2
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks: []
 ```
 
 
-### Step 4: browse the default Prometheus pages
+## [Role Variables](#role-variables)
 
-Open the page in your browser:
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+prometheus_version: 2.27.0
+prometheus_binary_local_dir: ''
+prometheus_skip_install: false
 
-- Prometheus - `http://HOST:9090` or `http://HOST:9090/consoles/node.html`
+prometheus_config_dir: /etc/prometheus
+prometheus_db_dir: /var/lib/prometheus
+prometheus_read_only_dirs: []
 
-- Alertmanager - `http://HOST:9093`
+prometheus_web_listen_address: "0.0.0.0:9090"
+prometheus_web_external_url: ''
+# See https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md
+prometheus_web_config:
+  tls_server_config: {}
+  http_server_config: {}
+  basic_auth_users: {}
+
+prometheus_storage_retention: "30d"
+# Available since Prometheus 2.7.0
+# [EXPERIMENTAL] Maximum number of bytes that can be stored for blocks. Units
+# supported: KB, MB, GB, TB, PB.
+prometheus_storage_retention_size: "0"
+
+prometheus_config_flags_extra: {}
+# prometheus_config_flags_extra:
+#   storage.tsdb.retention: 15d
+#   alertmanager.timeout: 10s
+
+prometheus_alertmanager_config: []
+# prometheus_alertmanager_config:
+#   - scheme: https
+#     path_prefix: alertmanager/
+#     basic_auth:
+#       username: user
+#       password: pass
+#     static_configs:
+#       - targets: ["127.0.0.1:9093"]
+#     proxy_url: "127.0.0.2"
+
+prometheus_alert_relabel_configs: []
+# prometheus_alert_relabel_configs:
+#   - action: labeldrop
+#     regex: replica
+
+prometheus_global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+prometheus_remote_write: []
+# prometheus_remote_write:
+#   - url: https://dev.kausal.co/prom/push
+#     basic_auth:
+#       password: FOO
+
+prometheus_remote_read: []
+# prometheus_remote_read:
+#   - url: https://demo.cloudalchemy.org:9201/read
+#     basic_auth:
+#       password: FOO
+
+prometheus_external_labels:
+  environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
+
+prometheus_targets: {}
+#  node:
+#    - targets:
+#        - localhost:9100
+#      labels:
+#        env: test
+
+prometheus_scrape_configs:
+  - job_name: "prometheus"
+    metrics_path: "{{ prometheus_metrics_path }}"
+    static_configs:
+      - targets:
+          - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9090"
+  - job_name: "node"
+    file_sd_configs:
+      - files:
+          - "{{ prometheus_config_dir }}/file_sd/node.yml"
+
+# Alternative config file name, searched in ansible templates path.
+prometheus_config_file: 'prometheus.yml.j2'
+
+prometheus_alert_rules_files:
+  - prometheus/rules/*.rules
+
+prometheus_static_targets_files:
+  - prometheus/targets/*.yml
+  - prometheus/targets/*.json
+
+prometheus_alert_rules:
+  - alert: Watchdog
+    expr: vector(1)
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: "This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n\"DeadMansSnitch\" integration in PagerDuty."
+      summary: 'Ensure entire alerting pipeline is functional'
+  - alert: InstanceDown
+    expr: 'up == 0'
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: '{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.{% endraw %}'
+      summary: '{% raw %}Instance {{ $labels.instance }} down{% endraw %}'
+  - alert: RebootRequired
+    expr: 'node_reboot_required > 0'
+    labels:
+      severity: warning
+    annotations:
+      description: '{% raw %}{{ $labels.instance }} requires a reboot.{% endraw %}'
+      summary: '{% raw %}Instance {{ $labels.instance }} - reboot required{% endraw %}'
+  - alert: NodeFilesystemSpaceFillingUp
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available space left and is filling up.{% endraw %}'
+      summary: 'Filesystem is predicted to run out of space within the next 24 hours.'
+    expr: "(\n  node_filesystem_avail_bytes{job=\"node\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node\",fstype!=\"\"} * 100 < 40\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"node\",fstype!=\"\"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: warning
+  - alert: NodeFilesystemSpaceFillingUp
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available space left and is filling up fast.{% endraw %}'
+      summary: 'Filesystem is predicted to run out of space within the next 4 hours.'
+    expr: "(\n  node_filesystem_avail_bytes{job=\"node\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node\",fstype!=\"\"} * 100 < 20\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"node\",fstype!=\"\"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: critical
+  - alert: NodeFilesystemAlmostOutOfSpace
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available space left.{% endraw %}'
+      summary: 'Filesystem has less than 5% space left.'
+    expr: "(\n  node_filesystem_avail_bytes{job=\"node\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node\",fstype!=\"\"} * 100 < 5\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: warning
+  - alert: NodeFilesystemAlmostOutOfSpace
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available space left.{% endraw %}'
+      summary: 'Filesystem has less than 3% space left.'
+    expr: "(\n  node_filesystem_avail_bytes{job=\"node\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node\",fstype!=\"\"} * 100 < 3\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: critical
+  - alert: NodeFilesystemFilesFillingUp
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available inodes left and is filling up.{% endraw %}'
+      summary: 'Filesystem is predicted to run out of inodes within the next 24 hours.'
+    expr: "(\n  node_filesystem_files_free{job=\"node\",fstype!=\"\"} / node_filesystem_files{job=\"node\",fstype!=\"\"} * 100 < 40\nand\n  predict_linear(node_filesystem_files_free{job=\"node\",fstype!=\"\"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: warning
+  - alert: NodeFilesystemFilesFillingUp
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available inodes left and is filling up fast.{% endraw %}'
+      summary: 'Filesystem is predicted to run out of inodes within the next 4 hours.'
+    expr: "(\n  node_filesystem_files_free{job=\"node\",fstype!=\"\"} / node_filesystem_files{job=\"node\",fstype!=\"\"} * 100 < 20\nand\n  predict_linear(node_filesystem_files_free{job=\"node\",fstype!=\"\"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: critical
+  - alert: NodeFilesystemAlmostOutOfFiles
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available inodes left.{% endraw %}'
+      summary: 'Filesystem has less than 5% inodes left.'
+    expr: "(\n  node_filesystem_files_free{job=\"node\",fstype!=\"\"} / node_filesystem_files{job=\"node\",fstype!=\"\"} * 100 < 5\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: warning
+  - alert: NodeFilesystemAlmostOutOfFiles
+    annotations:
+      description: '{% raw %}Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available inodes left.{% endraw %}'
+      summary: 'Filesystem has less than 3% inodes left.'
+    expr: "(\n  node_filesystem_files_free{job=\"node\",fstype!=\"\"} / node_filesystem_files{job=\"node\",fstype!=\"\"} * 100 < 3\nand\n  node_filesystem_readonly{job=\"node\",fstype!=\"\"} == 0\n)\n"
+    for: 1h
+    labels:
+      severity: critical
+  - alert: NodeNetworkReceiveErrs
+    annotations:
+      description: '{% raw %}{{ $labels.instance }} interface {{ $labels.device }} has encountered {{ printf "%.0f" $value }} receive errors in the last two minutes.{% endraw %}'
+      summary: 'Network interface is reporting many receive errors.'
+    expr: "increase(node_network_receive_errs_total[2m]) > 10\n"
+    for: 1h
+    labels:
+      severity: warning
+  - alert: NodeNetworkTransmitErrs
+    annotations:
+      description: '{% raw %}{{ $labels.instance }} interface {{ $labels.device }} has encountered {{ printf "%.0f" $value }} transmit errors in the last two minutes.{% endraw %}'
+      summary: 'Network interface is reporting many transmit errors.'
+    expr: "increase(node_network_transmit_errs_total[2m]) > 10\n"
+    for: 1h
+    labels:
+      severity: warning
+  - alert: NodeHighNumberConntrackEntriesUsed
+    annotations:
+      description: '{% raw %}{{ $value | humanizePercentage }} of conntrack entries are used{% endraw %}'
+      summary: 'Number of conntrack are getting close to the limit'
+    expr: "(node_nf_conntrack_entries / node_nf_conntrack_entries_limit) > 0.75\n"
+    labels:
+      severity: warning
+  - alert: NodeClockSkewDetected
+    annotations:
+      message: '{% raw %}Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.{% endraw %}'
+      summary: 'Clock skew detected.'
+    expr: "(\n  node_timex_offset_seconds > 0.05\nand\n  deriv(node_timex_offset_seconds[5m]) >= 0\n)\nor\n(\n  node_timex_offset_seconds < -0.05\nand\n  deriv(node_timex_offset_seconds[5m]) <= 0\n)\n"
+    for: 10m
+    labels:
+      severity: warning
+  - alert: NodeClockNotSynchronising
+    annotations:
+      message: '{% raw %}Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.{% endraw %}'
+      summary: 'Clock not synchronising.'
+    expr: "min_over_time(node_timex_sync_status[5m]) == 0\n"
+    for: 10m
+    labels:
+      severity: warning
+```
+
+## [Requirements](#requirements)
+
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-prometheus/blob/main/requirements.txt).
 
 
-## Dependencies
+## [Context](#context)
 
-None.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+
+Here is an overview of related roles:
+
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-prometheus/png/requirements.png "Dependencies")
+
+## [Compatibility](#compatibility)
+
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
+
+|container|tags|
+|---------|----|
+|ubuntu|all|
+|debian|all|
+|el|7|
+
+The minimum version of Ansible required is 2.2, tests have been done to:
+
+- The previous version.
+- The current version.
+- The development version.
 
 
-## Contributors
 
-- [Michael Buluma](https://github.com/buluma)
-- [William Yeh](https://github.com/buluma-Yeh)
-- [Robbie Trencheny](https://github.com/robbiet480) - contribute an early version of building binaries from Go source code.
-- [Travis Truman](https://github.com/trumant) - contribute an early version of consul_exporter installer; now moved to [William-Yeh.consul_exporter](https://github.com/William-Yeh/ansible-consul-exporter).
-- [Musee Ullah](https://github.com/lae)
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-prometheus/issues)
 
-## License
+## [License](#license)
 
-MIT License. See the [LICENSE file](LICENSE) for details.
+MIT
+
+## [Author Information](#author-information)
+
+[Michael Buluma](https://buluma.github.io/)

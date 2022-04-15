@@ -4,4 +4,3 @@ roles:
   - name: buluma.ca_certificates
   - name: buluma.zabbix_repository
 collections:
-  - name: community.general

@@ -1,6 +1,6 @@
 ---
 - name: Configure Apache.
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ apache_server_root }}/conf/{{ apache_daemon }}.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -15,7 +15,7 @@
   with_items: "{{ apache_vhosts_ssl }}"
 
 - name: Add apache vhosts configuration.
-  template:
+  ansible.builtin.template:
     src: "{{ apache_vhosts_template }}"
     dest: "{{ apache_conf_path }}/{{ apache_vhosts_filename }}"
     owner: root
@@ -25,7 +25,7 @@
   when: apache_create_vhosts | bool
 
 - name: Check if localhost cert exists (RHEL 8 and later).
-  stat:
+  ansible.builtin.stat:
     path: /etc/pki/tls/certs/localhost.crt
   register: localhost_cert
   when: ansible_distribution_major_version | int >= 8
