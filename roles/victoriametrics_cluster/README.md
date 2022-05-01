@@ -23,7 +23,6 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 
   roles:
     - role: buluma.victoriametrics_cluster
-      victoriametrics_version: v1.58.0
 ```
 
 The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
@@ -39,6 +38,7 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
       changed_when: false
 ```
 
+
 ## [Role Variables](#role-variables)
 
 The default values for the variables are set in `defaults/main.yml`:
@@ -47,7 +47,7 @@ The default values for the variables are set in `defaults/main.yml`:
 # defaults settings for all VictoriaMetrics nodes
 victoriametrics_repo_url: "https://github.com/VictoriaMetrics/VictoriaMetrics"
 victoriametrics_download_url: "{{ victoriametrics_repo_url }}/releases/download/{{ victoriametrics_version }}/victoria-metrics-amd64-{{ victoriametrics_version }}-cluster.tar.gz"
-victoriametrics_version: "v1.53.1"
+victoriametrics_version: "v1.58.0"
 victoriametrics_system_user: "victoria"
 victoriametrics_system_group: "victoria"
 
@@ -106,36 +106,10 @@ custom_sysctl:
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-victoriametrics_cluster/blob/main/requirements.txt).
 
-<!-- https://github.com/Slapper/ansible-victoriametrics-cluster-role -->
-### Ansible inventory
-
-In order to use this role create your inventory file with these 3 groups :
-
-- vmstorage ( for storage nodes )
-- vmselect ( for select nodes )
-- vminsert ( for insert nodes )
-
-More info here : https://github.com/VictoriaMetrics/VictoriaMetrics/tree/cluster#architecture-overview
-
-```
-[vmstorage]
-vmstorage01.example.com
-vmstorage02.example.com
-vmstorage03.example.com
-vmstorage04.example.com
-
-[vminsert]
-vminsert01.example.com
-vminsert02.example.com
-
-[vmselect]
-vmselect01.example.com
-vmselect02.example.com
-```
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -158,6 +132,10 @@ The minimum version of Ansible required is 2.4, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-victoriametrics_cluster/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-victoriametrics_cluster/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

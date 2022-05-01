@@ -1,0 +1,7 @@
+---
+firefox_download: /tmp/firefox-{{ firefox_version }}.tar.bz2
+firefox_bin: "{{ firefox_home }}/firefox/firefox"
+firefox_base_url: "https://ftp.mozilla.org/pub/firefox/releases"
+firefox_arch_url: "{{ firefox_base_url }}/{{ firefox_version }}/linux-x86_64"
+firefox_lang_url: "{{ firefox_arch_url }}/en-US"
+firefox_url: "{{ firefox_lang_url }}/firefox-{{ firefox_version }}.tar.bz2"

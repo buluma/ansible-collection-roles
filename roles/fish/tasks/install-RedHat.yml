@@ -1,0 +1,40 @@
+---
+- name: RHEL | require fish >=3 for newer RHEL
+  ansible.builtin.fail:
+    msg: Only fish >= 3 is supported on RHEL >= 8
+  when:
+    - ansible_facts.distribution in ['RedHat', 'CentOS']
+    - fish_release_version is version('3', '<')
+    - ansible_facts.distribution_major_version is version('8', '>=')
+  tags:
+    - fish
+
+- name: RHEL | require fish >=3 for newer Fedora
+  ansible.builtin.fail:
+    msg: Only fish >= 3 is supported on Fedora >= 28
+  when:
+    - ansible_facts.distribution == 'Fedora'
+    - fish_release_version is version('3', '<')
+    - ansible_facts.distribution_major_version is version('28', '>=')
+  tags:
+    - fish
+
+- name: RHEL | create yum repo
+  ansible.builtin.yum_repository:
+    name: shells_fish_release_{{ fish_release_version }}
+    description: Fish shell - {{ fish_release_version }}.x release series ({{ _fish_repo_version_string }})
+    baseurl: http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/
+    gpgkey: http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/repodata/repomd.xml.key
+    enabled: yes
+    gpgcheck: yes
+    file: fish
+  tags:
+    - fish
+
+- name: RHEL | install fish
+  action: "{{ ansible_facts.pkg_mgr }}"
+  args:
+    name: fish
+    state: latest
+  tags:
+    - fish

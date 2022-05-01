@@ -17,8 +17,6 @@ galaxy_info:
         - bullseye
     - name: Fedora
       versions:
-        - 32
-        - 33
         - 34
     - name: OpenSUSE
       versions:

@@ -28,3 +28,5 @@ galaxy_info:
     - python
     - pip
     - tools
+
+dependencies: []

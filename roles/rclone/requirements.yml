@@ -1,0 +1,8 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.openssl
+  - name: buluma.core_dependencies
+  - name: buluma.ca_certificates
+collections:
+  - name: community.general

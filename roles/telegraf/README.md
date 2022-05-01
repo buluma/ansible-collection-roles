@@ -29,7 +29,7 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
 
   tasks:
     - name: "Installing packages on CentOS"
-      yum:
+      ansible.builtin.yum:
         name: which
         state: present
       when:
@@ -41,7 +41,7 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
         - ansible_os_family == 'Debian'
 
     - name: "Installing packages on Debian"
-      apt:
+      ansible.builtin.apt:
         name:
           - wget
           - python3-apt
@@ -52,7 +52,7 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
         - ansible_os_family == 'Debian'
 
     - name: "Installing packages on Suse"
-      zypper:
+      community.general.zypper:
         name:
           - aaa_base
         state: present
@@ -178,7 +178,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -203,6 +203,10 @@ The minimum version of Ansible required is 2.4, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-telegraf/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-telegraf/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

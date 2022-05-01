@@ -37,7 +37,7 @@
   tags: victoriametrics
 
 - name: gather currently installed version (if any)
-  command: "/usr/local/bin/victoriametrics -version"
+  ansible.builtin.command: "/usr/local/bin/victoriametrics -version"
   args:
     warn: false
   changed_when: false
@@ -105,6 +105,7 @@
         url: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v{{ victoriametrics_version }}/victoria-metrics-{{ go_arch }}-v{{ victoriametrics_version }}.tar.gz"
         dest: "/tmp/victoriametrics-{{ victoriametrics_version }}.linux-{{ go_arch }}.tar.gz"
         checksum: "sha256:{{ victoriametrics_checksum }}"
+        mode: 0644
       environment: "{{ proxy_env }}"
       register: _download_binary
       until: _download_binary is succeeded

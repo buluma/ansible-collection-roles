@@ -3,7 +3,7 @@
   delegate_to: localhost
   run_once: true
   block:
-    - name: Create local grafana dashboard directory
+    - name: create local grafana dashboard directory
       ansible.builtin.tempfile:
         state: directory
       register: _tmp_dashboards
@@ -62,7 +62,7 @@
     # This regex can be tested and understood better by looking at the
     # matches and non-matches in https://regex101.com/r/f4Gkvg/6
 
-    - name: Set the correct data source name in the dashboard
+    - name: set the correct data source name in the dashboard
       ansible.builtin.replace:
         dest: "{{ _tmp_dashboards.path }}/{{ item.dashboard_id }}.json"
         regexp: '"(?:\${)?DS_[A-Z0-9_-]+(?:})?"'
@@ -71,7 +71,7 @@
       with_items: "{{ grafana_dashboards }}"
       when: grafana_dashboards | length > 0
 
-- name: Import grafana dashboards through API
+- name: import grafana dashboards through API
   ansible.builtin.uri:
     url: "{{ grafana_api_url }}/api/dashboards/db"
     user: "{{ grafana_security.admin_user }}"
@@ -107,7 +107,7 @@
 
 - when: grafana_use_provisioning
   block:
-    - name: Create/Update dashboards file (provisioning)
+    - name: create/Update dashboards file (provisioning)
       become: true
       ansible.builtin.copy:
         dest: "/etc/grafana/provisioning/dashboards/ansible.yml"
@@ -126,7 +126,7 @@
         mode: 0640
       notify: restart grafana
 
-    - name: Register previously copied dashboards
+    - name: register previously copied dashboards
       ansible.builtin.find:
         paths: "{{ grafana_data_dir }}/dashboards"
         hidden: true
@@ -135,24 +135,25 @@
       register: _dashboards_present
       when: grafana_provisioning_synced
 
-    - name: Import grafana dashboards
+    - name: import grafana dashboards
       become: true
       ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ grafana_data_dir }}/dashboards/{{ item | basename }}"
+        mode: 0644
       with_fileglob:
         - "{{ _tmp_dashboards.path }}/*"
         - "{{ grafana_dashboards_dir }}/*.json"
       register: _dashboards_copied
       notify: "provisioned dashboards changed"
 
-    - name: Get dashboard lists
+    - name: get dashboard lists
       ansible.builtin.set_fact:
         _dashboards_present_list: "{{ _dashboards_present | json_query('files[*].path') | default([]) }}"
         _dashboards_copied_list: "{{ _dashboards_copied | json_query('results[*].dest') | default([]) }}"
       when: grafana_provisioning_synced
 
-    - name: Remove dashboards not present on deployer machine (synchronize)
+    - name: remove dashboards not present on deployer machine (synchronize)
       become: true
       ansible.builtin.file:
         path: "{{ item }}"

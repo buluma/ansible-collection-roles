@@ -7,7 +7,7 @@
   tags:
     - grafana_run
 
-- name: Set privileges on provisioned dashboards
+- name: set privileges on provisioned dashboards
   become: true
   ansible.builtin.file:
     path: "{{ grafana_data_dir }}/dashboards"
@@ -17,7 +17,7 @@
     mode: 0640
   listen: "provisioned dashboards changed"
 
-- name: Set privileges on provisioned dashboards directory
+- name: set privileges on provisioned dashboards directory
   become: true
   ansible.builtin.file:
     path: "{{ grafana_data_dir }}/dashboards"

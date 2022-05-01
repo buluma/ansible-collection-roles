@@ -1,0 +1,34 @@
+---
+- name: prepare git repository for ara
+  git:
+    repo: "{{ ara_api_source }}"
+    dest: "{{ ara_api_source_checkout }}"
+    version: "{{ (ara_api_version == 'latest') | ternary('HEAD', ara_api_version) }}"
+
+- name: install ara
+  pip:
+    name: "{{ ara_api_source_checkout }}[server]"
+    state: present
+    virtualenv: "{{ ara_api_venv | bool | ternary(ara_api_venv_path, omit) }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+    ansible_python_interpreter: python3
+    # TODO: Check why this is failing
+
+- name: install python-passlib for managing authentication credentials
+  pip:
+    name: passlib
+    state: present
+    virtualenv: "{{ ara_api_venv | bool | ternary(ara_api_venv_path, omit) }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+  when: ara_api_external_auth
+
+- name: prefix the virtualenv bin directory to PATH
+  set_fact:
+    path_with_virtualenv: "{{ ara_api_venv_path }}/bin:{{ ansible_facts['env']['PATH'] }}"
+  when: ara_api_venv | bool
+
+# This lets us use "path_with_virtualenv" without conditions everywhere
+- name: otherwise don't prefix the virtualenv bin directory to PATH
+  set_fact:
+    path_with_virtualenv: "{{ ansible_facts['env']['PATH'] }}"
+  when: not ara_api_venv | bool

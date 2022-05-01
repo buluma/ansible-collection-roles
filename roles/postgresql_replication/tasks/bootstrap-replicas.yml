@@ -1,0 +1,22 @@
+---
+
+- name: "Stopping PostgreSQL server"
+  ansible.builtin.service:
+    name: postgresql
+    state: stopped
+  register: postgresql_was_stopped
+
+- name: "Removing all server datas"
+  ansible.builtin.file:
+    dest: "{{ postgresql__data_dir }}"
+    state: absent
+
+- name: "Copy datas from master"
+  ansible.builtin.command: "pg_basebackup -h {{ postgresql_replication__master_node_address }} -D {{ postgresql__data_dir }} \
+   -U {{ postgresql_replication__user }} --wal-method=stream"
+  args:
+    creates: "{{ postgresql__data_dir }}"
+  become: true
+  become_user: "{{ postgresql__user }}"
+  vars:
+    ansible_ssh_pipelining: true

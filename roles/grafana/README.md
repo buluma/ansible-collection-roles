@@ -1,6 +1,6 @@
 # [grafana](#grafana)
 
-Install and configure grafana on your system.
+Grafana - platform for analytics and monitoring
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
@@ -301,7 +301,7 @@ grafana_panels: {}
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -327,6 +327,10 @@ The minimum version of Ansible required is 2.9, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-grafana/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-grafana/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

@@ -1,6 +1,6 @@
 ---
 - name: Get systemd version
-  command: systemctl --version
+  ansible.builtin.command: systemctl --version
   changed_when: false
   check_mode: false
   register: __systemd_version
@@ -34,7 +34,7 @@
   when: inventory_hostname in groups['vmstorage']
 
 - name: Check current VictoriaMetrics vmselect version
-  command: /usr/local/bin/victoriametrics/vmselect-prod -version
+  ansible.builtin.command: /usr/local/bin/victoriametrics/vmselect-prod -version
   changed_when: false
   failed_when: false
   check_mode: false
@@ -44,7 +44,7 @@
     - victoriametrics_vmselect_is_installed.stat.exists == True
 
 - name: Check current VictoriaMetrics vminsert version
-  command: /usr/local/bin/victoriametrics/vminsert-prod -version
+  ansible.builtin.command: /usr/local/bin/victoriametrics/vminsert-prod -version
   changed_when: false
   failed_when: false
   check_mode: false
@@ -54,7 +54,7 @@
     - victoriametrics_vminsert_is_installed.stat.exists == True
 
 - name: Check current VictoriaMetrics vmstorage version
-  command: /usr/local/bin/victoriametrics/vmstorage-prod -version
+  ansible.builtin.command: /usr/local/bin/victoriametrics/vmstorage-prod -version
   changed_when: false
   failed_when: false
   check_mode: false

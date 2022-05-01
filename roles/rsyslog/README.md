@@ -4,7 +4,7 @@ Install and configure rsyslog on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|
 |------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-rsyslog/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-rsyslog/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-rsyslog/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-rsyslog)|[![quality](https://img.shields.io/ansible/quality/58234)](https://galaxy.ansible.com/buluma/rsyslog)|[![downloads](https://img.shields.io/ansible/role/d/58234)](https://galaxy.ansible.com/buluma/rsyslog)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-rsyslog.svg)](https://github.com/buluma/ansible-role-rsyslog/releases/)|
+|[![github](https://github.com/buluma/ansible-role-rsyslog/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-rsyslog/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-rsyslog/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-rsyslog)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/rsyslog)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/rsyslog)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-rsyslog.svg)](https://github.com/buluma/ansible-role-rsyslog/releases/)|
 
 ## [Example Playbook](#example-playbook)
 

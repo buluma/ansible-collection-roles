@@ -2,9 +2,9 @@
 
 Install vagrant on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-vagrant/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-vagrant/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-vagrant/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-vagrant)|[![quality](https://img.shields.io/ansible/quality/57944)](https://galaxy.ansible.com/buluma/vagrant)|[![downloads](https://img.shields.io/ansible/role/d/57944)](https://galaxy.ansible.com/buluma/vagrant)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-vagrant.svg)](https://github.com/buluma/ansible-role-vagrant/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-vagrant/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-vagrant/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-vagrant/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-vagrant)|[![quality](https://img.shields.io/ansible/quality/57944)](https://galaxy.ansible.com/buluma/vagrant)|[![downloads](https://img.shields.io/ansible/role/d/57944)](https://galaxy.ansible.com/buluma/vagrant)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-vagrant.svg)](https://github.com/buluma/ansible-role-vagrant/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-vagrant.svg)](https://github.com/buluma/ansible-role-vagrant/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-vagrant.svg)](https://github.com/buluma/ansible-role-vagrant/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -69,7 +69,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -103,6 +103,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-vagrant/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-vagrant/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

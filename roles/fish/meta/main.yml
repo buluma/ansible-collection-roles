@@ -1,0 +1,30 @@
+---
+galaxy_info:
+  role_name: fish
+  author: Michael Buluma
+  namespace: buluma
+  description: "Install the Friendly Interactive Shell (fish)"
+  company: ShadowNet
+  license: Apache 2.0
+  min_ansible_version: 2.10
+
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+
+  galaxy_tags:
+    - system
+    - shell
+    - fish
+
+dependencies: []

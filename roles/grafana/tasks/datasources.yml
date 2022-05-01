@@ -1,5 +1,5 @@
 ---
-- name: Ensure datasources exist (via API)
+- name: ensure datasources exist (via API)
   grafana_datasource:
     grafana_url: "{{ grafana_api_url }}"
     grafana_user: "{{ grafana_security.admin_user }}"
@@ -23,7 +23,7 @@
   with_items: "{{ grafana_datasources }}"
   when: not grafana_use_provisioning
 
-- name: Create/Update datasources file (provisioning)
+- name: create/Update datasources file (provisioning)
   become: true
   ansible.builtin.copy:
     dest: "/etc/grafana/provisioning/datasources/ansible.yml"

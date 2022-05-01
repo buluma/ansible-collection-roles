@@ -29,6 +29,9 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
   gather_facts: no
 
   roles:
+    - role: buluma.bootstrap
+    - role: buluma.ca_certificates
+    - role: andrewrothstein.unarchive-deps
 ```
 
 
@@ -38,7 +41,7 @@ The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
 # defaults file for nancy
-nancy_ver: v1.0.30
+nancy_ver: v1.0.33
 nancy_os: linux
 nancy_arch: amd64
 nancy_mirror: https://github.com/sonatype-nexus-community/nancy/releases/download
@@ -113,6 +116,15 @@ nancy_checksums:
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-nancy/blob/main/requirements.txt).
 
+## [Status of used roles](#status-of-requirements)
+
+The following roles are used to prepare a system. You can prepare your system in another way.
+
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.ca_certificates](https://galaxy.ansible.com/buluma/ca_certificates)|[![Build Status GitHub](https://github.com/buluma/ansible-role-ca_certificates/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca_certificates/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-ca_certificates/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ca_certificates)|
+|[andrewrothstein.unarchive-deps](https://galaxy.ansible.com/buluma/andrewrothstein.unarchive-deps)|[![Build Status GitHub](https://github.com/buluma/andrewrothstein.unarchive-deps/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/andrewrothstein.unarchive-deps/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/andrewrothstein.unarchive-deps/badges/master/pipeline.svg)](https://gitlab.com/buluma/andrewrothstein.unarchive-deps)|
 
 ## [Dependencies](#dependencies)
 
@@ -121,7 +133,7 @@ Most roles require some kind of preparation, this is done in `molecule/default/p
 - andrewrothstein.unarchive-deps
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -149,6 +161,10 @@ The minimum version of Ansible required is 2.0, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-nancy/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-nancy/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

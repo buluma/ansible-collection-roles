@@ -4,7 +4,7 @@ tune ext3 and ext4 filesystems using tune2fs.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-tune2fs/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-tune2fs/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-tune2fs/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-tune2fs)|[![quality](https://img.shields.io/ansible/quality/58488)](https://galaxy.ansible.com/buluma/tune2fs)|[![downloads](https://img.shields.io/ansible/role/d/58488)](https://galaxy.ansible.com/buluma/tune2fs)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-tune2fs.svg)](https://github.com/buluma/ansible-role-tune2fs/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-tune2fs.svg)](https://github.com/buluma/ansible-role-tune2fs/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr/buluma/ansible-role-tune2fs.svg)](https://github.com/buluma/ansible-role-tune2fs/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-tune2fs/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-tune2fs/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-tune2fs/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-tune2fs)|[![quality](https://img.shields.io/ansible/quality/58488)](https://galaxy.ansible.com/buluma/tune2fs)|[![downloads](https://img.shields.io/ansible/role/d/58488)](https://galaxy.ansible.com/buluma/tune2fs)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-tune2fs.svg)](https://github.com/buluma/ansible-role-tune2fs/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-tune2fs.svg)](https://github.com/buluma/ansible-role-tune2fs/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-tune2fs.svg)](https://github.com/buluma/ansible-role-tune2fs/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -61,7 +61,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -89,6 +89,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-tune2fs/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-tune2fs/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

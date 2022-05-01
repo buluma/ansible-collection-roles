@@ -1,0 +1,124 @@
+---
+- name: cp -rfT /etc/skel /root
+  ansible.builtin.raw: |
+    set -eu
+    cp -rfT /etc/skel /root
+  changed_when: false
+  failed_when: false
+
+- name: setenforce 0
+  ansible.builtin.raw: |
+    set -eu
+    setenforce 0
+    sed -i 's/^SELINUX=.*$/SELINUX=permissive/g' /etc/selinux/config
+  changed_when: false
+  failed_when: false
+
+- name: systemctl stop firewalld.service
+  ansible.builtin.raw: |
+    set -eu
+    systemctl stop firewalld.service
+    systemctl disable firewalld.service
+  changed_when: false
+  failed_when: false
+
+- name: systemctl stop ufw.service
+  ansible.builtin.raw: |
+    set -eu
+    systemctl stop ufw.service
+    systemctl disable ufw.service
+  changed_when: false
+  failed_when: false
+
+- name: debian | apt-get install *.deb
+  ansible.builtin.raw: |
+    set -eu
+    DEBIAN_FRONTEND=noninteractive apt-get install -y bzip2 ca-certificates curl gcc gnupg gzip hostname iproute2 passwd procps python3 python3-apt python3-jmespath python3-lxml python3-pip python3-setuptools python3-venv python3-virtualenv python3-wheel rsync sudo tar unzip util-linux xz-utils zip
+  when: ansible_os_family | lower == "debian"
+  changed_when: false
+  failed_when: false
+
+- name: fedora | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_distribution | lower == "fedora"
+  changed_when: false
+  failed_when: false
+
+- name: redhat-9 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum-config-manager --enable crb || echo $?
+    yum-config-manager --enable codeready-builder-beta-for-rhel-9-x86_64-rpms || echo $?
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "9"
+  changed_when: false
+  failed_when: false
+
+- name: redhat-8 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "8"
+  changed_when: false
+  failed_when: false
+
+- name: redhat-7 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    subscription-manager repos --enable=rhel-7-server-optional-rpms || echo $?
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-plugin-versionlock yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "7"
+  changed_when: false
+  failed_when: false
+
+- name: suse | zypper -n install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    zypper -n install -y bzip2 ca-certificates curl gcc gpg2 gzip hostname iproute2 procps python3 python3-jmespath python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow sudo tar unzip util-linux xz zip
+  when: ansible_os_family | lower == "suse"
+  changed_when: false
+  failed_when: false
+
+- name: include default variables
+  ansible.builtin.include_vars: "../vars/main.yml"
+
+- name: include release specific variables
+  ansible.builtin.include_vars: "{{ _loop_var }}"
+  loop: "{{ query('first_found', _params) }}"
+  loop_control:
+    loop_var: _loop_var
+  vars:
+    _params:
+      files:
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version | lower }}.yml"
+        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+      paths:
+        - "../vars"
+      skip: true
+
+- name: include release specific tasks
+  ansible.builtin.include_tasks: "{{ _loop_var }}"
+  loop: "{{ query('first_found', _params) }}"
+  loop_control:
+    loop_var: _loop_var
+  vars:
+    _params:
+      files:
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version | lower }}.yml"
+        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+      paths:
+        - "."
+      skip: true

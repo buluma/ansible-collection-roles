@@ -1,0 +1,8 @@
+---
+- name: Check ansible version
+  ansible.builtin.debug:
+    msg: "This role works best with ansible version 2.8 or greater. It is recommended to use the latest ansible version for the best experience."
+  when:
+    - ansible_version.full is version_compare('2.8', '<')
+
+# TODO: Improve this in the future

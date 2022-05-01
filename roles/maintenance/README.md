@@ -2,9 +2,9 @@
 
 Maintain your system by cleaning up.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-maintenance/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-maintenance/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-maintenance/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-maintenance)|[![quality](https://img.shields.io/ansible/quality/57958)](https://galaxy.ansible.com/buluma/maintenance)|[![downloads](https://img.shields.io/ansible/role/d/57958)](https://galaxy.ansible.com/buluma/maintenance)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-maintenance.svg)](https://github.com/buluma/ansible-role-maintenance/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-maintenance/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-maintenance/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-maintenance/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-maintenance)|[![quality](https://img.shields.io/ansible/quality/57958)](https://galaxy.ansible.com/buluma/maintenance)|[![downloads](https://img.shields.io/ansible/role/d/57958)](https://galaxy.ansible.com/buluma/maintenance)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-maintenance.svg)](https://github.com/buluma/ansible-role-maintenance/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-maintenance.svg)](https://github.com/buluma/ansible-role-maintenance/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-maintenance.svg)](https://github.com/buluma/ansible-role-maintenance/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -70,7 +70,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -99,6 +99,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-maintenance/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-maintenance/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

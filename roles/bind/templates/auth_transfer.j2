@@ -1,0 +1,19 @@
+// {{ ansible_managed }}
+{% if bind_key_mapping | length > 0 %}
+{% for primary in bind_key_mapping.keys() %}
+server {{ primary }} {
+  keys { {{ bind_key_mapping[primary] }}; };
+};
+{% endfor %}
+
+{% endif %}
+server {{ ansible_default_ipv4.address }} {
+  keys { {% for mykey in bind_dns_keys %} {{ mykey.name }}; {% endfor %} };
+};
+
+{% for mykey in bind_dns_keys %}
+key {{ mykey.name }} {
+  algorithm {{ mykey.algorithm }};
+  secret "{{ mykey.secret }}";
+};
+{% endfor %}

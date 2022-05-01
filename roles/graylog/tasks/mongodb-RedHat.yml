@@ -1,0 +1,66 @@
+---
+
+- name: "update repositories"
+  ansible.builtin.yum_repository:
+    name: "mongodb-org"
+    description: "MongoDB Repository"
+    baseurl: "{{ graylog_mongodb_redhat_repo }}"
+    gpgkey: "{{ graylog_mongodb_redhat_key }}"
+    gpgcheck: "yes"
+    enabled: "yes"
+
+- name: "install package dependencies"
+  ansible.builtin.yum:
+    name: "{{ graylog_mongodb_package_dependencies_python2 }}"
+    state: present
+  when: ansible_python_version is version('3.0.0', '<')
+
+- name: "install package dependencies"
+  ansible.builtin.yum:
+    name: "{{ graylog_mongodb_package_dependencies_python3 }}"
+    state: present
+  when: ansible_python_version is version('3.0.0', '>=')
+
+- name: "install MongoDB"
+  ansible.builtin.yum:
+    name: "mongodb-org"
+    state: "present"
+
+- name: "install MongoDB service file"
+  ansible.builtin.template:
+    src: "mongodb.service-RedHat.j2"
+    dest: "/lib/systemd/system/mongod.service"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  when:
+    - use_system_d | bool
+  notify:
+    - "reload systemd configuration"
+    - "restart mongod"
+
+- name: "configure MongoDB"
+  ansible.builtin.template:
+    src: "mongodb.conf.j2"
+    dest: "/etc/mongod.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify: "restart mongod"
+
+- name: "grant SELinux port access for MongoDB"
+  community.general.seport:
+    ports: "{{graylog_mongodb_bind_port}}"
+    proto: "tcp"
+    setype: "mongod_port_t"
+    state: "present"
+  when: ansible_selinux.status == "enabled"
+
+- meta: "flush_handlers"
+
+- name: "wait for MongoDB to startup"
+  ansible.builtin.wait_for:
+    host: "{{graylog_mongodb_bind_ip}}"
+    port: "{{graylog_mongodb_bind_port}}"
+    delay: 5
+    connect_timeout: 1

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+CROWD_HOME="{{ crowd_home }}"
+CROWD_CATALINA="{{ crowd_catalina }}"
+
+JAVA_OPTS=" \
+-Xms{{ crowd_jvm_minimum_memory }} \
+-Xmx{{ crowd_jvm_maximum_memory }} \
+{{ crowd_jvm_support_recommended_args }} \
+-Dfile.encoding=UTF-8 \
+"
+export JAVA_OPTS
+
+CATALINA_OPTS=" \
+-Dcrowd.home={{ crowd_home }} \
+"
+export CATALINA_OPTS
+
+# set the location of the pid file
+if [ -z "$CATALINA_PID" ] ; then
+    if [ -n "$CATALINA_BASE" ] ; then
+        CATALINA_PID="$CATALINA_BASE"/work/catalina.pid
+    elif [ -n "$CATALINA_HOME" ] ; then
+        CATALINA_PID="$CATALINA_HOME"/work/catalina.pid
+    fi
+fi
+export CATALINA_PID

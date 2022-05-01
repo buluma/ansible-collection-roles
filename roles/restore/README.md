@@ -2,9 +2,9 @@
 
 The purpose of this role is to restore objects to your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-restore/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-restore/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-restore/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-restore)|[![quality](https://img.shields.io/ansible/quality/57953)](https://galaxy.ansible.com/buluma/restore)|[![downloads](https://img.shields.io/ansible/role/d/57953)](https://galaxy.ansible.com/buluma/restore)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-restore.svg)](https://github.com/buluma/ansible-role-restore/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-restore/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-restore/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-restore/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-restore)|[![quality](https://img.shields.io/ansible/quality/57953)](https://galaxy.ansible.com/buluma/restore)|[![downloads](https://img.shields.io/ansible/role/d/57953)](https://galaxy.ansible.com/buluma/restore)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-restore.svg)](https://github.com/buluma/ansible-role-restore/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-restore.svg)](https://github.com/buluma/ansible-role-restore/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-restore.svg)](https://github.com/buluma/ansible-role-restore/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -96,7 +96,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -129,6 +129,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-restore/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-restore/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

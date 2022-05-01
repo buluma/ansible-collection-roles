@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# One way to set the BITBUCKET_HOME path is here via this variable.  Simply uncomment it and set a valid path like
+# /bitbucket/home.  You can of course set it outside in the command terminal; that will also work.
+#
+BITBUCKET_HOME="{{ bitbucket_home }}"
+BITBUCKET_CATALINA="{{ bitbucket_catalina }}"
+
+# When upgrading from the packaged distribution BITBUCKET_HOME may not be set. Fallback to legacy STASH_HOME
+# and output a message for the user recommending that they update their environment
+if [ -z "$BITBUCKET_HOME" ]; then
+    if [ -z "$STASH_HOME" ]; then
+        echo "Bitbucket doesn't know where to store its data. Configure the BITBUCKET_HOME"
+        echo "environment variable with the directory where Bitbucket should store its data."
+        echo "Ensure the path to BITBUCKET_HOME does not contain spaces. BITBUCKET_HOME may"
+        echo "be configured in set-bitbucket-home.sh, if preferred, rather than exporting it"
+        echo "as an environment variable"
+        return 1
+    else
+        BITBUCKET_HOME=$STASH_HOME
+        echo "WARNING: STASH_HOME has been deprecated and replaced with BITBUCKET_HOME. It"
+        echo "is recommended to set BITBUCKET_HOME instead of STASH_HOME. Future versions"
+        echo -e "of Bitbucket may not support the STASH_HOME variable\n"
+    fi
+fi
+
+echo $BITBUCKET_HOME | grep -q " "
+if [ $? -eq 0 ]; then
+    echo "BITBUCKET_HOME '$BITBUCKET_HOME' contains spaces."
+    echo "Using a directory with spaces is likely to cause unexpected behaviour and is not"
+    echo "supported. Set BITBUCKET_HOME to a directory which does not contain spaces"
+    return 1
+fi
+
+export BITBUCKET_HOME
+export BITBUCKET_CATALINA

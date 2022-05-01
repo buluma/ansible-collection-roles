@@ -4,7 +4,7 @@ Install and configure rundeck on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-rundeck/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-rundeck/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-rundeck/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-rundeck)|[![quality](https://img.shields.io/ansible/quality/58053)](https://galaxy.ansible.com/buluma/rundeck)|[![downloads](https://img.shields.io/ansible/role/d/58053)](https://galaxy.ansible.com/buluma/rundeck)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-rundeck.svg)](https://github.com/buluma/ansible-role-rundeck/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-rundeck.svg)](https://github.com/buluma/ansible-role-rundeck/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-rundeck.svg)](https://github.com/buluma/ansible-role-rundeck/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-rundeck/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-rundeck/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-rundeck/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-rundeck)|[![quality](https://img.shields.io/ansible/quality/58053)](https://galaxy.ansible.com/buluma/rundeck)|[![downloads](https://img.shields.io/ansible/role/d/58053)](https://galaxy.ansible.com/buluma/rundeck)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-rundeck.svg)](https://github.com/buluma/ansible-role-rundeck/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-rundeck.svg)](https://github.com/buluma/ansible-role-rundeck/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-rundeck.svg)](https://github.com/buluma/ansible-role-rundeck/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -142,7 +142,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -182,6 +182,10 @@ This role [refers to a version](https://github.com/buluma/ansible-role-rundeck/b
 This version reference means a role may get outdated. Monthly tests occur to see if [bit-rot](https://en.wikipedia.org/wiki/Software_rot) occured. If you however find a problem, please create an issue, I'll get on it as soon as possible.
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-rundeck/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-rundeck/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

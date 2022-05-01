@@ -38,6 +38,10 @@
     dest: "{{ ca_path }}/{{ ca_openssl_config_file }}"
     mode: "0644"
 
+- name: install crycptograghy
+  ansible.builtin.pip:
+    name: cryptography
+
 - name: generate ca key
   community.crypto.openssl_privatekey:
     path: "{{ ca_path }}/{{ ca_privatekey_path }}"

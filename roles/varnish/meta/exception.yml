@@ -1,0 +1,6 @@
+---
+exceptions:
+  - variation: alpine
+    reason: "Dependency not available: python_pip"
+  - variation: archlinux
+    reason: "version `GLIBC_2.34' not found (required by /usr/lib/libpython3.10.so.1.0)\n"

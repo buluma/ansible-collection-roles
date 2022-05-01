@@ -1,0 +1,58 @@
+---
+
+# (c) Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+_rpm_key:
+  - key: "http://packages.gitlab.com/gitlab/gitlab-ee/gpgkey"
+    fingerprint: "F6403F6544A38863DAA0B6E03F01618A51312F3F"
+    state: "present"
+  - key: "http://packages.gitlab.com/gitlab/gitlab-ee/gpgkey/gitlab-gitlab-ee-3D645A26AB9FBD22.pub.gpg"
+    fingerprint: "DBEF89774DDB9EB37D9FC3A03CFCF9BAF27EAB47"
+    state: "present"
+  - key: "http://download.opensuse.org/repositories/home:/alvistack/Fedora_36/repodata/repomd.xml.key"
+    fingerprint: "789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD"
+    state: "present"
+
+_yum_repository:
+  - file: "gitlab-ee"
+    name: "gitlab-ee"
+    description: "GitLab EE"
+    baseurl: "http://packages.gitlab.com/gitlab/gitlab-ee/el/8/x86_64"
+    enabled: true
+    priority: "2"
+    module_hotfixes: true
+    gpgcheck: true
+    gpgkey:
+      - "http://packages.gitlab.com/gitlab/gitlab-ee/gpgkey"
+      - "http://packages.gitlab.com/gitlab/gitlab-ee/gpgkey/gitlab-gitlab-ee-3D645A26AB9FBD22.pub.gpg"
+    state: "present"
+  - file: "home:alvistack"
+    name: "home_alvistack"
+    description: "home:alvistack (Fedora_36)"
+    baseurl: "http://download.opensuse.org/repositories/home:/alvistack/Fedora_36"
+    enabled: true
+    priority: "2"
+    module_hotfixes: true
+    gpgcheck: true
+    gpgkey: "http://download.opensuse.org/repositories/home:/alvistack/Fedora_36/repodata/repomd.xml.key"
+    state: "present"
+
+_yum:
+  - { state: "latest", name: "ca-certificates" }
+  - { state: "latest", name: "curl" }
+  - { state: "latest", name: "libxcrypt-compat" }
+  - { state: "latest", name: "openssl" }
+  - { state: "latest", name: "python3-gitlab" }
+  - { state: "present", name: "gitlab-ee-{{ gitlab_version}}*" }

@@ -1,0 +1,4 @@
+---
+_fish_apt_keyserver: keyserver.ubuntu.com
+_fish_apt_key_id: 59FDA1CE1B84B3FAD89366C027557F056DC33CA5
+_fish_apt_repo_url: deb http://ppa.launchpad.net/fish-shell/release-{{ fish_release_version }}/ubuntu {{ ansible_facts.lsb.codename | lower }} main

@@ -1,0 +1,16 @@
+---
+# handlers file for ansible-role-sonarqube/
+- name: "restart SonarQube service"
+  ansible.builtin.service:
+    name: sonar
+    state: restarted
+
+- name: "fail if expected sonar version not confirmed"
+  ansible.builtin.fail:
+    msg: Please check if 'Version' field of http://{{ inventory_hostname }}{{ sonar_web_context }} match to {{ sonar_version }}
+
+- name: "warn about post-upgrade steps"
+  ansible.builtin.debug:
+    msg:
+      - "SonarQube version changed to {{ sonar_version }} but additional actions required from your side"
+      - "Visit http://{{ inventory_hostname }}{{ sonar_web_context }}/setup to follow the post-upgrade procedure"

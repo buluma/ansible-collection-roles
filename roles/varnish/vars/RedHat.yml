@@ -1,3 +1,4 @@
 ---
 varnish_sysvinit_config_path: /etc/sysconfig
 varnish_systemd_config_path: /usr/lib/systemd/system
+varnish_repo_gpg_key_url: https://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/j/jemalloc-3.6.0-1.el7.x86_64.rpm

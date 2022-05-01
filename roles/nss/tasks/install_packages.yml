@@ -1,0 +1,11 @@
+---
+- name: mozilla-nss | {{ task.name }} | Ensure all packages are installed and updated
+  become: yes
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: '{{ packages }}'
+
+# TODO:
+# coverity
+# rr

@@ -2,9 +2,9 @@
 
 Install and configure fail2ban on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-fail2ban/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-fail2ban/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-fail2ban/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-fail2ban)|[![quality](https://img.shields.io/ansible/quality/57895)](https://galaxy.ansible.com/buluma/fail2ban)|[![downloads](https://img.shields.io/ansible/role/d/57895)](https://galaxy.ansible.com/buluma/fail2ban)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-fail2ban.svg)](https://github.com/buluma/ansible-role-fail2ban/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-fail2ban/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-fail2ban/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-fail2ban/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-fail2ban)|[![quality](https://img.shields.io/ansible/quality/57895)](https://galaxy.ansible.com/buluma/fail2ban)|[![downloads](https://img.shields.io/ansible/role/d/57895)](https://galaxy.ansible.com/buluma/fail2ban)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-fail2ban.svg)](https://github.com/buluma/ansible-role-fail2ban/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-fail2ban.svg)](https://github.com/buluma/ansible-role-fail2ban/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-fail2ban.svg)](https://github.com/buluma/ansible-role-fail2ban/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -84,7 +84,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -120,6 +120,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-fail2ban/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-fail2ban/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

@@ -1,0 +1,8 @@
+---
+- name: Get rclone stable version {{ rclone_version }}
+  ansible.builtin.unarchive:
+    src: https://downloads.rclone.org/v{{ rclone_version }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}.zip
+    dest: "{{ rclone_setup_tmp_dir }}"
+    remote_src: true
+    mode: 0744
+    creates: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}"

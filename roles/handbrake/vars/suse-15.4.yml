@@ -1,0 +1,21 @@
+---
+_rpm_key:
+  - key: "http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_15.4/repodata/repomd.xml.key"
+    fingerprint: "F8875B880D518B6B8C530D1345A1D0671ABD1AFB"
+    state: "present"
+
+_yum_repository:
+  - file: "packman"
+    name: "packman"
+    description: "Packman repository (openSUSE_Leap_15.4)"
+    baseurl: "http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_15.4"
+    enabled: true
+    priority: "2"
+    module_hotfixes: true
+    gpgcheck: true
+    gpgkey: "http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_15.4/repodata/repomd.xml.key"
+    state: "present"
+
+_zypper:
+  - { state: "latest", name: "handbrake-cli" }
+  - { state: "latest", name: "handbrake-gtk" }

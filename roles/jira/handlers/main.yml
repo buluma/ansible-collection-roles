@@ -1,0 +1,17 @@
+---
+- name: jira | systemctl daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+  changed_when: false
+  failed_when: false
+
+- name: jira | systemctl restart jira.service
+  ansible.builtin.service:
+    name: "jira.service"
+    state: "restarted"
+    enabled: true
+  loop: "{{ ansible_play_hosts }}"
+  delegate_to: "{{ item }}"
+  run_once: true
+  changed_when: false
+  failed_when: false

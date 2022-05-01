@@ -15,9 +15,37 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
   hosts: all
   become: yes
   gather_facts: yes
+  tasks:
+    - name: Enable EPEL repo on EL for Redis role
+      yum: pkg=epel-release state=present
+      when: ansible_os_family == 'RedHat'
+    - name: Flush handlers so services are restarted before Sentry installation
+      meta: flush_handlers
+    - import_role:
+        name: buluma.sentry
+      vars:
+        sentry_db_user: 'sentry'
+        sentry_secret_key: 'SAFE'
+        sentry_extra_pip_packages:
+          - 'sentry-plugins==9.0.0'
+```
+
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: prepare
+  hosts: all
+  become: yes
+  gather_facts: no
 
   roles:
-    - role: buluma.sentry
+    - role: buluma.bootstrap
+    - role: buluma.buildtools
+    - role: buluma.cron
+    - role: duologic.postgresql_repository
+    - role: geerlingguy.redis
+    - role: geerlingguy.postgresql
+    - role: duologic.sentry
 ```
 
 
@@ -26,13 +54,13 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
-sentry_version: '9.0.0'
+sentry_version: '21.6.3'
 sentry_install_dir: '/srv/sentry'
 sentry_system_user: 'sentry'
 sentry_system_group: 'sentry'
-sentry_system_cron_hour: 3
+sentry_system_cron_hour: 4
 sentry_system_cron_minute: 0
-sentry_extra_pip_packages: []
+sentry_extra_pip_packages: ['petname']
 
 # config.yml settigs
 sentry_mail_backend: 'dummy'
@@ -83,10 +111,23 @@ sentry_cleanup_days: 30
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-sentry/blob/main/requirements.txt).
 
+## [Status of used roles](#status-of-requirements)
+
+The following roles are used to prepare a system. You can prepare your system in another way.
+
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[duologic.postgresql_repository](https://galaxy.ansible.com/buluma/duologic.postgresql_repository)|[![Build Status GitHub](https://github.com/buluma/duologic.postgresql_repository/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/duologic.postgresql_repository/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/duologic.postgresql_repository/badges/master/pipeline.svg)](https://gitlab.com/buluma/duologic.postgresql_repository)|
+|[geerlingguy.redis](https://galaxy.ansible.com/buluma/geerlingguy.redis)|[![Build Status GitHub](https://github.com/buluma/geerlingguy.redis/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/geerlingguy.redis/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/geerlingguy.redis/badges/master/pipeline.svg)](https://gitlab.com/buluma/geerlingguy.redis)|
+|[geerlingguy.postgresql](https://galaxy.ansible.com/buluma/geerlingguy.postgresql)|[![Build Status GitHub](https://github.com/buluma/geerlingguy.postgresql/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/geerlingguy.postgresql/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/geerlingguy.postgresql/badges/master/pipeline.svg)](https://gitlab.com/buluma/geerlingguy.postgresql)|
+|[duologic.sentry](https://galaxy.ansible.com/buluma/duologic.sentry)|[![Build Status GitHub](https://github.com/buluma/duologic.sentry/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/duologic.sentry/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/duologic.sentry/badges/master/pipeline.svg)](https://gitlab.com/buluma/duologic.sentry)|
+|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
+|[buluma.cron](https://galaxy.ansible.com/buluma/cron)|[![Build Status GitHub](https://github.com/buluma/ansible-role-cron/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-cron/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-cron/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-cron)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -111,6 +152,10 @@ The minimum version of Ansible required is 2.7, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-sentry/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-sentry/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

@@ -1,0 +1,59 @@
+---
+- name: include distribution specific variables
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_facts.os_family }}-{{ ansible_facts.distribution_major_version }}.yml"
+        - "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_version }}.yml"
+        - "{{ ansible_facts.distribution }}.yml"
+        - "{{ ansible_facts.os_family }}.yml"
+      paths:
+        - vars
+
+- name: download firefox package
+  ansible.builtin.get_url:
+    url: "{{ firefox_url }}"
+    dest: /tmp/firefox-{{ firefox_version }}.tar.bz2
+    mode: 0755
+    checksum: "{{ firefox_checksum }}"
+
+- block:
+    - name: remove the firefox package
+      ansible.builtin.package:
+        name: firefox
+        state: absent
+
+    - name: install dependencies
+      ansible.builtin.package:
+        name: "{{ item }}"
+      with_items: "{{ firefox_dependencies }}"
+
+    - name: create install directory
+      ansible.builtin.file:
+        path: "{{ firefox_home }}"
+        state: directory
+        mode: 0755
+
+    - name: unarchive package
+      ansible.builtin.unarchive:
+        src: "{{ firefox_download }}"
+        dest: "{{ firefox_home }}"
+        remote_src: true
+        creates: "{{ firefox_bin }}"
+
+    - name: symlink package
+      ansible.builtin.file:
+        src: "{{ firefox_bin }}"
+        dest: /usr/bin/firefox
+        state: link
+  become: true
+
+- name: create desktop icon
+  ansible.builtin.template:
+    src: firefox.desktop.j2
+    dest: /usr/share/applications/firefox.desktop
+    owner: root
+    group: root
+    mode: 0644
+  when: firefox_desktop_icon

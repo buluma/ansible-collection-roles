@@ -1,24 +1,26 @@
 ---
-- name: Include OS-specific variables.
-  include_vars: "{{ ansible_os_family }}.yml"
+- name: include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
 
-- name: Set the packagecloud repository name based on the version.
+- name: set the packagecloud repository name based on the version.
   ansible.builtin.set_fact:
     varnish_packagecloud_repo: "varnish{{ varnish_version|replace('.', '') }}"
 
-- include_tasks: setup-RedHat.yml
+- name: include RedHat setup
+  ansible.builtin.include_tasks: setup-RedHat.yml
   when: ansible_os_family == 'RedHat'
 
-- include_tasks: setup-Debian.yml
+- name: include Debian setup
+  ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_os_family == 'Debian'
 
-- name: Ensure Varnish config path exists.
+- name: ensure Varnish config path exists.
   ansible.builtin.file:
     path: "{{ varnish_config_path }}"
     state: directory
     mode: 0755
 
-- name: Copy Varnish configuration (sysvinit).
+- name: copy Varnish configuration (sysvinit).
   ansible.builtin.template:
     src: varnish.j2
     dest: "{{ varnish_sysvinit_config_path }}/varnish"
@@ -30,7 +32,7 @@
     (ansible_os_family == 'Debian' and ansible_distribution_release != "xenial")
   notify: restart varnish
 
-- name: Copy Debian Jessie/Xenial specific Varnish configs (systemd).
+- name: copy Debian Jessie/Xenial specific Varnish configs (systemd).
   ansible.builtin.template:
     src: varnish.service.j2
     dest: "{{ varnish_systemd_config_path }}/varnish.service"
@@ -45,7 +47,7 @@
     - reload systemd
     - restart varnish
 
-- name: Copy Varnish configuration (systemd).
+- name: copy Varnish configuration (systemd).
   ansible.builtin.template:
     src: varnish.params.j2
     dest: "{{ varnish_config_path }}/varnish.params"
@@ -56,7 +58,7 @@
     (ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 7) or
     (ansible_os_family == 'Debian' and ansible_distribution_release == "xenial")
 
-- name: Copy Varnish default VCL.
+- name: copy Varnish default VCL.
   ansible.builtin.template:
     src: "{{ varnish_default_vcl_template_path }}"
     dest: "{{ varnish_config_path }}/default.vcl"
@@ -66,7 +68,7 @@
   when: varnish_use_default_vcl
   notify: restart varnish
 
-- name: Copy varnish secret.
+- name: copy varnish secret.
   ansible.builtin.template:
     src: secret.j2
     dest: "{{ varnish_config_path }}/secret"
@@ -75,7 +77,7 @@
     mode: 0644
   notify: restart varnish
 
-- name: Ensure Varnish services are started and enabled on startup.
+- name: ensure varnish services are started and enabled on startup.
   ansible.builtin.service:
     name: "{{ item }}"
     state: started
@@ -86,7 +88,7 @@
     (ansible_os_family != 'Debian' and ansible_distribution_release != "xenial"))
 
 # See: https://github.com/ansible/ansible/issues/22303
-- name: Ensure Varnish services are started and enabled on startup (Xenial specific)
+- name: ensure varnish services are started and enabled on startup (Xenial specific)
   ansible.builtin.service:
     name: "{{ item }}"
     state: started

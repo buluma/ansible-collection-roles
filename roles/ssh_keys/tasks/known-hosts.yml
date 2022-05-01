@@ -1,0 +1,34 @@
+# tasks file
+---
+- name: known-hosts | stat directories
+  ansible.builtin.stat:
+    path: "{{ item }}/"
+  register: _stat_directories
+  with_items:
+    - "{{ ssh_keys_known_hosts_path | dirname }}"
+  tags:
+    - ssh-keys-known-hosts-directories
+    - ssh-keys-known-hosts-directories-stat
+
+- name: known-hosts | create directories
+  ansible.builtin.file:
+    path: "{{ item.item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items: "{{ _stat_directories.results }}"
+  when: not item.stat.exists | bool
+  tags:
+    - ssh-keys-known-hosts-directories
+    - ssh-keys-known-hosts-directories-create
+
+- name: known-hosts | update file
+  ansible.builtin.template:
+    src: "{{ ssh_keys_known_hosts_path.lstrip('/') }}.j2"
+    dest: "{{ ssh_keys_known_hosts_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    ssh-keys-known-hosts-update

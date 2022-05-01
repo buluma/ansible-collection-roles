@@ -1,0 +1,22 @@
+---
+- name: install required packages from Pypi
+  pip:
+    name: ara[server]
+    state: "{{ (ara_api_version == 'latest') | ternary('latest', 'present') }}"
+    version: "{{ (ara_api_version != 'latest') | ternary(ara_api_version, omit) }}"
+    virtualenv: "{{ ara_api_venv | bool | ternary(ara_api_venv_path, omit) }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+  notify: restart ara-api
+
+- name: install python-passlib for managing authentication credentials
+  pip:
+    name: passlib
+    state: present
+    virtualenv: "{{ ara_api_venv | bool | ternary(ara_api_venv_path, omit) }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+  when: ara_api_external_auth
+
+- name: prefix the virtualenv bin directory to PATH
+  set_fact:
+    path_with_virtualenv: "{{ ara_api_venv_path }}/bin:{{ ansible_facts['env']['PATH'] }}"
+  when: ara_api_venv | bool

@@ -23,6 +23,34 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
       - load
       - memory
     collectd_plugins:
+      - name: df
+        config: |
+          MountPoint "/proc"
+          MountPoint "/dev"
+          MountPoint "/\/docker\/containers\//"
+          MountPoint "/\/docker\/devicemapper\//"
+          MountPoint "/\/docker\/plugins\//"
+          MountPoint "/\/docker\/overlay\//"
+          MountPoint "/\/docker\/overlay2\//"
+          MountPoint "/\/docker\/netns\//"
+          FSType "overlay"
+          FSType "proc"
+          FSType "tmpfs"
+          IgnoreSelected true
+          ReportInodes true
+      - name: disk
+        config: |
+          Disk "/^hd"
+          IgnoreSelected true
+      - name: interface
+        config: |
+          Interface "lo"
+          Interface "/veth.*/"
+          IgnoreSelected true
+      - name: swap
+        config: |
+          ReportByDevice false
+          ReportBytes true
       - name: write_http
         config: |
           <Node "test">
@@ -48,7 +76,6 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
             SSLMode "prefer"
             Query tickets
           </Database>
-
   roles:
     - role: buluma.collectd
 ```
@@ -92,6 +119,8 @@ collectd_conf_writethreads: 5
 collectd_conf_include_dir: /etc/collectd.d
 collectd_conf_fnmatch_filters:
   - "*.conf"
+
+collectd_conf_extra: ~
 
 #### Logging Configuration
 
@@ -310,7 +339,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -346,6 +375,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-collectd/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-collectd/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

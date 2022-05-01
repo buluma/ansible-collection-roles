@@ -1,6 +1,6 @@
 ---
 roles:
-  - name: robertdebock.apt_autostart
+  - name: buluma.apt_autostart
   - name: buluma.bootstrap
   - name: buluma.epel
   - name: buluma.sysctl

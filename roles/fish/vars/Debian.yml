@@ -1,0 +1,3 @@
+---
+_fish_apt_key_url: https://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/Debian_{{ ansible_facts.distribution_major_version }}{{ '.0' if ansible_facts.distribution_major_version is version('9', '<=') else '' }}/Release.key
+_fish_apt_repo_url: deb http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/Debian_{{ ansible_facts.distribution_major_version }}{{ '.0' if ansible_facts.distribution_major_version is version('9', '<=') else '' }}/ /

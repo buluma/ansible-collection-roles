@@ -1,0 +1,33 @@
+---
+# tasks file for buluma.hosts
+
+- name: Collect only selected facts
+  ansible.builtin.setup:
+    filter:
+      - 'ansible_distribution'
+      - 'ansible_machine_id'
+      - 'ansible_*_mb'
+      - 'ansible_eth[0-2]'
+
+- name: Collect only facts returned by network
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - network
+
+- name: "edit the hosts file in /etc"
+  become: true
+  ansible.builtin.template:
+    src: "etc/hosts.j2"
+    dest: "{{ hosts_file }}"
+    backup: "{{ hosts_backup }}"
+    group: "{{ hosts_group }}"
+    owner: "{{ hosts_owner }}"
+    serole: "{{ hosts_serole }}"
+    setype: "{{ hosts_setype }}"
+    seuser: "{{ hosts_seuser }}"
+    selevel: "{{ hosts_selevel }}"
+    mode: "{{ hosts_mode }}"
+  tags:
+    - configuration

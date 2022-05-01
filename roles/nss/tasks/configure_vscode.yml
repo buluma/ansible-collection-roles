@@ -1,0 +1,212 @@
+---
+- name: mozilla-nss | {{ task.name }} | Ensure VSCode repository
+  become: yes
+  ansible.builtin.yum_repository:
+    name: '{{ item.name }}'
+    description: 'Visual Studio Code'
+    baseurl: '{{ item.repo }}'
+    gpgcheck: '{{ item.gpgcheck }}'
+    gpgkey: '{{ item.gpgkey }}'
+    enabled: yes
+    state: '{{ item.state }}'
+  loop: '{{ linux_repos }}'
+  register: result_repo_vscode
+  when:
+    - item.enabled
+    - ansible_facts['os_family']|lower == "redhat"
+
+- name: mozilla-nss | {{ task.name }} | Ensure VSCode is installed and updated
+  become: yes
+  ansible.builtin.package:
+    name: 'code'
+    state: present
+  register: result_install_vscode
+  when:
+    - ansible_facts['system']|lower == "linux"
+    - result_repo_vscode is success
+
+- name: mozilla-nss | {{ task.name }} | Ensure Bugzilla workspace folders in FileSystem
+  ansible.builtin.file:
+    path: '{{ item.path }}/{{ dev_ws_prefix }}{{ item.bugId }}_{{ item.name }}'
+    state: '{{ item.state }}'
+    mode: '0775'
+  loop: '{{ vscode_workspaces }}'
+  register: result_workspaces_dir
+  when:
+    - item.enabled
+    - item.path == bugzilla_dev_dir
+    - result_bugzilla_dev_dir is success
+
+- name: mozilla-nss | {{ task.name }} | Ensure Notes file for each Bugzilla workspace
+  ansible.builtin.copy:
+    dest: '{{ item.path }}/{{ dev_ws_prefix }}{{ item.bugId }}_{{ item.name }}/Notes'
+    force: no
+    mode: '0664'
+    content: |
+      Bug URL: https://bugzilla.mozilla.org/show_bug.cgi?id={{ item.bugId }}
+      Created: "{{ ansible_facts['date_time']['iso8601'] }}"
+  loop: '{{ vscode_workspaces }}'
+  register: result_workspaces_notes
+  when:
+    - item.enabled
+    - item.state == "directory"
+    - item.path == bugzilla_dev_dir
+    - result_workspaces_dir is success
+
+- name: mozilla-nss | {{ task.name }} | Ensure the repositories for each Bugzilla workspace
+  community.general.hg:
+    repo: '{{ item[0].dest }}'
+    dest: '{{ bugzilla_dev_dir }}/{{ dev_ws_prefix }}{{ item[1].bugId }}_{{ item[1].name }}/{{ item[0].name }}'
+    purge: yes
+    clone: yes
+    update: yes
+    revision: "default"
+  loop: '{{ hg_repos | product(vscode_workspaces)|list }}'
+  register: result_workspaces_hg
+  ignore_errors: yes
+  when:
+    - not item[0].support_repo
+    - item[1].enabled
+    - item[1].state == "directory"
+    - item[1].path == bugzilla_dev_dir
+    - result_workspaces_dir is success
+
+- name: mozilla-nss | {{ task.name }} | Ensure Mercurial requirements for each Bugzilla workspace
+  ansible.builtin.lineinfile:
+    dest: '{{ bugzilla_dev_dir }}/{{ dev_ws_prefix }}{{ item[2].bugId }}_{{ item[2].name }}/{{ item[1].name }}/{{ repo_mercurial_requires_file }}'
+    state: '{{ item[0].state }}'
+    create: no
+    backup: yes
+    line: '{{ item[0].name }}'
+  loop: "{{ hg_requires | product(hg_repos,vscode_workspaces)|list }}"
+  ignore_errors: yes
+  when:
+    - item[0].enabled
+    - item[0].state == "directory"
+    - not item[1].support_repo
+    - result_workspaces_hg is success or result_workspaces_hg is skipped
+
+- name: mozilla-nss | {{ task.name }} | Ensure Try-Server path for each Bugzilla workspace
+  ansible.builtin.lineinfile:
+    dest: '{{ bugzilla_dev_dir }}/{{ dev_ws_prefix }}{{ item[1].bugId }}_{{ item[1].name }}/{{ item[0].name }}/{{ repo_mercurial_config_file }}'
+    state: 'present'
+    create: no
+    backup: yes
+    insertafter: '^\[paths\]'
+    line: 'nss-try = {{ nss_try }}'
+  loop: '{{ hg_repos | product(vscode_workspaces)|list }}'
+  ignore_errors: yes
+  when:
+    - not item[0].support_repo
+    - item[1].state == "directory"
+    - item[1].path == bugzilla_dev_dir
+    - result_workspaces_hg is success or result_workspaces_hg is skipped
+
+- name: mozilla-nss | {{ task.name }} | Ensure Mercurial extensions for each Bugzilla workspace
+  ansible.builtin.lineinfile:
+    dest: '{{ bugzilla_dev_dir }}/{{ dev_ws_prefix }}{{ item[1].bugId }}_{{ item[1].name }}/{{ item[0].name }}/{{ repo_mercurial_config_file }}'
+    state: '{{ item[2].state }}'
+    create: yes
+    insertafter: '^\[extensions\]'
+    backup: yes
+    line: '{{ item[2].parameter }} = {{ item[2].value }}'
+  loop: '{{ hg_repos | product(vscode_workspaces,hg_extensions)|list }}'
+  ignore_errors: yes
+  when:
+    - not item[0].support_repo
+    - item[1].state == "directory"
+    - item[1].path == bugzilla_dev_dir
+    - item[2].enabled
+    - result_workspaces_hg is success or result_workspaces_hg is skipped
+    - ansible_facts['distribution']|lower == "fedora"
+
+- name: mozilla-nss | {{ task.name }} | Ensure the workspaces folder for VSCode
+  ansible.builtin.file:
+    path: '{{ vscode_workspaces_folder }}'
+    state: directory
+    mode: '0755'
+  register: result_vscode_workspaces_folder
+  when: result_install_vscode is success
+
+- name: mozilla-nss | {{ task.name }} | Locate the {{ vscode_workspaces_config_file }} file of VSCode
+  ansible.builtin.find:
+    paths: '{{ vscode_workspaces_folder }}'
+    recurse: yes
+    patterns: '{{ vscode_workspaces_config_file }}'
+  register: result_vscode_workspaces_file
+  when: result_vscode_workspaces_folder is success
+
+- name: mozilla-nss | {{ task.name }} | First execution of VSCode
+  ansible.builtin.debug:
+    msg:
+      - "If VSCode was just installed, is necessary to open it for create the initial configurations."
+      - "Also, add some folder in your VSCode workspace to create the workspaces configurations file."
+  when: result_vscode_workspaces_file.matched == 0
+
+- name: mozilla-nss | {{ task.name }} | Ensure desired Bugzilla workspaces are set in VSCode
+  ansible.builtin.command:
+    chdir: '{{ role_path }}/files'
+    argv:
+      - '{{ ansible_python_interpreter }}'
+      - vscode_settings.py
+      - '{{ item.action }}'
+      - '{{ result_vscode_workspaces_file.files[0].path }}'
+      - 'folders'
+      - 'path'
+      - '{{ item.path }}/{{ dev_ws_prefix }}{{ item.bugId }}_{{ item.name }}'
+    warn: yes
+  loop: '{{ vscode_workspaces }}'
+  register: result_workspaces_bugzilla
+  when:
+    - item.enabled
+    - item.state == "directory"
+    - item.path == bugzilla_dev_dir
+    - result_vscode_workspaces_file.matched == 1
+    - result_workspaces_dir is success
+
+- name: mozilla-nss | {{ task.name }} | Ensure the Reference/Main workspace folder is set in VSCode
+  ansible.builtin.command:
+    chdir: '{{ role_path }}/files'
+    argv:
+      - '{{ ansible_python_interpreter }}'
+      - vscode_settings.py
+      - '{{ item.action }}'
+      - '{{ result_vscode_workspaces_file.files[0].path }}'
+      - 'folders'
+      - 'path'
+      - '{{ item.path }}'
+    warn: yes
+  loop: '{{ vscode_workspaces }}'
+  register: result_workspaces_reference
+  when:
+    - item.enabled
+    - item.state == "directory"
+    - item.path == main_dir
+    - result_vscode_workspaces_file.matched == 1
+    - result_main_dir is success
+
+- name: mozilla-nss | {{ task.name }} | Ensure the desired extensions are installed in VSCode
+  ansible.builtin.command:
+    argv:
+      - 'code'
+      - '--install-extension'
+      - '{{ item.name }}'
+    warn: yes
+  loop: '{{ vscode_extensions }}'
+  register: result_vscode_extensions_add
+  when:
+    - item.enabled
+    - item.installed
+
+- name: mozilla-nss | {{ task.name }} | Ensure the undesired extensions are uninstalled in VSCode
+  ansible.builtin.command:
+    argv:
+      - 'code'
+      - '--uninstall-extension'
+      - '{{ item.name }}'
+    warn: yes
+  loop: '{{ vscode_extensions }}'
+  register: result_vscode_extensions_remove
+  when:
+    - item.enabled
+    - not item.installed

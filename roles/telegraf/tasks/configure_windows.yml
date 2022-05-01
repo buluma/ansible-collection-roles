@@ -87,7 +87,8 @@
   register: service_result
   failed_when: service_result is not defined
 
-- debug: msg={{ service_result }}
+- name: debug service_result
+  ansible.builtin.debug: msg={{ service_result }}
 
 - name: "Windows | Set service startup mode to auto and ensure it is started"
   win_service:

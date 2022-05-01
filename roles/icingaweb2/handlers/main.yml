@@ -1,7 +1,7 @@
 ---
 # handlers file for ansible-icingaweb2
 - name: run-kickstart
-  command: /usr/bin/icingacli director kickstart run --verbose
+  ansible.builtin.command: /usr/bin/icingacli director kickstart run --verbose
 
 - name: restart-director
   ansible.builtin.systemd:

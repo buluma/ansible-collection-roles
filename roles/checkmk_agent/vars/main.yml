@@ -1,0 +1,6 @@
+---
+# vars file for checkmk_agent
+# checkmk_agent_deb: check-mk-free-2.0.0p23-el7-38_all.deb
+checkmk_agent_deb: check-mk-free-2.0.0p23_0.bullseye_amd64.deb
+checkmk_agent_rpm: check-mk-free-2.0.0p23-el7-38.x86_64.rpm
+checkmk_agent_suse: check-mk-free-2.0.0p23-sles15sp3-38.x86_64.rpm

@@ -1,0 +1,11 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.core_dependencies
+  # - name: buluma.openjdk
+  - name: lean_delivery.java
+    version: 7.1.0
+  - name: elastic.elasticsearch
+    version: v7.17.0
+collections:
+  - name: community.general

@@ -1,0 +1,32 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: github_users
+  author: Michael buluma
+  namespace: buluma
+  description: Create users based on GitHub accounts.
+  company: ShadowNet
+  license: "license (Apache-2.0)"
+  min_ansible_version: 2.10
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - system
+    - user
+    - security
+    - ssh
+    - accounts
+    - pubkey
+    - github

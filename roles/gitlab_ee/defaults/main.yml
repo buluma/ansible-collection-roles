@@ -1,0 +1,24 @@
+---
+# GitLab release.
+gitlab_release: "14.9"
+
+# GitLab version.
+gitlab_version: "{{ _gitlab_version[gitlab_release] }}"
+
+# GitLab external URL.
+gitlab_external_url: "http://{{ ansible_default_ipv4.address }}"
+
+# Set to approximately 1/4 of available RAM.
+gitlab_postgresql_shared_buffers: "256MB"
+
+# Disable Prometheus node_exporter inside Docker.
+gitlab_node_exporter_enable: "true"
+
+# Manage accounts with docker.
+gitlab_manage_accounts_enable: "false"
+
+# Explicitly disable init detection since we are running on a container.
+gitlab_package_detect_init: "true"
+
+# Attempt to modify kernel paramaters.
+gitlab_package_modify_kernel_parameters: "true"

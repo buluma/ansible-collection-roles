@@ -1,0 +1,25 @@
+---
+_rpm_key:
+  - key: "http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9"
+    fingerprint: "FF8AD1344597106ECE813B918A3872BF3228467C"
+    state: "present"
+  - key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xEDC00FE7418C9DF7EF4991A47403EA33296458F3"
+    fingerprint: "EDC00FE7418C9DF7EF4991A47403EA33296458F3"
+    state: "present"
+  - key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xBB24128A4BB3C3352C0B75A2E4174E6BAAB212EA"
+    fingerprint: "BB24128A4BB3C3352C0B75A2E4174E6BAAB212EA"
+    state: "present"
+
+_rpm_download:
+  - url: "http://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+    dest: "/var/cache/ansible/d3731f75ac51d998c6c4a71871ae7b62fc6f8bbf236ba609e7d303ec8c3d1390/epel-release-latest-9.noarch.rpm"
+    checksum: "d3731f75ac51d998c6c4a71871ae7b62fc6f8bbf236ba609e7d303ec8c3d1390"
+  - url: "http://rpmfind.net/linux/rpmfusion/free/el/rpmfusion-free-release-9.noarch.rpm"
+    dest: "/var/cache/ansible/766d53de37d36d1364fe573e48d9fee337b1fd71281129883096bc7537e79ae1/rpmfusion-free-release-9.noarch.rpm"
+    checksum: "766d53de37d36d1364fe573e48d9fee337b1fd71281129883096bc7537e79ae1"
+  - url: "http://rpmfind.net/linux/rpmfusion/nonfree/el/rpmfusion-nonfree-release-9.noarch.rpm"
+    dest: "/var/cache/ansible/e8a6a820da2132710c6bc367a6fc1e9311a765334b97ee7fed90cb834f1fadbc/rpmfusion-nonfree-release-9.noarch.rpm"
+    checksum: "e8a6a820da2132710c6bc367a6fc1e9311a765334b97ee7fed90cb834f1fadbc"
+
+_yum:
+  - { state: "latest", name: "handbrake" }

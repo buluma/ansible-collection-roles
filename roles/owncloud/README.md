@@ -2,9 +2,9 @@
 
 Install and configure owncloud on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-owncloud/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-owncloud/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-owncloud/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-owncloud)|[![quality](https://img.shields.io/ansible/quality/58028)](https://galaxy.ansible.com/buluma/owncloud)|[![downloads](https://img.shields.io/ansible/role/d/58028)](https://galaxy.ansible.com/buluma/owncloud)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-owncloud.svg)](https://github.com/buluma/ansible-role-owncloud/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-owncloud/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-owncloud/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-owncloud/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-owncloud)|[![quality](https://img.shields.io/ansible/quality/58028)](https://galaxy.ansible.com/buluma/owncloud)|[![downloads](https://img.shields.io/ansible/role/d/58028)](https://galaxy.ansible.com/buluma/owncloud)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-owncloud.svg)](https://github.com/buluma/ansible-role-owncloud/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-owncloud.svg)](https://github.com/buluma/ansible-role-owncloud/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-owncloud.svg)](https://github.com/buluma/ansible-role-owncloud/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -113,7 +113,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -127,7 +127,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |---------|----|
 |el|8|
 |debian|bullseye|
-|fedora|32, 33, 34|
+|fedora|34|
 |opensuse|all|
 |ubuntu|focal|
 
@@ -145,9 +145,14 @@ Some roles can't run on a specific distribution or version. Here are some except
 |---------------------------|------------------------|
 | centos:latest | No package php73 available. |
 | opensuse | This version of ownCloud is not compatible with PHP 7.4 |
+| fedora:32 | nothing provides libzip(x86-64) >= 1.7.3 needed by php-pecl-zip-1.19.1-1.fc32.remi.7.4.x86_64 |
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-owncloud/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-owncloud/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

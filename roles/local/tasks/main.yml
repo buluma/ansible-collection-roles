@@ -3,3 +3,9 @@
 - include: ping.yml
   tags:
     - ping
+
+- name: Add all hosts running this playbook to the done group
+  ansible.builtin.add_host:
+    name: '{{ item }}'
+    groups: done
+  loop: "{{ ansible_play_hosts }}"

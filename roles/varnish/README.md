@@ -15,26 +15,48 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
   hosts: all
   become: true
 
-  pre_tasks:
-    - import_tasks: setup.yml
-
   roles:
     - role: buluma.varnish
+```
 
-  post_tasks:
-    - name: Check the installed Varnish version.
-      command: varnishd -V
-      register: varnish_version_output
-      failed_when: "varnish_version not in varnish_version_output.stderr"
-      changed_when: false
-      tags: ['skip_ansible_lint']
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  become: yes
 
-    - name: Verify Varnish is running on port 80.
-      shell: 'curl -sI localhost:80 | grep -q "Via: .* varnish"'
-      args:
-        warn: false
-      changed_when: false
-      tags: ['skip_ansible_lint']
+  roles:
+    - role: buluma.bootstrap
+    - role: buluma.systemd
+    - role: buluma.httpd
+
+  tasks:
+    - name: update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+
+    - name: ensure build dependencies are installed (RedHat 7+).
+      ansible.builtin.yum:
+        name:
+          - logrotate
+          - systemd-sysv
+        state: present
+      when:
+        - ansible_os_family == 'RedHat'
+        - ansible_distribution_major_version >= '7'
+
+    - name: ensure build dependencies are installed (RedHat < 7).
+      ansible.builtin.yum:
+        name: logrotate
+        state: present
+      when:
+        - ansible_os_family == 'RedHat'
+        - ansible_distribution_major_version < '7'
+
+    - name: ensure curl is installed.
+      package: name=curl state=present
 ```
 
 
@@ -44,7 +66,7 @@ The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
 varnish_package_name: "varnish"
-varnish_version: "6.4"
+varnish_version: "7.1"
 
 varnish_use_default_vcl: true
 varnish_default_vcl_template_path: default.vcl.j2
@@ -99,10 +121,20 @@ varnish_apt_repo: deb https://packagecloud.io/varnishcache/{{ varnish_packageclo
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-varnish/blob/main/requirements.txt).
 
+## [Status of used roles](#status-of-requirements)
+
+The following roles are used to prepare a system. You can prepare your system in another way.
+
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.systemd](https://galaxy.ansible.com/buluma/systemd)|[![Build Status GitHub](https://github.com/buluma/ansible-role-systemd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-systemd/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-systemd/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-systemd)|
+|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
+|[buluma.httpd](https://galaxy.ansible.com/buluma/httpd)|[![Build Status GitHub](https://github.com/buluma/ansible-role-httpd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-httpd/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-httpd/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-httpd)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -117,6 +149,9 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |el|all|
 |ubuntu|all|
 |debian|all|
+|fedora|all|
+|amazon|all|
+|archlinux|all|
 
 The minimum version of Ansible required is 2.5, tests have been done to:
 
@@ -124,9 +159,22 @@ The minimum version of Ansible required is 2.5, tests have been done to:
 - The current version.
 - The development version.
 
+## [Exceptions](#exceptions)
+
+Some roles can't run on a specific distribution or version. Here are some exceptions.
+
+| variation                 | reason                 |
+|---------------------------|------------------------|
+| alpine | Dependency not available: python_pip |
+| archlinux | version `GLIBC_2.34' not found (required by /usr/lib/libpython3.10.so.1.0)
+ |
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-varnish/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-varnish/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

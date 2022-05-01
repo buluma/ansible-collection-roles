@@ -5,22 +5,19 @@ galaxy_info:
   role_name: nodejs
   author: buluma
   description: Node.js installation for Linux
-  company: "Midwestern Mac, LLC"
-  license: "license (BSD, MIT)"
+  company: "ShadowNet"
+  license: "license (Apache-2.0)"
   min_ansible_version: 2.4
   platforms:
     - name: EL
       versions:
-        - 7
-        - 8
+        - all
     - name: Debian
       versions:
         - all
     - name: Ubuntu
       versions:
-        - trusty
-        - xenial
-        - bionic
+        - all
   galaxy_tags:
     - development
     - web

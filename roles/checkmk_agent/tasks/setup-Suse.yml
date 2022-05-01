@@ -1,0 +1,43 @@
+---
+- name: Print the gateway for each debian host when defined
+  ansible.builtin.debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_default_ipv4.gateway }}
+  when: ansible_default_ipv4.gateway is defined
+
+- name: suse | zypper -n install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    zypper -n install -y bzip2 ca-certificates curl gcc gpg2 gzip hostname iproute2 procps python3 python3-jmespath python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow sudo tar unzip util-linux xz zip
+  when: ansible_os_family | lower == "suse"
+  changed_when: false
+  failed_when: false
+
+# https://download.checkmk.com/checkmk/2.0.0p23/check-mk-free-2.0.0p23-sles15sp3-38.x86_64.rpm
+
+- name: "Download check_mk_agent installer (rpm) - {{ ansible_os_family }}"
+  delegate_to: localhost
+  ansible.builtin.get_url:
+    # url: "http://{{ checkmk_server }}/{{ checkmk_site_name }}/check_mk/agents/{{ checkmk_agent_rpm }}"
+    url: "https://download.checkmk.com/checkmk/2.0.0p23/check-mk-free-2.0.0p23-sles15sp3-38.x86_64.rpm"
+    dest: /tmp/
+  run_once: true
+
+- name: "Copy installer (rpm) - {{ ansible_os_family }}"
+  ansible.builtin.copy:
+    src: "/tmp/{{ checkmk_agent_suse }}"
+    dest: "/tmp/{{ checkmk_agent_suse }}"
+    mode: preserve
+
+- name: Import Check_MK-pubkey
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://download.checkmk.com/checkmk/Check_MK-pubkey.gpg
+
+- name: "Install check_mk_agent (rpm) - {{ ansible_os_family }}"
+  become: true
+  ansible.builtin.yum:
+    name: "/tmp/{{ checkmk_agent_suse }}"
+    state: present
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/sbin:/usr/sbin"
+  use_backend: yum

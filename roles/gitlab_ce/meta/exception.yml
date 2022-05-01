@@ -1,0 +1,5 @@
+---
+exceptions:
+  - variation: enterpriselinux:7
+    reason: "Failed to import the required Python library (setuptools) on gitlabce-enterpriselinux-7's Python /usr/bin/python. Please read the module documentation and install it in the appropriate location. If the required library is installed, but Ansible is using the wrong Python interpreter, please consult the documentation on ansible_python_interpreter"
+    # TODO: Come back to this later

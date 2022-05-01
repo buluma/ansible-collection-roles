@@ -2,9 +2,9 @@
 
 Install sudo on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-sudo/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sudo/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-sudo/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sudo)|[![quality](https://img.shields.io/ansible/quality/58376)](https://galaxy.ansible.com/buluma/sudo)|[![downloads](https://img.shields.io/ansible/role/d/58376)](https://galaxy.ansible.com/buluma/sudo)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-sudo.svg)](https://github.com/buluma/ansible-role-sudo/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-sudo/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sudo/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-sudo/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sudo)|[![quality](https://img.shields.io/ansible/quality/58376)](https://galaxy.ansible.com/buluma/sudo)|[![downloads](https://img.shields.io/ansible/role/d/58376)](https://galaxy.ansible.com/buluma/sudo)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-sudo.svg)](https://github.com/buluma/ansible-role-sudo/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-sudo.svg)](https://github.com/buluma/ansible-role-sudo/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-sudo.svg)](https://github.com/buluma/ansible-role-sudo/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -49,7 +49,7 @@ sudo_timeout: 3
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -84,6 +84,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-sudo/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-sudo/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

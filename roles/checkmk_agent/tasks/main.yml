@@ -1,0 +1,61 @@
+---
+# tasks file for checkmk_agent
+
+# Prepare
+- name: Create checkmk group
+  become: true
+  group:
+    name: checkmk
+    state: present
+
+- name: Create checkmk user
+  become: true
+  user:
+    name: checkmk
+    comment: checkmk user
+    group: checkmk
+
+- name: Create .ssh directory
+  become: true
+  file:
+    path: /home/checkmk/.ssh
+    state: directory
+    owner: checkmk
+    group: checkmk
+    mode: 0700
+
+- name: Copy authorised keys
+  become: true
+  template:
+    src: authorized_keys.j2
+    dest: /home/checkmk/.ssh/authorized_keys
+    owner: checkmk
+    group: checkmk
+    mode: 0600
+
+- name: cp -rfT /etc/skel /root
+  ansible.builtin.raw: |
+    set -eu
+    cp -rfT /etc/skel /root
+  changed_when: false
+  failed_when: false
+
+- name: setenforce 0
+  ansible.builtin.raw: |
+    set -eu
+    setenforce 0
+    sed -i 's/^SELINUX=.*$/SELINUX=permissive/g' /etc/selinux/config
+  changed_when: false
+  failed_when: false
+
+- name: systemctl stop firewalld.service
+  ansible.builtin.raw: |
+    set -eu
+    systemctl stop firewalld.service
+    systemctl disable firewalld.service
+  changed_when: false
+  failed_when: false
+
+# Setup/install.
+- name: Setup.
+  include_tasks: "setup-{{ ansible_os_family }}.yml"

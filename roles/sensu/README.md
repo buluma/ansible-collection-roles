@@ -35,6 +35,15 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
     - role: buluma.nginx
 ```
 
+
+## [Role Variables](#role-variables)
+
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+# defaults file for ansible-sensu-install
+```
+
 ## [Requirements](#requirements)
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-sensu/blob/main/requirements.txt).
@@ -52,7 +61,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -64,7 +73,6 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|el|all|
 |ubuntu|all|
 
 The minimum version of Ansible required is 2.1, tests have been done to:
@@ -76,6 +84,10 @@ The minimum version of Ansible required is 2.1, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-sensu/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-sensu/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

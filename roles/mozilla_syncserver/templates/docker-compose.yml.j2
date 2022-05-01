@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  mozilla-syncserver:
+    image: mozilla/syncserver:{{ mozilla_syncserver_docker_version }}
+    container_name: mozilla-syncserver
+{% if mozilla_syncserver_container_labels %}
+    labels:
+{% for label in mozilla_syncserver_container_labels %}
+      - {{ label }}
+{% endfor %}
+{% endif %}
+    restart: always
+    ports:
+      - "{{ mozilla_syncserver_port }}" # sync endpoint
+{% if mozilla_syncserver_network_name %}
+    networks:
+      - {{ mozilla_syncserver_network_name }}
+{% endif %}
+{% if _mozilla_syncserver_docker_volumes %}
+    volumes:
+{% for vol in _mozilla_syncserver_docker_volumes %}
+      - {{ vol }}
+{% endfor %}
+{% endif %}
+{% if mozilla_syncserver_environment_variables %}
+    environment:
+{% for k, v in mozilla_syncserver_environment_variables.items() %}
+      - {{ k }}={{ v }}
+{% endfor %}
+{% endif %}
+{% if mozilla_syncserver_network_name %}
+networks:
+  {{ mozilla_syncserver_network_name }}:
+    external: true
+{% endif %}

@@ -1,0 +1,5 @@
+---
+# This ensures the WSGI application servers are set up to use the right endpoint
+- name: set WSGI application to distributed_sqlite
+  set_fact:
+    _ara_api_wsgi_application: "ara.server.wsgi:distributed_sqlite"

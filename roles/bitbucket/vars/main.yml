@@ -1,0 +1,23 @@
+---
+_postgresql_jdbc_version:
+  "42.3": "42.3.4"
+
+_postgresql_jdbc_download:
+  "42.3.4":
+    url: "http://jdbc.postgresql.org/download/postgresql-42.3.4.jar"
+    dest: "/var/cache/ansible/5d5ed5716645f19e895152a5dd181c7a1376f81e8dcaab4fff12b008122240ae/postgresql-42.3.4.jar"
+    checksum: "5d5ed5716645f19e895152a5dd181c7a1376f81e8dcaab4fff12b008122240ae"
+
+_bitbucket_version:
+  "7.21": "7.21.0"
+  "7.20": "7.20.0"
+
+_bitbucket_download:
+  "7.21.0":
+    url: "http://product-downloads.atlassian.com/software/stash/downloads/atlassian-bitbucket-7.21.0.tar.gz"
+    dest: "/var/cache/ansible/3717c54be87ee47f519b3f5696daac9bc038b2849eb3da1cac86c123f431ea53/atlassian-bitbucket-7.21.0.tar.gz"
+    checksum: "3717c54be87ee47f519b3f5696daac9bc038b2849eb3da1cac86c123f431ea53"
+  "7.20.0":
+    url: "http://product-downloads.atlassian.com/software/stash/downloads/atlassian-bitbucket-7.20.0.tar.gz"
+    dest: "/var/cache/ansible/5a5d0d72eec7ef4fca40d56fdeb29f55ff31db9c427367012fd0de578be115f6/atlassian-bitbucket-7.20.0.tar.gz"
+    checksum: "5a5d0d72eec7ef4fca40d56fdeb29f55ff31db9c427367012fd0de578be115f6"

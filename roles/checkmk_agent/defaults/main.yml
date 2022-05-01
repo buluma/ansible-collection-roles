@@ -1,0 +1,6 @@
+---
+# defaults file for checkmk_agent
+checkmk_server: localhost
+checkmk_site_name: cmk
+checkmk_purge_xinetd: true
+checkmk_pub_key: ''

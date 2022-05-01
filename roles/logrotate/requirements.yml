@@ -2,4 +2,5 @@
 roles:
   - name: buluma.bootstrap
   - name: buluma.cron
+  - name: buluma.epel
 collections:

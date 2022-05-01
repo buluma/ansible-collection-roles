@@ -4,7 +4,7 @@ Install atom on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-atom/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-atom/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-atom/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-atom)|[![quality](https://img.shields.io/ansible/quality/57873)](https://galaxy.ansible.com/buluma/atom)|[![downloads](https://img.shields.io/ansible/role/d/57873)](https://galaxy.ansible.com/buluma/atom)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-atom/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-atom/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-atom/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-atom)|[![quality](https://img.shields.io/ansible/quality/57873)](https://galaxy.ansible.com/buluma/atom)|[![downloads](https://img.shields.io/ansible/role/d/57873)](https://galaxy.ansible.com/buluma/atom)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -61,7 +61,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -96,6 +96,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-atom/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-atom/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

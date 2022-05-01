@@ -24,13 +24,19 @@
   with_items:
     - "{{ vector_skeleton_paths }}"
 
+- name: Check that the "{{ vector_bin_path }}/{{ vector_exec_name }}" exists
+  stat:
+    path: "{{ vector_bin_path }}/{{ vector_exec_name }}"
+  register: vector_stat_result
+
 - name: check vector version
   command: "{{ vector_exec_name }} --version"
   register: vector_check
   changed_when: false
   ignore_errors: true
+  when: vector_stat_result.stat.exists
 
 - name: download package
   ansible.builtin.apt:
     deb: "{{ vector_deb_package }}"
-  when: vector_force_reinstall or vector_check is failed or vector_version not in vector_check.stderr
+  when: vector_force_reinstall or vector_check is failed or not vector_stat_result.stat.exists

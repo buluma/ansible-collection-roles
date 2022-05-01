@@ -1,0 +1,5 @@
+---
+firefox_dependencies:
+  - bzip2
+  - gtk3
+  - libXt

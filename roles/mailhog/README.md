@@ -1,63 +1,133 @@
-# Ansible Role: MailHog
+# [mailhog](#mailhog)
 
-[![CI](https://github.com/buluma/ansible-role-mailhog/workflows/CI/badge.svg?event=push)](https://github.com/buluma/ansible-role-mailhog/actions?query=workflow%3ACI)
+MailHog for Linux
 
-Installs [MailHog](https://github.com/mailhog/MailHog), a Go-based SMTP server and web UI/API for displaying captured emails, on RedHat or Debian-based linux systems.
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-mailhog/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-mailhog/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-mailhog/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-mailhog)|[![quality](https://img.shields.io/ansible/quality/55009)](https://galaxy.ansible.com/buluma/mailhog)|[![downloads](https://img.shields.io/ansible/role/d/55009)](https://galaxy.ansible.com/buluma/mailhog)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-mailhog.svg)](https://github.com/buluma/ansible-role-mailhog/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-mailhog.svg)](https://github.com/buluma/ansible-role-mailhog/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-mailhog.svg)](https://github.com/buluma/ansible-role-mailhog/pulls/)|
 
-Also installs [mhsendmail](https://github.com/mailhog/mhsendmail) so you can redirect system mail to MailHog's built-in SMTP server.
+## [Example Playbook](#example-playbook)
 
-If you're using PHP and would like to route all PHP email into MailHog, you will need to update the `sendmail_path` configuration option in php.ini, like so:
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
 
-    sendmail_path = "{{ mailhog_install_dir }}/mhsendmail"
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
 
-(Replace `{{ mailhog_install_dir }}` with the actual MailHog installation directory, which is `/opt/mailhog` by default—e.g. `/opt/mailhog/mhsendmail`).
+    - name: Ensure build dependencies are installed (RedHat).
+      package:
+        name:
+          - "@Development tools"
+          - tar
+          - unzip
+          - net-tools
+          - curl
+        state: present
+      when: ansible_os_family == 'RedHat'
 
-## Requirements
+    - name: Ensure build dependencies are installed (Debian).
+      apt:
+        name:
+          - build-essential
+          - tar
+          - unzip
+          - net-tools
+          - curl
+        state: present
+      when: ansible_os_family == 'Debian'
 
-None.
+  roles:
+    - geerlingguy.daemonize
+    - buluma.mailhog
 
-## Role Variables
+  post_tasks:
+    - name: Copy test message into place.
+      copy:
+        src: test-message
+        dest: /tmp/test-message
+        mode: 0644
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
+    - name: Send an email via mhsendmail.
+      shell: cat /tmp/test-message | /opt/mailhog/mhsendmail johndoe@example.com
+      changed_when: false
 
-    mailhog_install_dir: /opt/mailhog
+    - name: Test retrieiving messages from the MailHog API.
+      uri:
+        url: http://localhost:8025/api/v2/messages
+      register: result
+      until: result.status == 200
+      retries: 60
+      delay: 1
+```
 
-The directory into which the MailHog binary will be installed.
 
-    mailhog_version: 1.0.0
+## [Role Variables](#role-variables)
 
-The version of MailHog that will be installed. You can find the latest version by visiting the [MailHog project releases page](https://github.com/mailhog/MailHog/releases).
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+mailhog_install_dir: /opt/mailhog
+mailhog_version: 1.0.0
+mailhog_binary_url: "https://github.com/mailhog/MailHog/releases/download/v{{ mailhog_version }}/MailHog_linux_amd64"
+mhsendmail_version: 0.2.0
+mhsendmail_binary_url: "https://github.com/mailhog/mhsendmail/releases/download/v{{ mhsendmail_version }}/mhsendmail_linux_amd64"
 
-    mailhog_binary_url: "https://github.com/mailhog/MailHog/releases/download/v{{ mailhog_version }}/MailHog_linux_amd64"
+# Path to daemonize, which is used to launch MailHog via init script.
+mailhog_daemonize_bin_path: /usr/sbin/daemonize
+```
 
-The MailHog binary that will be installed. You can find the latest version or a 32-bit version by visiting the [MailHog project releases page](https://github.com/mailhog/MailHog/releases).
+## [Requirements](#requirements)
 
-    mailhog_daemonize_bin_path: /usr/sbin/daemonize
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-mailhog/blob/main/requirements.txt).
 
-The path to `daemonize`, which is used to launch MailHog via init script.
 
-    mhsendmail_version: 0.2.0
-    
-The version of the mhsendmail binary that will be installed. You can find the latest version by visiting the [mhsendmail project releases page](https://github.com/mailhog/mhsendmail/releases).
+## [Dependencies](#dependencies)
 
-    mhsendmail_binary_url: "https://github.com/mailhog/mhsendmail/releases/download/v{{ mhsendmail_version }}/mhsendmail_linux_amd64"
+Most roles require some kind of preparation, this is done in `molecule/default/prepare.yml`. This role has a "hard" dependency on the following roles:
 
-The mhsendmail binary that will be installed. You can find the latest version or a 32-bit version by visiting the [mhsendmail project releases page](https://github.com/mailhog/mhsendmail/releases).
+- geerlingguy.daemonize
+## [Context](#context)
 
-## Dependencies
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
-  - geerlingguy.daemonize
+Here is an overview of related roles:
 
-## Example Playbook
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-mailhog/png/requirements.png "Dependencies")
 
-    - hosts: servers
-      roles:
-        - { role: buluma.mailhog }
+## [Compatibility](#compatibility)
 
-## License
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-MIT / BSD
+|container|tags|
+|---------|----|
+|el|all|
+|ubuntu|all|
+|debian|all|
 
-## Author Information
+The minimum version of Ansible required is 2.4, tests have been done to:
 
-This role was created in 2021 by [Michael Buluma](https://buluma.github.io/).
+- The previous version.
+- The current version.
+- The development version.
+
+
+
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-mailhog/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-mailhog/blob/master/CHANGELOG.md)
+
+## [License](#license)
+
+license (BSD, MIT)
+
+## [Author Information](#author-information)
+
+[buluma](https://buluma.github.io/)

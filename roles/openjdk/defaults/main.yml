@@ -1,0 +1,16 @@
+---
+
+# OpenJDK release.
+openjdk_release: "17"
+
+# Specify JAVA_HOME.
+openjdk_home: "{{ _openjdk_home[openjdk_release] }}"
+
+# Maven release.
+maven_release: "3.8"
+
+# Maven version.
+maven_version: "{{ _maven_version[maven_release] }}"
+
+# Maven download details.
+maven_download: "{{ _maven_download[maven_version] }}"

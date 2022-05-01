@@ -1,15 +1,14 @@
-zabbix_web
-=========
-
-<img src="https://docs.ansible.com/ansible-tower/3.2.4/html_ja/installandreference/_static/images/logo_invert.png" width="10%" height="10%" alt="Ansible logo" align="right"/>
-<a href="https://travis-ci.org/robertdebock/ansible-role-zabbix_web"> <img src="https://travis-ci.org/robertdebock/ansible-role-zabbix_web.svg?branch=master" alt="Build status"/></a> <img src="https://img.shields.io/ansible/role/d/57968"/> <img src="https://img.shields.io/ansible/quality/57968"/>
+# [zabbix_web](#zabbix_web)
 
 Install and configure zabbix_web on your system.
 
-Example Playbook
-----------------
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-zabbix_web/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-zabbix_web/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-zabbix_web/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-zabbix_web)|[![quality](https://img.shields.io/ansible/quality/57968)](https://galaxy.ansible.com/buluma/zabbix_web)|[![downloads](https://img.shields.io/ansible/role/d/57968)](https://galaxy.ansible.com/buluma/zabbix_web)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-zabbix_web.svg)](https://github.com/buluma/ansible-role-zabbix_web/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-zabbix_web.svg)](https://github.com/buluma/ansible-role-zabbix_web/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-zabbix_web.svg)](https://github.com/buluma/ansible-role-zabbix_web/pulls/)|
 
-This example is taken from `molecule/resources/playbook.yml` and is tested on each push, pull request and release.
+## [Example Playbook](#example-playbook)
+
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
 ```yaml
 ---
 - name: Converge
@@ -18,7 +17,7 @@ This example is taken from `molecule/resources/playbook.yml` and is tested on ea
   gather_facts: yes
 
   roles:
-    - role: robertdebock.zabbix_web
+    - role: buluma.zabbix_web
       # You can provision Zabbix groups.
       # Most options map directly to the documentation:
       # https://docs.ansible.com/ansible/latest/modules/zabbix_group_module.html
@@ -39,7 +38,7 @@ This example is taken from `molecule/resources/playbook.yml` and is tested on ea
             - Template OS Linux by Zabbix agent
 ```
 
-The machine you are running this on, may need to be prepared, I use this playbook to ensure everything is in place to let the role work.
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
 ```yaml
 ---
 - name: Prepare
@@ -76,12 +75,9 @@ The machine you are running this on, may need to be prepared, I use this playboo
 ```
 
 
-Also see a [full explanation and example](https://robertdebock.nl/how-to-use-these-roles.html) on how to use these roles.
+## [Role Variables](#role-variables)
 
-Role Variables
---------------
-
-These variables are set in `defaults/main.yml`:
+The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
 # defaults file for zabbix_web
@@ -110,67 +106,58 @@ zabbix_web_password: zabbix
 zabbix_web_validate_certs: no
 ```
 
-Requirements
-------------
+## [Requirements](#requirements)
 
-- Access to a repository containing packages, likely on the internet.
-- A recent version of Ansible. (Tests run on the current, previous and next release of Ansible.)
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-zabbix_web/blob/main/requirements.txt).
 
-The following roles can be installed to ensure all requirements are met, using `ansible-galaxy install -r requirements.yml`:
+## [Status of used roles](#status-of-requirements)
 
-```yaml
----
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.buildtools
-  - name: robertdebock.container_docs
-  - name: buluma.ca_certificates
-  - name: buluma.core_dependencies
-  - name: buluma.epel
-  - name: buluma.httpd
-  - name: buluma.mysql
-  - name: buluma.openssl
-  - name: buluma.php
-  - name: buluma.python_pip
-  - name: buluma.selinux
-  - name: buluma.zabbix_repository
-  - name: buluma.zabbix_server
-collections:
-  - name: community.zabbix
-  - name: ansible.posix
-  - name: community.crypto
-  - name: community.mysql
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-```
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
+|[robertdebock.container_docs](https://galaxy.ansible.com/buluma/robertdebock.container_docs)|[![Build Status GitHub](https://github.com/buluma/robertdebock.container_docs/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/robertdebock.container_docs/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/robertdebock.container_docs/badges/master/pipeline.svg)](https://gitlab.com/buluma/robertdebock.container_docs)|
+|[buluma.ca_certificates](https://galaxy.ansible.com/buluma/ca_certificates)|[![Build Status GitHub](https://github.com/buluma/ansible-role-ca_certificates/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca_certificates/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-ca_certificates/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ca_certificates)|
+|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.httpd](https://galaxy.ansible.com/buluma/httpd)|[![Build Status GitHub](https://github.com/buluma/ansible-role-httpd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-httpd/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-httpd/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-httpd)|
+|[buluma.mysql](https://galaxy.ansible.com/buluma/mysql)|[![Build Status GitHub](https://github.com/buluma/ansible-role-mysql/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-mysql/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-mysql/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-mysql)|
+|[buluma.openssl](https://galaxy.ansible.com/buluma/openssl)|[![Build Status GitHub](https://github.com/buluma/ansible-role-openssl/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-openssl/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-openssl/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-openssl)|
+|[buluma.php](https://galaxy.ansible.com/buluma/php)|[![Build Status GitHub](https://github.com/buluma/ansible-role-php/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-php/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-php/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-php)|
+|[buluma.python_pip](https://galaxy.ansible.com/buluma/python_pip)|[![Build Status GitHub](https://github.com/buluma/ansible-role-python_pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-python_pip/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-python_pip/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-python_pip)|
+|[buluma.selinux](https://galaxy.ansible.com/buluma/selinux)|[![Build Status GitHub](https://github.com/buluma/ansible-role-selinux/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-selinux/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-selinux/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-selinux)|
+|[buluma.zabbix_repository](https://galaxy.ansible.com/buluma/zabbix_repository)|[![Build Status GitHub](https://github.com/buluma/ansible-role-zabbix_repository/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-zabbix_repository/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-zabbix_repository/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-zabbix_repository)|
+|[buluma.zabbix_server](https://galaxy.ansible.com/buluma/zabbix_server)|[![Build Status GitHub](https://github.com/buluma/ansible-role-zabbix_server/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-zabbix_server/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-zabbix_server/badges/buluma/pipeline.svg)](https://gitlab.com/buluma/ansible-role-zabbix_server)|
 
-Context
--------
+## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://robertdebock.nl/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
-![dependencies](https://raw.githubusercontent.com/robertdebock/drawings/artifacts/zabbix_web.png "Dependency")
 
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-zabbix_web/png/requirements.png "Dependencies")
 
-Compatibility
--------------
+## [Compatibility](#compatibility)
 
-This role has been tested on these [container images](https://hub.docker.com/):
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-|container|tag|allow_failures|
-|---------|---|--------------|
-||latest|no|
+|container|tags|
+|---------|----|
+|debian|bullseye|
+|opensuse|all|
+|ubuntu|all|
 
-This role has been tested on these Ansible versions:
+The minimum version of Ansible required is 2.10, tests have been done to:
 
-- 
-- 
-- 
+- The previous version.
+- The current version.
+- The development version.
 
-Exceptions
-----------
+## [Exceptions](#exceptions)
 
-Some variarations of the build matrix do not work. These are the variations and reasons why the build won't work:
+Some roles can't run on a specific distribution or version. Here are some exceptions.
 
 | variation                 | reason                 |
 |---------------------------|------------------------|
@@ -184,67 +171,16 @@ Some variarations of the build matrix do not work. These are the variations and 
 | Ubuntu rolling | Zabbix has [limited OS support](https://www.zabbix.com/download). |
 
 
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-zabbix_web/issues)
 
-Testing
--------
+## [Changelog](#changelog)
 
-[Unit tests](https://travis-ci.org/robertdebock/ansible-role-zabbix_web) are done on every commit, pull request, release and periodically.
+[Role History](https://github.com/buluma/ansible-role-zabbix_web/blob/master/CHANGELOG.md)
 
-If you find issues, please register them in [GitHub](https://github.com/robertdebock/ansible-role-zabbix_web/issues)
-
-Testing is done using [Tox](https://tox.readthedocs.io/en/latest/) and [Molecule](https://github.com/ansible/molecule):
-
-[Tox](https://tox.readthedocs.io/en/latest/) tests multiple ansible versions.
-[Molecule](https://github.com/ansible/molecule) tests multiple distributions.
-
-To test using the defaults (any installed ansible version, namespace: `robertdebock`, image: `fedora`, tag: `latest`):
-
-```
-molecule test
-
-# Or select a specific image:
-image=ubuntu molecule test
-# Or select a specific image and a specific tag:
-image="debian" tag="stable" tox
-```
-
-Or you can test multiple versions of Ansible, and select images:
-Tox allows multiple versions of Ansible to be tested. To run the default (namespace: `robertdebock`, image: `fedora`, tag: `latest`) tests:
-
-```
-tox
-
-# To run CentOS (namespace: `robertdebock`, tag: `latest`)
-image="centos" tox
-# Or customize more:
-image="debian" tag="stable" tox
-```
-
-Modules
--------
-
-This role uses the following modules:
-```yaml
----
-- ansible.builtin.assert
-- ansible.builtin.import_tasks
-- ansible.builtin.meta
-- ansible.builtin.package
-- ansible.builtin.pip
-- ansible.builtin.service
-- ansible.builtin.template
-- ansible.posix.seboolean
-- community.zabbix.zabbix_group
-- community.zabbix.zabbix_host
-```
-
-License
--------
+## [License](#license)
 
 Apache-2.0
 
+## [Author Information](#author-information)
 
-Author Information
-------------------
-
-[Michael Buluma](https://robertdebock.nl/)
+[Michael Buluma](https://buluma.github.io/)

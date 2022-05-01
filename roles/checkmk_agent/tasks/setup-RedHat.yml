@@ -1,0 +1,77 @@
+---
+- name: Print the gateway for each debian host when defined
+  ansible.builtin.debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_default_ipv4.gateway }}
+  when: ansible_default_ipv4.gateway is defined
+
+- name: fedora | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_distribution | lower == "fedora"
+  changed_when: false
+  failed_when: false
+
+- name: redhat-9 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum-config-manager --enable crb || echo $?
+    yum-config-manager --enable codeready-builder-beta-for-rhel-9-x86_64-rpms || echo $?
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "9"
+  changed_when: false
+  failed_when: false
+
+- name: redhat-8 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    subscription-manager repos --enable "codeready-builder-for-rhel-8-x86_64-rpms"
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "8"
+  changed_when: false
+  failed_when: false
+
+- name: redhat-7 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum-config-manager --enable rhel-7-server-optional-rpms
+    yum-config-manager --enable rhel-7-server-extras-rpms
+    subscription-manager repos --enable=rhel-7-server-optional-rpms || echo $?
+    subscription-manager repos --enable=rhel-7-server-extras-rpms || echo $?
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-plugin-versionlock yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "7"
+  changed_when: false
+  failed_when: false
+
+- name: Install a list of packages dependencies (yum)
+  ansible.builtin.yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      # - nagios-plugins
+      - xinetd
+
+- name: Download check_mk_agent installer (rpm)
+  delegate_to: localhost
+  get_url:
+    # url: "http://{{ checkmk_server }}/{{ checkmk_site_name }}/check_mk/agents/{{ checkmk_agent_rpm }}"
+    url: "https://download.checkmk.com/checkmk/2.0.0p23/check-mk-free-2.0.0p23-el7-38.x86_64.rpm"
+    dest: /tmp/
+  run_once: true
+
+- name: Copy installer (rpm)
+  copy:
+    src: "/tmp/{{ checkmk_agent_rpm }}"
+    dest: "/tmp/{{ checkmk_agent_rpm }}"
+    mode: preserve
+
+- name: Install check_mk_agent (rpm)
+  become: true
+  yum:
+    name: "/tmp/{{ checkmk_agent_rpm }}"
+    state: present
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/sbin:/usr/sbin"

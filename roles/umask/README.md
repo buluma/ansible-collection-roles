@@ -2,9 +2,9 @@
 
 Install and configure umask on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-umask/actions/workflows/molecule.yml/badge.svg)](https://github.com/buluma/ansible-role-umask/actions/workflows/molecule.yml)|[![gitlab](https://gitlab.com/buluma/ansible-role-umask/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-umask)|[![quality](https://img.shields.io/ansible/quality/58217)](https://galaxy.ansible.com/buluma/umask)|[![downloads](https://img.shields.io/ansible/role/d/58217)](https://galaxy.ansible.com/buluma/umask)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-umask.svg)](https://github.com/buluma/ansible-role-umask/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-umask/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-umask/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-umask/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-umask)|[![quality](https://img.shields.io/ansible/quality/58217)](https://galaxy.ansible.com/buluma/umask)|[![downloads](https://img.shields.io/ansible/role/d/58217)](https://galaxy.ansible.com/buluma/umask)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-umask.svg)](https://github.com/buluma/ansible-role-umask/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-umask.svg)](https://github.com/buluma/ansible-role-umask/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-umask.svg)](https://github.com/buluma/ansible-role-umask/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -61,7 +61,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -89,6 +89,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-umask/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-umask/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

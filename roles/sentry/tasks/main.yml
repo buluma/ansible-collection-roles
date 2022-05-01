@@ -1,6 +1,6 @@
 ---
 - name: Install packages required by Sentry
-  apt: name={{ packages }} state=present
+  ansible.builtin.apt: name={{ packages }} state=present
   vars:
       packages:
           - python3-virtualenv
@@ -24,7 +24,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: Install packages required by Sentry
-  yum: name={{ packages }} state=present
+  ansible.builtin.yum: name={{ packages }} state=present
   vars:
       packages:
           - python3-virtualenv
@@ -99,12 +99,14 @@
   ansible.builtin.file:
       path: '{{ sentry_install_dir }}/etc'
       state: directory
+      mode: 0644
 
 - name: Write config.yml
   no_log: true
   ansible.builtin.copy:
       content: '{{ sentry_config_yml|to_nice_yaml }}'
       dest: '{{ sentry_install_dir }}/etc/config.yml'
+      mode: 0644
   notify: restart sentry
   register: _config_yml
   when: not sentry_config_yml['system.secret-key'] is match('UNSAFE')
@@ -114,6 +116,7 @@
   ansible.builtin.template:
       src: sentry.conf.py
       dest: '{{ sentry_install_dir }}/etc/sentry.conf.py'
+      mode: 0644
   notify: restart sentry
   register: _sentry_conf_py
 
@@ -121,6 +124,7 @@
   ansible.builtin.template:
       src: '{{ item }}'
       dest: '/etc/systemd/system/{{ item }}'
+      mode: 0644
   with_items:
       - sentry-web.service
       - sentry-worker.service

@@ -1,0 +1,10 @@
+---
+
+rclone_packages:
+  - unzip
+  - man
+
+rclone_man_pages:
+  OWNER: root
+  GROUP: root
+  PATH: '/usr/local/share/man/man1'

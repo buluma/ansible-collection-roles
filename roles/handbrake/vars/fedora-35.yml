@@ -1,0 +1,20 @@
+---
+_rpm_key:
+  - key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE9A491A3DE247814E7E067EAE06F8ECDD651FF2E"
+    fingerprint: "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E"
+    state: "present"
+  - key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x79BDB88F9BBF73910FD4095B6A2AF96194843C65"
+    fingerprint: "79BDB88F9BBF73910FD4095B6A2AF96194843C65"
+    state: "present"
+
+_rpm_download:
+  - url: "http://rpmfind.net/linux/rpmfusion/free/fedora/rpmfusion-free-release-35.noarch.rpm"
+    dest: "/var/cache/ansible/2cd189157290db61a722c88e0a8df83c922214d960bd59f7ec10bacbdf9d0aba/rpmfusion-free-release-35.noarch.rpm"
+    checksum: "2cd189157290db61a722c88e0a8df83c922214d960bd59f7ec10bacbdf9d0aba"
+  - url: "http://rpmfind.net/linux/rpmfusion/nonfree/fedora/rpmfusion-nonfree-release-35.noarch.rpm"
+    dest: "/var/cache/ansible/758b339b9a1ff0678a67071452649c768ffb90c87a6ddb22ac57b5a6b57e7850/rpmfusion-nonfree-release-35.noarch.rpm"
+    checksum: "758b339b9a1ff0678a67071452649c768ffb90c87a6ddb22ac57b5a6b57e7850"
+
+_yum:
+  - { state: "latest", name: "handbrake" }
+  - { state: "latest", name: "handbrake-gui" }

@@ -2,9 +2,9 @@
 
 Configure sysctl on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-sysctl/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sysctl/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-sysctl/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sysctl)|[![quality](https://img.shields.io/ansible/quality/58001)](https://galaxy.ansible.com/buluma/sysctl)|[![downloads](https://img.shields.io/ansible/role/d/58001)](https://galaxy.ansible.com/buluma/sysctl)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-sysctl.svg)](https://github.com/buluma/ansible-role-sysctl/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-sysctl/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sysctl/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-sysctl/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sysctl)|[![quality](https://img.shields.io/ansible/quality/58001)](https://galaxy.ansible.com/buluma/sysctl)|[![downloads](https://img.shields.io/ansible/role/d/58001)](https://galaxy.ansible.com/buluma/sysctl)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-sysctl.svg)](https://github.com/buluma/ansible-role-sysctl/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-sysctl.svg)](https://github.com/buluma/ansible-role-sysctl/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-sysctl.svg)](https://github.com/buluma/ansible-role-sysctl/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -65,7 +65,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -100,6 +100,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-sysctl/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-sysctl/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

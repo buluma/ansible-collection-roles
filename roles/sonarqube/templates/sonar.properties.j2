@@ -1,0 +1,170 @@
+# Property values can:
+# - reference an environment variable, for example sonar.jdbc.url= ${env:SONAR_JDBC_URL}
+# - be encrypted. See http://redirect.sonarsource.com/doc/settings-encryption.html
+
+#--------------------------------------------------------------------------------------------------
+# DATABASE
+
+{% if sonar_db_embedded %}
+sonar.embeddedDatabase.port={{ sonar_db_embedded_port | default('9092') }}
+{% else %}
+sonar.jdbc.username={{ sonar_db_user }}
+sonar.jdbc.password={{ sonar_db_pass }}
+sonar.jdbc.url={{ sonar_jdbc_url }}
+{% endif %}
+
+sonar.jdbc.maxActive={{ sonar_jdbc_maxactive | default('60') }}
+sonar.jdbc.maxIdle={{ sonar_jdbc_maxidle | default('5') }}
+sonar.jdbc.minIdle={{ sonar_jdbc_minidle | default('2') }}
+sonar.jdbc.maxWait={{ sonar_jdbc_maxwait | default('5000') }}
+
+sonar.jdbc.minEvictableIdleTimeMillis={{ sonar_jdbc_min_evictable_idle_time_millis | default('600000') }}
+sonar.jdbc.timeBetweenEvictionRunsMillis={{ sonar_jdbc_time_between_eviction_runs_millis | default('30000') }}
+
+#--------------------------------------------------------------------------------------------------
+# WEB SERVER
+
+{% if (sonar_web_java_opts is defined) and (sonar_web_java_opts | length > 0) %}
+sonar.web.javaOpts={{ sonar_web_java_opts }}
+{% endif %}
+{% if (sonar_web_java_additional_opts is defined) and (sonar_web_java_additional_opts | length > 0) %}
+sonar.web.javaAdditionalOpts={{ sonar_web_java_additional_opts | default('') }}
+{% endif %}
+sonar.web.host={{ sonar_web_host | default('0.0.0.0') }}
+{% if (sonar_web_context is defined) and (sonar_web_context | length > 0) %}
+sonar.web.context={{ sonar_web_context }}
+{% endif %}
+sonar.web.port={{ sonar_web_port | default('9000') }}
+sonar.web.http.maxThreads={{ sonar_web_http_max_threads | default('50') }}
+sonar.web.http.minThreads={{ sonar_web_http_min_threads | default('5') }}
+sonar.web.http.acceptCount={{ sonar_web_http_accept_count | default('25') }}
+sonar.ajp.port={{ sonar_ajp_port | default('-1') }}
+
+
+{%- if (sonar_ldap is defined) %}
+#--------------------------------------------------------------------------------------------------
+# LDAP AUTH
+sonar.security.realm=LDAP
+sonar.authenticator.downcase={{ sonar_ldap.authenticator_downcase | default('false') }}
+ldap.url={{ sonar_ldap.url | mandatory }}
+{% if (sonar_ldap.bind_dn is defined) and (sonar_ldap.bind_dn | length > 0 ) %}
+ldap.bindDn={{ sonar_ldap.bind_dn }}
+{%  endif  %}
+{% if (sonar_ldap.bind_password is defined) and (sonar_ldap.bind_password | length > 0 ) %}
+ldap.bindPassword={{ sonar_ldap.bind_password }}
+{%  endif  %}
+ldap.authentication={{ sonar_ldap.authentication | default('simple') }}
+{% if ( sonar_ldap.realm is defined) and (sonar_ldap.realm | length > 0 ) %}
+ldap.security.realm={{ sonar_ldap.realm }}
+{%  endif  %}
+ldap.contextFactoryClass={{ sonar_ldap.context_factory_class | default('com.sun.jndi.ldap.LdapCtxFactory') }}
+ldap.StartTLS={{ sonar_ldap.start_tls | default('false') }}
+ldap.followReferrals={{ sonar_ldap.follow_referrals | default('true') }}
+ldap.user.baseDn={{ sonar_ldap.user_base_dn | mandatory }}
+ldap.user.request={{ sonar_ldap.user_request | default('(&(objectClass=inetOrgPerson)(uid={login}))') }}
+ldap.user.realNameAttribute={{ sonar_ldap.user_real_name_attribute | default('cn') }}
+ldap.user.emailAttribute={{ sonar_ldap.user_email_attribute | default('mail') }}
+{% if (sonar_ldap.group_base_dn is defined) and (sonar_ldap.group_base_dn | length > 0 ) %}
+ldap.group.baseDn={{ sonar_ldap.group_base_dn }}
+{%  endif  %}
+ldap.group.request={{ sonar_ldap.group_request | default('(&(objectClass=groupOfUniqueNames)(uniqueMember={dn}))') }}
+ldap.group.idAttribute={{ sonar_ldap.group_id_attribute | default('cn') }}
+{%- endif %}
+
+#--------------------------------------------------------------------------------------------------
+# COMPUTE ENGINE
+
+{% if (sonar_ce_java_opts is defined) and (sonar_ce_java_opts | length > 0) %}
+sonar.ce.javaOpts={{ sonar_ce_java_opts }}
+{% endif %}
+{% if (sonar_ce_java_additional_opts is defined) and (sonar_ce_java_additional_opts | length > 0) %}
+sonar.ce.javaAdditionalOpts={{ sonar_ce_java_additional_opts }}
+{% endif %}
+sonar.ce.workerCount={{ sonar_ce_worker_count | default('1') }}
+
+#--------------------------------------------------------------------------------------------------
+# ELASTICSEARCH
+
+sonar.search.javaOpts={{ sonar_search_java_opts | default('-Xmx1G -Xms1G -Xss1m -Djava.net.preferIPv4Stack=true -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+HeapDumpOnOutOfMemoryError', true) }}
+sonar.search.javaAdditionalOpts={{ sonar_search_java_additional_opts | default('') }}
+sonar.search.port={{ sonar_search_port | default('9001') }}
+sonar.search.host={{ sonar_search_host | default('127.0.0.1') }}
+
+
+#--------------------------------------------------------------------------------------------------
+# UPDATE CENTER
+
+sonar.updatecenter.activate={{ sonar_updatecenter_activate | default('true') | lower }}
+
+{% if (http_proxy_host is defined) and (http_proxy_host | length > 0) %}
+http.proxyHost={{ http_proxy_host }}
+{% endif %}
+{% if (http_proxy_port is defined) and (http_proxy_port | int > 0) %}
+http.proxyPort={{ http_proxy_port }}
+{% endif %}
+{% if (https_proxy_host is defined) and (https_proxy_host | length > 0) %}
+https.proxyHost={{ https_proxy_host }}
+{% endif %}
+{% if (https_proxy_port is defined) and (https_proxy_port | int > 0) %}
+https.proxyPort={{ https_proxy_port }}
+{% endif %}
+{% if (http_auth_ntlm_domain is defined) and (http_auth_ntlm_domain | length > 0) %}
+http.auth.ntlm.domain={{ http_auth_ntlm_domain }}
+{% endif %}
+{% if (socks_proxy_host is defined) and (socks_proxy_host | length > 0) %}
+socksProxyHost={{ socks_proxy_host }}
+{% endif %}
+{% if (socks_proxy_port is defined) and (socks_proxy_port | int > 0) %}
+socksProxyPort={{ socks_proxy_port }}
+{% endif %}
+# Proxy authentication (used for HTTP, HTTPS and SOCKS proxies)
+{% if (http_proxy_user is defined) and (http_proxy_user | length > 0) %}
+http.proxyUser={{ http_proxy_user }}
+{% endif %}
+{% if (http_proxy_password is defined) and (http_proxy_password | length > 0) %}
+http.proxyPassword={{ http_proxy_password }}
+{% endif %}
+
+#--------------------------------------------------------------------------------------------------
+# LOGGING
+
+sonar.log.level={{ sonar_log_level | default('INFO') }}
+sonar.path.logs={{ sonar_logs_dir | default('logs') }}
+sonar.log.rollingPolicy={{ sonar_log_rolling_policy | default('time:yyyy-MM-dd') }}
+sonar.log.maxFiles={{ sonar_log_max_files | default('7') }}
+sonar.web.access_logs.enable={{ sonar_web_access_logs_enable | default('true') | lower }}
+sonar.web.accessLogs.pattern={{ sonar_web_access_logs_pattern | default('combined')}}
+
+
+#--------------------------------------------------------------------------------------------------
+# OTHERS
+
+# Delay in seconds between processing of notification queue. Default is 60 seconds.
+sonar.notifications.delay={{ sonar_notifications_delay | default('60') }}
+
+# Paths to persistent data files (embedded database and search index) and temporary files.
+# Can be absolute or relative to installation directory.
+# Defaults are respectively <installation home>/data and <installation home>/temp
+sonar.path.data={{ sonar_data_dir | default('data') }}
+sonar.path.temp={{ sonar_temp_dir | default('temp') }}
+
+{% if sonar_additional_properties is defined %}
+#--------------------------------------------------------------------------------------------------
+# ADDITIONAL PROPERIES
+{%   for p in sonar_additional_properties | dict2items %}
+{{ p.key }} = {{ p.value }}
+{%   endfor %}
+{% endif %}
+
+#--------------------------------------------------------------------------------------------------
+# DEVELOPMENT - only for developers
+# The following properties MUST NOT be used in production environments.
+{% if (sonar_web_dev is defined) and (sonar_web_dev != False) %}
+sonar_web_dev={{ sonar_web_dev  | lower}}
+{% endif %}
+{% if (sonar_web_dev_sources is defined) and (sonar_web_dev_sources | length > 0) %}
+sonar.web.dev.sources={{ sonar_web_dev_sources }}
+{% endif %}
+{% if (sonar_search_http_port is defined) and (sonar_search_http_port | int > 0) %}
+sonar.search.httpPort={{ sonar_search_http_port }}
+{% endif %}

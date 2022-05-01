@@ -18,6 +18,7 @@
   ansible.builtin.get_url:
     url: "{{ atom_package_url }}"
     dest: "/tmp/{{ atom_package }}"
+    mode: 0644
     # checksum: "{{ atom_checksum }}"
     validate_certs: no
   when:
@@ -54,8 +55,9 @@
   when:
     - ansible_pkg_mgr == "zypper"
 
-- name: install apm packages
-  ansible.builtin.command:
-    cmd: apm install {{ item }}
-    creates: /root/.atom/packages/linter
-  loop: "{{ atom_apm_packages }}"
+# TODO: find a better way to install apm packages without failure
+# - name: install apm packages
+# command:
+# cmd: apm install {{ item }}
+# creates: /root/.atom/packages/linter
+# loop: "{{ atom_apm_packages }}"

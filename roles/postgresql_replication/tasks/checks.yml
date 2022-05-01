@@ -1,0 +1,23 @@
+---
+
+# checking parameters.
+- name: "Checking {{ postgresql_replication__group }} members"
+  ansible.builtin.assert:
+    that:
+      - "\"{{ postgresql_replication__group }}\" in groups"
+      - "{{ groups[postgresql_replication__group] | length }} == 2"
+    msg: "Only support 2 hosts clusters"
+
+- name: "Checking {{ postgresql_replication__group_master }} members"
+  ansible.builtin.assert:
+    that:
+      - "\"{{ postgresql_replication__group_master }}\" in groups"
+      - "{{ groups[postgresql_replication__group_master] | length }} == 1"
+    msg: "There must be only one master node"
+
+- name: "Checking {{ postgresql_replication__group_replicas }} members"
+  ansible.builtin.assert:
+    that:
+      - "\"{{ postgresql_replication__group_replicas }}\" in groups"
+      - "{{ groups[postgresql_replication__group_replicas] | length }} == 1"
+    msg: "Only support 1 replica server"

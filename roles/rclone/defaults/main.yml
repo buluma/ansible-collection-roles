@@ -1,0 +1,23 @@
+---
+# rclone_arch can be defined as an architecture (e.g. arm, mips, 386) listed at https://github.com/ncw/rclone/releases
+rclone_arch: amd64
+
+# release of rclone to use. 'default' or 'beta' are accepted
+rclone_release: stable
+
+rclone_version: '{{ ansible_local.rclone.version | d("0.0.0") }}'
+
+install_manpages: true
+
+# Defaults in case no variables for OS are chosen
+rclone_setup_tmp_dir: "/tmp/rclone_setup"
+
+# The location to install the config file if configured
+rclone_config_location: "/root/.config/rclone/rclone.conf"
+
+rclone_packages:
+  - unzip
+
+rclone_man_pages:
+  OWNER: root
+  GROUP: root

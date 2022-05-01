@@ -1,10 +1,10 @@
 # [pip](#pip)
 
-Pip (Python package manager) for Linux.
+Install Pip (Python package manager) for Linux.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-pip/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-pip/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-pip)|[![quality](https://img.shields.io/ansible/quality/54591)](https://galaxy.ansible.com/buluma/pip)|[![downloads](https://img.shields.io/ansible/role/d/54591)](https://galaxy.ansible.com/buluma/pip)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-pip.svg)](https://github.com/buluma/ansible-role-pip/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-pip/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-pip/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-pip)|[![quality](https://img.shields.io/ansible/quality/54591)](https://galaxy.ansible.com/buluma/pip)|[![downloads](https://img.shields.io/ansible/role/d/54591)](https://galaxy.ansible.com/buluma/pip)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-pip.svg)](https://github.com/buluma/ansible-role-pip/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-pip.svg)](https://github.com/buluma/ansible-role-pip/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-pip.svg)](https://github.com/buluma/ansible-role-pip/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -45,7 +45,6 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
-# defaults file for ansible-role-pip
 # For Python 3, use python3-pip.
 pip_package: python3-pip
 pip_executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
@@ -60,7 +59,7 @@ pip_install_packages: []
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -72,20 +71,32 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|el|all|
+|el|8|
 |fedora|all|
 |debian|all|
 |ubuntu|all|
 
-The minimum version of Ansible required is 2.4, tests have been done to:
+The minimum version of Ansible required is 2.10, tests have been done to:
 
 - The previous version.
 - The current version.
 - The development version.
 
+## [Exceptions](#exceptions)
+
+Some roles can't run on a specific distribution or version. Here are some exceptions.
+
+| variation                 | reason                 |
+|---------------------------|------------------------|
+| enterpriselinux:7 | No package matching 'python-pip' found available, installed or updated |
+| debian:bookworm | No module named 'pkg_resources |
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-pip/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-pip/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

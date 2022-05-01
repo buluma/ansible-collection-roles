@@ -1,0 +1,18 @@
+---
+# General and common requirement
+# This include is focused on Windows and is not ready yet.
+# It will be included when possible. I hope soon! : )
+# - name: mozilla-nss | main |Download Agent
+#  include_tasks: download-packages.yml
+#  when: inventory_hostname in groups['ansible-server']
+
+- name: mozilla-nss | main | Add the OS specific variables
+  include_vars: "{{ ansible_facts['os_family']|lower }}.yml"
+
+# Call extra tasks
+- name: mozilla-nss | main | Include Extra Tasks
+  include: extras.yml object="{{ task }}"
+  loop: '{{ available_tasks }}'
+  loop_control:
+    loop_var: task
+  when: object.enabled

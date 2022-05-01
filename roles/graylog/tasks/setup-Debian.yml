@@ -1,0 +1,59 @@
+---
+
+- name: "download Graylog repository package"
+  ansible.builtin.get_url:
+    url: "{{ graylog_apt_deb_url }}"
+    dest: "/tmp/graylog_{{ graylog_version }}_repository.deb"
+  when: graylog_manage_apt_repo
+
+- name: "install 'apt-transport-https' package"
+  ansible.builtin.apt:
+    name: "apt-transport-https"
+    state: present
+
+- name: "install Graylog repository package"
+  ansible.builtin.apt:
+    deb: "/tmp/graylog_{{ graylog_version }}_repository.deb"
+    state: present
+    dpkg_options: "force-all"
+  when: graylog_manage_apt_repo
+  register: "install_repo"
+
+- name: "update APT cache"
+  ansible.builtin.apt:
+    update_cache: True
+  when: install_repo.changed
+
+- name: "install Graylog server package"
+  ansible.builtin.apt:
+    name: "graylog-server{% if graylog_full_version is defined %}={{ graylog_full_version }}{% endif %}"
+    state: "{{ graylog_package_state }}"
+  notify: "restart graylog-server"
+
+- name: "setup-Debian.yml | set elasticsearch priority to {{ graylog_es_debian_pin_version }} apt_preferences"
+  ansible.builtin.template:
+    src: "apt_preferences.d/debian_elasticsearch.j2"
+    dest: "/etc/apt/preferences.d/elasticsearch"
+    owner: "root"
+    mode: 0644
+
+- name: "installing graylog-enterprise-plugins"
+  ansible.builtin.apt:
+    name: "graylog-enterprise-plugins{% if graylog_full_version is defined %}={{ graylog_full_version }}{% endif %}"
+    state: "{{ graylog_package_state }}"
+  when: graylog_install_enterprise_plugins
+  notify: restart graylog-server
+
+- name: "installing graylog-integrations-plugins"
+  ansible.builtin.apt:
+    name: "graylog-integrations-plugins{% if graylog_full_version is defined %}={{ graylog_full_version }}{% endif %}"
+    state: "{{ graylog_package_state }}"
+  when: graylog_install_integrations_plugins
+  notify: restart graylog-server
+
+- name: "installing graylog-enterprise-integrations-plugins"
+  ansible.builtin.apt:
+    name: "graylog-enterprise-integrations-plugins{% if graylog_full_version is defined %}={{ graylog_full_version }}{% endif %}"
+    state: "{{ graylog_package_state }}"
+  when: graylog_install_enterprise_integrations_plugins
+  notify: restart graylog-server

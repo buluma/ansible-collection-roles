@@ -31,6 +31,10 @@
       ansible.builtin.include_tasks:
         file: init_ca.yml
 
+    - name: install crycptograghy
+      ansible.builtin.pip:
+        name: cryptography
+
     - name: generate ca certificates
       ansible.builtin.include_tasks:
         file: generate_ca_certs.yml

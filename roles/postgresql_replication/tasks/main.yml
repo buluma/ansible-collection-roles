@@ -1,0 +1,24 @@
+---
+
+- include_tasks: checks.yml
+
+- include_tasks: gather_cluster.yml
+
+- include_tasks: install-debian.yml
+  when: ansible_os_family == 'Debian'
+
+- include_tasks: config-user.yml
+
+- include_tasks: config-postgresql.yml
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- include_tasks: bootstrap-replicas.yml
+  when:
+    - "postgresql_replication__group_replicas in group_names"
+    - postgresql_replication__bootstrap is defined
+    - postgresql_replication__bootstrap == "yesiwant"
+
+- include_tasks: config-replicas.yml
+  when: "postgresql_replication__group_replicas in group_names"

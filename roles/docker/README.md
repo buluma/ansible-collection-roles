@@ -2,9 +2,9 @@
 
 Install and configure Docker (non-CE) on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-docker/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-docker/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-docker/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-docker)|[![quality](https://img.shields.io/ansible/quality/54979)](https://galaxy.ansible.com/buluma/docker)|[![downloads](https://img.shields.io/ansible/role/d/54979)](https://galaxy.ansible.com/buluma/docker)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-docker.svg)](https://github.com/buluma/ansible-role-docker/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-docker/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-docker/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-docker/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-docker)|[![quality](https://img.shields.io/ansible/quality/54979)](https://galaxy.ansible.com/buluma/docker)|[![downloads](https://img.shields.io/ansible/role/d/54979)](https://galaxy.ansible.com/buluma/docker)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-docker.svg)](https://github.com/buluma/ansible-role-docker/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-docker.svg)](https://github.com/buluma/ansible-role-docker/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-docker.svg)](https://github.com/buluma/ansible-role-docker/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -82,7 +82,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -118,6 +118,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-docker/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-docker/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

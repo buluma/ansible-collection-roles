@@ -2,9 +2,9 @@
 
 The purpose of this role is to add users and groups on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-users/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-users/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-users/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-users)|[![quality](https://img.shields.io/ansible/quality/57943)](https://galaxy.ansible.com/buluma/users)|[![downloads](https://img.shields.io/ansible/role/d/57943)](https://galaxy.ansible.com/buluma/users)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-users.svg)](https://github.com/buluma/ansible-role-users/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-users/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-users/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-users/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-users)|[![quality](https://img.shields.io/ansible/quality/57943)](https://galaxy.ansible.com/buluma/users)|[![downloads](https://img.shields.io/ansible/role/d/57943)](https://galaxy.ansible.com/buluma/users)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-users.svg)](https://github.com/buluma/ansible-role-users/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-users.svg)](https://github.com/buluma/ansible-role-users/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-users.svg)](https://github.com/buluma/ansible-role-users/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -20,7 +20,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
     - role: buluma.users
       # You can create groups:
       users_group_list:
-        - name: robertdb
+        - name: bulumadb
           gid: 1024
         - name: users
           # You can also remove groups.
@@ -37,11 +37,11 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
           # You can remove authorized keys.
           unauthorized_keys:
             - "ssh-rsa XYZYX54321"
-        - name: robertdb
-          comment: Robert de Bock
+        - name: bulumadb
+          comment: Michael Buluma
           uid: 1024
           # The `group` and `groups` listed here should exist.
-          group: robertdb
+          group: bulumadb
           # groups: A comma separated string of groups, i.e.:
           # groups: users,wheel
           groups: users
@@ -142,7 +142,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -171,6 +171,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-users/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-users/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

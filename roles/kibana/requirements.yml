@@ -1,4 +1,4 @@
 ---
 roles:
-  - name: buluma.elasticsearch
+  - name: robertdebock.elasticsearch
 collections:

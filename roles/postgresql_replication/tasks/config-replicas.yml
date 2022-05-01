@@ -1,0 +1,17 @@
+---
+
+- name: "Setup recovery.conf"
+  ansible.builtin.template:
+    src: recovery.conf.j2
+    dest: "{{ postgresql__data_dir }}/recovery.conf"
+    owner: "{{ postgresql__user }}"
+    group: "{{ postgresql__user }}"
+    mode: 0644
+    backup: true
+  notify: restart postgresql
+
+- name: "Starting PostgreSQL server"
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+  when: postgresql_was_stopped is defined

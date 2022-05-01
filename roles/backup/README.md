@@ -4,7 +4,7 @@ The purpose of this role is to make backups of your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-backup/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-backup/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-backup/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-backup)|[![quality](https://img.shields.io/ansible/quality/58021)](https://galaxy.ansible.com/buluma/backup)|[![downloads](https://img.shields.io/ansible/role/d/58021)](https://galaxy.ansible.com/buluma/backup)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-backup.svg)](https://github.com/buluma/ansible-role-backup/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-backup.svg)](https://github.com/buluma/ansible-role-backup/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr/buluma/ansible-role-backup.svg)](https://github.com/buluma/ansible-role-backup/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-backup/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-backup/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-backup/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-backup)|[![quality](https://img.shields.io/ansible/quality/58021)](https://galaxy.ansible.com/buluma/backup)|[![downloads](https://img.shields.io/ansible/role/d/58021)](https://galaxy.ansible.com/buluma/backup)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-backup.svg)](https://github.com/buluma/ansible-role-backup/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-backup.svg)](https://github.com/buluma/ansible-role-backup/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-backup.svg)](https://github.com/buluma/ansible-role-backup/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -93,7 +93,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -126,6 +126,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-backup/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-backup/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+
+### postgres hosts configuration
+{% for host in postgresql_replication__other_nodes %}
+Host {{ hostvars[host].ansible_default_ipv4.address }}
+  IdentityFile            ~/.ssh/id_rsa_wal
+  ForwardAgent            no
+  ForwardX11              no
+  HashKnownHosts          no
+  CheckHostIP             no
+  VerifyHostKeyDNS        no
+  StrictHostKeyChecking   no
+
+{% endfor %}

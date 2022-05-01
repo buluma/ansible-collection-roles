@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  role_name: nss
+  namespace: buluma
+  description: Role for prepare an entire development environment for NSS.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: 2.4
+  min_ansible_container_version: 2.4
+  platforms:
+    - name: EL
+      versions:
+        - 7
+    - name: Fedora
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - nss
+    - mozilla
+    - development
+dependencies: []

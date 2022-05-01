@@ -1,0 +1,3 @@
+---
+_apt:
+  - { state: "latest", name: "fontconfig" }

@@ -4,7 +4,7 @@ Install and configure automatic package updates on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-auto_update/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-auto_update/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-auto_update/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-auto_update)|[![quality](https://img.shields.io/ansible/quality/57875)](https://galaxy.ansible.com/buluma/auto_update)|[![downloads](https://img.shields.io/ansible/role/d/57875)](https://galaxy.ansible.com/buluma/auto_update)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-auto_update.svg)](https://github.com/buluma/ansible-role-auto_update/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-auto_update.svg)](https://github.com/buluma/ansible-role-auto_update/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr/buluma/ansible-role-auto_update.svg)](https://github.com/buluma/ansible-role-auto_update/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-auto_update/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-auto_update/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-auto_update/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-auto_update)|[![quality](https://img.shields.io/ansible/quality/57875)](https://galaxy.ansible.com/buluma/auto_update)|[![downloads](https://img.shields.io/ansible/role/d/57875)](https://galaxy.ansible.com/buluma/auto_update)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-auto_update.svg)](https://github.com/buluma/ansible-role-auto_update/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-auto_update.svg)](https://github.com/buluma/ansible-role-auto_update/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-auto_update.svg)](https://github.com/buluma/ansible-role-auto_update/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -73,7 +73,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -99,6 +99,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-auto_update/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-auto_update/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

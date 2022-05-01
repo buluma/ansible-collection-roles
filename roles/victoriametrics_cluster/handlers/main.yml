@@ -19,4 +19,4 @@
     state: restarted
 
 - name: reload sysctl.conf
-  command: /sbin/sysctl --system
+  ansible.builtin.command: /sbin/sysctl --system

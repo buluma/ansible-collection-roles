@@ -1,0 +1,48 @@
+---
+# defaults file for buluma.hosts
+
+# Path to the host file on the target system.
+hosts_file: /etc/hosts
+
+# Backup the hosts file before changing it.
+hosts_backup: false
+
+# Group owner of hosts file.
+hosts_group: root
+
+# Owner of hosts file.
+hosts_owner: root
+
+# Settings for SElinux.
+hosts_serole: object_r
+hosts_setype: net_conf_t
+hosts_seuser: system_u
+hosts_selevel: s0
+
+# Access permission hosts file.
+hosts_mode: 0644
+
+# Creates a 172.0.0.1 entry for the server name.
+hosts_hostname_loopback: true
+
+# Inserts all hosts in the Ansible Inventory
+# file into the Hosts file
+hosts_inventory_to_hosts: false
+
+# If this option and the hosts_inventory_to_hosts is enabled it writes all private ip addresses from the inventory into the hosts
+hosts_all_private: true
+
+# If this option and the hosts_inventory_to_hosts is enabled it writes all public ip addresses from the inventory into the hosts.
+hosts_all_public: false
+
+# Ipv6 localhost entries are set automatically.
+# Setting false it can be prevented.
+hosts_ipv6: true
+
+# Set ipv4 address (could be override by what you want)
+hosts_ipv4_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+# List of network cards that should not be added to the hosts file.
+hosts_exludes_interfaces:
+  - 'vet*'
+  - 'docker'

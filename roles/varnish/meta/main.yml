@@ -19,6 +19,15 @@ galaxy_info:
     - name: Debian
       versions:
         - all
+    - name: Fedora
+      versions:
+        - all
+    - name: Amazon
+      versions:
+        - all
+    - name: Archlinux
+      versions:
+        - all
   galaxy_tags:
     - web
     - varnish

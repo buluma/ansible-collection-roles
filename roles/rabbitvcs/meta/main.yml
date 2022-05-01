@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Michael Buluma
+  role_name: rabbitvcs
+  namespace: buluma
+  description: Install and configure rabbitvcs on your system.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - rabbitvcs
+
+dependencies: []

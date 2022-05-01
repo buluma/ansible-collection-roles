@@ -1,0 +1,87 @@
+---
+# Prepare
+- name: update apt cache.
+  ansible.builtin.apt: update_cache=true cache_valid_time=600
+  when: ansible_os_family == 'Debian'
+
+- name: ensure build dependencies are installed.
+  ansible.builtin.package:
+    name:
+      - ed
+      - nano
+      - vim
+      - coreutils
+    state: present
+
+- name: ensure build dependencies are installed (RedHat).
+  ansible.builtin.package:
+    name:
+      - openssh-server
+      - openssh-clients
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: ensure build dependencies are installed (Debian).
+  ansible.builtin.apt:
+    name:
+      - openssh-server
+      - openssh-client
+    state: present
+  when: ansible_os_family == 'Debian'
+
+# main tasks
+- name: include os-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+- name: ensure jail directories exist.
+  ansible.builtin.file:  # noqa 208
+    path: "{{ ssh_chroot_jail_path }}/{{ item }}"
+    state: directory
+    recurse: "{{ ssh_chroot_jail_dirs_recurse }}"
+  with_items: "{{ ssh_chroot_jail_dirs }}"
+
+- name: ensure jail devices exist.
+  ansible.builtin.command: mknod -m 0666 {{ ssh_chroot_jail_path }}/dev/{{ item.dev }} {{ item.type | default('c') }} {{ item.major }} {{ item.minor }}
+  args:
+    creates: "{{ ssh_chroot_jail_path }}/dev/{{ item.dev }}"
+  with_items: "{{ ssh_chroot_jail_devs }}"
+
+- name: ensure jail devices get created after reboot
+  ansible.builtin.template:
+    src: ssh-chroot.conf.j2
+    dest: "{{ ssh_chroot_tmpfiles_conf_path }}"
+    mode: 0644
+  when: "ansible_service_mgr == 'systemd'"
+
+- name: ensure l2chroot is installed.
+  ansible.builtin.template:
+    src: "{{ ssh_chroot_l2chroot_template }}"
+    dest: "{{ ssh_chroot_l2chroot_path }}"
+    mode: 0755
+
+- name: ensure binaries are copied into the jail.
+  ansible.builtin.copy:
+    src: "{{ item.bin | default(item) }}"
+    dest: "{{ ssh_chroot_jail_path }}{{ item.bin | default(item) }}"
+    remote_src: true
+    mode: "{{ item.mode | default('0755') }}"
+  with_items: "{{ ssh_chroot_bins }}"
+  notify:
+    - copy ssh-chroot-jail extra items
+    - add binary libs via l2chroot
+    - copy extra libraries for whoami
+
+- name: ensure an ssh jail group exists.
+  ansible.builtin.group:
+    name: "{{ ssh_chroot_jail_group_name }}"
+    state: present
+
+- name: ensure sshd config contains jail configuration.
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config
+    block: "{{ ssh_chroot_sshd_chroot_jail_config }}"
+    insertafter: EOF
+  notify: restart ssh daemon
+
+- include_tasks: jail-user.yml
+  with_items: "{{ ssh_chroot_jail_users }}"

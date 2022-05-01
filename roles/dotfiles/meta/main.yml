@@ -1,0 +1,32 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: dotfiles
+  author: Michael Buluma
+  namespace: buluma
+  description: Dotfile installation for UNIX/Linux.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: 2.2
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Amazon
+      versions:
+        - all
+    - name: Alpine
+      versions:
+        - all
+  galaxy_tags:
+    - development
+    - system
+    - dotfiles
+    - configuration

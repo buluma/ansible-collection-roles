@@ -1,0 +1,35 @@
+---
+- name: Warn user this does nothing on Debian > 8.
+  ansible.builtin.debug:
+    msg: "NOTICE: This role doesn't do anything on Debian 9 'Stretch' or later."
+  when: ansible_distribution_version | int >= 9
+
+- block:
+    - name: Run the equivalent of "apt-get update" as a separate step
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install the package "python-apt"
+      ansible.builtin.apt:
+        name: "python-apt"
+
+    - name: Install DotDeb repo.
+      ansible.builtin.apt_repository:
+        repo: "{{ item }}"
+      with_items: "{{ dotdeb_sources }}"
+      register: dotdeb_apt_repo_result
+
+    - name: Import DotDeb GPG key.
+      ansible.builtin.apt_key:
+        url: "{{ dotdeb_repo_gpg_key_url }}"
+      register: dotdeb_apt_key_result
+
+    - name: Update apt cache if repo or key added.
+      ansible.builtin.apt: update_cache=yes
+      when: dotdeb_apt_repo_result.changed or dotdeb_apt_key_result.changed
+  when: ansible_distribution_version | int < 9

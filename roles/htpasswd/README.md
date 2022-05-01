@@ -8,22 +8,24 @@ htpasswd installation and helper role for Linux servers.
 
 ## [Example Playbook](#example-playbook)
 
-### Apache Example
-
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
 ```yaml
 ---
-- hosts: apache-server
+# Note: This playbook is built to work on Red Hat-derivative Linux OSes.
+- name: Converge
+  hosts: all
+  become: true
 
   vars:
     htpasswd_credentials:
-      - path: /etc/apache-passwdfile
+      - path: /etc/httpd/passwdfile
         name: johndoe
         password: 'supersecure'
         owner: root
         group: apache
         mode: 'u+rw,g+r'
 
-    apache_remove_default_vhost: True
+    apache_remove_default_vhost: true
     apache_vhosts:
       - listen: "80"
         servername: "htpassword.test"
@@ -32,58 +34,25 @@ htpasswd installation and helper role for Linux servers.
               <Directory "/var/www/html">
                   AuthType Basic
                   AuthName "Apache with basic auth."
-                  AuthUserFile /etc/apache-passwdfile
+                  AuthUserFile /etc/httpd/passwdfile
                   Require valid-user
               </Directory>
 
-  pre_tasks:
-    - name: Update apt cache.
-      apt: update_cache=yes cache_valid_time=600
-      when: ansible_os_family == 'Debian'
-
   roles:
-    - buluma.bootstrap
-    - buluma.nginx
-    - buluma.htpasswd
+    - role: buluma.bootstrap
+    - role: geerlingguy.apache
+    - role: buluma.htpasswd
 ```
 
-### Nginx Example
-
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
 ```yaml
 ---
-- hosts: nginx-server
 
-  vars:
-    htpasswd_credentials:
-      - path: /etc/nginx/passwdfile
-        name: johndoe
-        password: 'supersecure'
-        owner: root
-        group: www-data
-        mode: 'u+rw,g+r'
-
-    nginx_remove_default_vhost: True
-    nginx_vhosts:
-      - listen: "80"
-        server_name: "htpassword.test"
-        root: "/var/www/html"
-        index: "index.html index.html index.nginx-debian.html"
-        filename: "htpassword.test.conf"
-        extra_parameters: |
-              location / {
-                  auth_basic           "Nginx with basic auth.";
-                  auth_basic_user_file /etc/nginx/passwdfile;
-              }
-
-  pre_tasks:
-    - name: Update apt cache.
-      apt: update_cache=yes cache_valid_time=600
-      when: ansible_os_family == 'Debian'
-
+- hosts: all
   roles:
-    - buluma.bootstrap
-    - buluma.nginx
-    - buluma.htpasswd
+    - name: buluma.bootstrap
+    - name: geerlingguy.apache
+    - name: geerlingguy.nginx
 ```
 
 
@@ -126,12 +95,12 @@ The following roles are used to prepare a system. You can prepare your system in
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
 |[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.apache](https://galaxy.ansible.com/buluma/apache)|[![Build Status GitHub](https://github.com/buluma/ansible-role-apache/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-apache/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-apache/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-apache)|
-|[buluma.nginx](https://galaxy.ansible.com/buluma/nginx)|[![Build Status GitHub](https://github.com/buluma/ansible-role-nginx/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-nginx/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-nginx/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-nginx)|
+|[geerlingguy.apache](https://galaxy.ansible.com/buluma/geerlingguy.apache)|[![Build Status GitHub](https://github.com/buluma/geerlingguy.apache/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/geerlingguy.apache/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/geerlingguy.apache/badges/master/pipeline.svg)](https://gitlab.com/buluma/geerlingguy.apache)|
+|[geerlingguy.nginx](https://galaxy.ansible.com/buluma/geerlingguy.nginx)|[![Build Status GitHub](https://github.com/buluma/geerlingguy.nginx/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/geerlingguy.nginx/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/geerlingguy.nginx/badges/master/pipeline.svg)](https://gitlab.com/buluma/geerlingguy.nginx)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -157,6 +126,10 @@ The minimum version of Ansible required is 2.9, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-htpasswd/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-htpasswd/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

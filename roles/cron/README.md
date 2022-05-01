@@ -4,7 +4,7 @@ Install cron and scedule jobs on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-cron/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-cron/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-cron/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-cron)|[![quality](https://img.shields.io/ansible/quality/57821)](https://galaxy.ansible.com/buluma/cron)|[![downloads](https://img.shields.io/ansible/role/d/57821)](https://galaxy.ansible.com/buluma/cron)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-cron.svg)](https://github.com/buluma/ansible-role-cron/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-cron.svg)](https://github.com/buluma/ansible-role-cron/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-cron.svg)](https://github.com/buluma/ansible-role-cron/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-cron/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-cron/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-cron/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-cron)|[![quality](https://img.shields.io/ansible/quality/57821)](https://galaxy.ansible.com/buluma/cron)|[![downloads](https://img.shields.io/ansible/role/d/57821)](https://galaxy.ansible.com/buluma/cron)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-cron.svg)](https://github.com/buluma/ansible-role-cron/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-cron.svg)](https://github.com/buluma/ansible-role-cron/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-cron.svg)](https://github.com/buluma/ansible-role-cron/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -76,7 +76,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -105,6 +105,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-cron/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-cron/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

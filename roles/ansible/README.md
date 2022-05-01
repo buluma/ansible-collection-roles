@@ -4,7 +4,7 @@ Install and configure ansible on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-ansible/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ansible/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-ansible/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ansible)|[![quality](https://img.shields.io/ansible/quality/54973)](https://galaxy.ansible.com/buluma/ansible)|[![downloads](https://img.shields.io/ansible/role/d/54973)](https://galaxy.ansible.com/buluma/ansible)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-ansible.svg)](https://github.com/buluma/ansible-role-ansible/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-ansible.svg)](https://github.com/buluma/ansible-role-ansible/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-ansible.svg)](https://github.com/buluma/ansible-role-ansible/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-ansible/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ansible/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-ansible/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ansible)|[![quality](https://img.shields.io/ansible/quality/54973)](https://galaxy.ansible.com/buluma/ansible)|[![downloads](https://img.shields.io/ansible/role/d/54973)](https://galaxy.ansible.com/buluma/ansible)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-ansible.svg)](https://github.com/buluma/ansible-role-ansible/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-ansible.svg)](https://github.com/buluma/ansible-role-ansible/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-ansible.svg)](https://github.com/buluma/ansible-role-ansible/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -108,6 +108,10 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-ansible/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-ansible/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

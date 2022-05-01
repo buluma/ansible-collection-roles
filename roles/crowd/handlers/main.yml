@@ -1,0 +1,31 @@
+---
+# handlers file for crowd
+
+- name: update build with ant
+  ansible.builtin.shell: |
+    set -euxo pipefail
+    cd {{ crowd_catalina }}
+    ./build.sh
+    rm -rf apache-tomcat/conf/Catalina/localhost
+    chown -Rf crowd:crowd {{ crowd_catalina }}
+  args:
+    executable: "/bin/bash"
+  register: result
+  changed_when: result is not succeeded
+
+- name: systemctl daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+  changed_when: false
+  failed_when: false
+
+- name: systemctl restart crowd.service
+  ansible.builtin.service:
+    name: "crowd.service"
+    state: "restarted"
+    enabled: true
+  loop: "{{ ansible_play_hosts }}"
+  delegate_to: "{{ item }}"
+  run_once: true
+  changed_when: false
+  failed_when: false

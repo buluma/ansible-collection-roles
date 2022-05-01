@@ -1,0 +1,9 @@
+---
+
+# force a setup on other cluster nodes,
+# This is needed later to get cluster nodes informations
+- name: Gather facts from other nodes
+  ansible.builtin.setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ postgresql_replication__other_nodes }}"

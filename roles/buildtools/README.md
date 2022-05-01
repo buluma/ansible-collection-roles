@@ -4,7 +4,7 @@ Install buildtools on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-buildtools/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|[![quality](https://img.shields.io/ansible/quality/57838)](https://galaxy.ansible.com/buluma/buildtools)|[![downloads](https://img.shields.io/ansible/role/d/57838)](https://galaxy.ansible.com/buluma/buildtools)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-buildtools.svg)](https://github.com/buluma/ansible-role-buildtools/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-buildtools.svg)](https://github.com/buluma/ansible-role-buildtools/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr/buluma/ansible-role-buildtools.svg)](https://github.com/buluma/ansible-role-buildtools/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-buildtools/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|[![quality](https://img.shields.io/ansible/quality/57838)](https://galaxy.ansible.com/buluma/buildtools)|[![downloads](https://img.shields.io/ansible/role/d/57838)](https://galaxy.ansible.com/buluma/buildtools)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-buildtools.svg)](https://github.com/buluma/ansible-role-buildtools/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-buildtools.svg)](https://github.com/buluma/ansible-role-buildtools/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-buildtools.svg)](https://github.com/buluma/ansible-role-buildtools/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -48,7 +48,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -85,10 +85,14 @@ Some roles can't run on a specific distribution or version. Here are some except
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-buildtools/issues)
 
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-buildtools/blob/main/CHANGELOG.md)
+
 ## [License](#license)
 
 Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Robert de Bock](https://buluma.github.io/)
+[Michael Buluma](https://buluma.github.io/)

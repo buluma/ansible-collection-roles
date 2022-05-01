@@ -1,27 +1,27 @@
 ---
-- name: Ensure dependencies are present.
+- name: ensure dependencies are present.
   ansible.builtin.apt:
     name:
       - apt-transport-https
       - gnupg2
     state: present
 
-- name: Add packagecloud.io Varnish apt key.
+- name: add packagecloud.io varnish apt key.
   ansible.builtin.apt_key:
     url: https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/gpgkey
     state: present
 
-- name: Add packagecloud.io Varnish apt repository.
+- name: add packagecloud.io varnish apt repository.
   ansible.builtin.apt_repository:
     repo: "{{ varnish_apt_repo }}"
     state: present
 
-- name: Ensure Varnish is installed.
+- name: ensure varnish is installed.
   ansible.builtin.apt:
     name: "{{ varnish_package_name }}"
     state: present
 
-- name: Ensure old role-managed Varnish systemd unit file is removed.
+- name: ensure old role-managed varnish systemd unit file is removed.
   ansible.builtin.file:
     path: /etc/systemd/system/varnish.service
     state: absent

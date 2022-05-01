@@ -46,6 +46,8 @@
     - name: stop dhcpd
       ansible.builtin.command:
         cmd: pkill dhcpd
+      register: pkill_output
+      changed_when: pkill_output.rc != 0
 
     - name: remove pid file
       ansible.builtin.file:

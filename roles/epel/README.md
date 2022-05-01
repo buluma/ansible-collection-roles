@@ -2,9 +2,9 @@
 
 Install epel on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|[![quality](https://img.shields.io/ansible/quality/57859)](https://galaxy.ansible.com/buluma/epel)|[![downloads](https://img.shields.io/ansible/role/d/57859)](https://galaxy.ansible.com/buluma/epel)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-epel.svg)](https://github.com/buluma/ansible-role-epel/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|[![quality](https://img.shields.io/ansible/quality/57859)](https://galaxy.ansible.com/buluma/epel)|[![downloads](https://img.shields.io/ansible/role/d/57859)](https://galaxy.ansible.com/buluma/epel)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-epel.svg)](https://github.com/buluma/ansible-role-epel/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-epel.svg)](https://github.com/buluma/ansible-role-epel/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-epel.svg)](https://github.com/buluma/ansible-role-epel/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -33,6 +33,17 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
 ```
 
 
+## [Role Variables](#role-variables)
+
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+# defaults file for epel
+
+# Whether to install the new `epel-next` repository. This is only installed
+# by default on CentOS Stream, as per https://docs.fedoraproject.org/en-US/epel/#_quickstart.
+epel_next: "{{ yes if ansible_distribution_release == 'Stream' }}"
+```
 
 ## [Requirements](#requirements)
 
@@ -44,11 +55,11 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -61,7 +72,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |container|tags|
 |---------|----|
 |amazon|Candidate|
-|el|7,8|
+|el|7, 8|
 
 The minimum version of Ansible required is 2.10, tests have been done to:
 
@@ -72,6 +83,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-epel/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-epel/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

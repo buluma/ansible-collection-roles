@@ -1,0 +1,18 @@
+---
+- hosts: linux
+  vars:
+    - hg_username: 'My Name <myemail@mydomain.com>'
+    - git_username: 'My Name'
+    - git_email: 'myemail@mydomain.com'
+    - nss_try: 'ssh://myemail@mydomain.com@hg.mozilla.org/projects/nss-try'
+    - available_tasks:
+        - { enabled: True, name: 'install_packages' }
+        - { enabled: True, name: 'configure_env' }
+        - { enabled: True, name: 'configure_mercurial' }
+        - { enabled: True, name: 'configure_git' }
+        - { enabled: True, name: 'configure_vscode' }
+    - vscode_workspaces:
+        - { enabled: False, state: 'directory', rebase: False, action: 'add', name: 'Reference', bugId: '', path: '{{ main_dir }}' }
+        # - { enabled: True,  state: 'directory', rebase: True,   action: 'remove', name: 'GTest',      bugId: '1577624', path: '{{ bugzilla_dev_dir }}' }
+  roles:
+    - buluma.nss

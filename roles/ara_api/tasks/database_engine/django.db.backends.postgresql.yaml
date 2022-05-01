@@ -1,0 +1,43 @@
+---
+- name: retrieve list of missing required packages for postgresql
+  set_fact:
+    _postgresql_missing_packages: "{{ ara_api_postgresql_packages | difference(ansible_facts.packages.keys()) }}"
+
+# Only attempt to elevate privileges if there are any missing packages
+- when: _postgresql_missing_packages | length > 0
+  block:
+    - name: install required packages
+      become: true
+      package:
+        name: "{{ ara_api_postgresql_packages }}"
+        state: present
+  rescue:
+    - name: fail due to missing packages
+      fail:
+        msg: |
+          Failed to elevate privileges and install missing required packages.
+          Install the following packages before running this role again
+          {{ _postgresql_missing_packages | join(' ') }}
+
+# Django requires psycopg2 when using postgresql
+# https://docs.djangoproject.com/en/2.2/ref/databases/#postgresql-notes
+- name: ensure psycopg2 is installed
+  pip:
+    # Pin psycopg2 until we upgrade to django 3.2 LTS
+    # https://github.com/ansible-community/ara/issues/320
+    name: psycopg2<2.9
+    state: present
+    virtualenv: "{{ ara_api_venv | bool | ternary(ara_api_venv_path, omit) }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+
+- name: run SQL migrations
+  environment:
+    ARA_SETTINGS: "{{ ara_api_settings }}"
+    PATH: "{{ path_with_virtualenv }}"
+  command: ara-manage migrate
+  run_once: true
+  register: _ara_sql_migrations
+  retries: 3
+  delay: 5
+  until: _ara_sql_migrations is succeeded
+  changed_when: "'no migrations to apply' not in _ara_sql_migrations.stdout"

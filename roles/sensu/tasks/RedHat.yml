@@ -3,6 +3,7 @@
   ansible.builtin.copy:
     src: sensu.repo
     dest: /etc/yum.repos.d/sensu.repo
+    mode: 0644
 
 - name: ensure sensu is installed
   ansible.builtin.yum:

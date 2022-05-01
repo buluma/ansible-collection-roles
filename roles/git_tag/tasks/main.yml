@@ -1,0 +1,10 @@
+---
+# Origin: https://github.com/cjw296/ansible-role-createtag
+# tasks file for git_tag
+- name: Fetch existing tags
+  command: "git fetch {{git_remote}} --tags"
+  # command: "git fetch origin --tags"
+  args:
+    warn: false
+    chdir: "{{git_repo_location}}"
+  when: "git_remote != '' and git_remote != None"

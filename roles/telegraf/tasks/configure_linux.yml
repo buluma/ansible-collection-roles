@@ -119,7 +119,7 @@
     - Restart Telegraf container
 
 - name: "Force restart service after reread config"
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: "Start Telegraf (If it wasn't running)"
   ansible.builtin.service:
@@ -150,7 +150,7 @@
         name: smartmontools
 
     - name: Find path of smartctl
-      command: which smartctl
+      ansible.builtin.command: which smartctl
       register: which_smartctl
       ignore_errors: true
       changed_when: false

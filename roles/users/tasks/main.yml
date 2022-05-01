@@ -44,4 +44,4 @@
     path: /etc/cron.allow
     state: absent
   when:
-    - not users_cron_allow|bool
+    - not users_cron_allow | bool

@@ -1,28 +1,33 @@
 ---
 collections:
   - name: andrewrothstein.unarchive-deps
+  - name: ansible.netcommon
   - name: ansible.posix
+  - name: bukuma.apache
+  - name: community.aws
   - name: community.crypto
   - name: community.general
   - name: community.mysql
   - name: community.postgresql
   - name: community.zabbix
+  - name: containers.podman
   - name: duologic.postgresql_repository
   - name: duologic.sentry  # TODO: localise on release
+  - name: elastic.elasticsearch
   - name: elliotweiser.osx-command-line-tools
-  - name: geerlingguy.apache
-  - name: geerlingguy.nginx
+  - name: enix.postgresql
+  - name: f5networks.f5_modules
   - name: geerlingguy.php-mysql
   - name: geerlingguy.postgresql
   - name: geerlingguy.redis
   - name: geerlingguy.repo-epel
   - name: geerlingguy.repo-remi
   - name: gluster.gluster
-  - name: robertdebock.apt_autostart
+  - name: lean_delivery.java
+  - name: openjdk
+  - name: operator_sdk.util
   - name: robertdebock.bootstrap
   - name: robertdebock.container_docs
   - name: robertdebock.elastic_repo
   - name: robertdebock.elasticsearch
-  - name: robertdebock.epel
   - name: robertdebock.grub
-  - name: robertdebock.rpmfusion

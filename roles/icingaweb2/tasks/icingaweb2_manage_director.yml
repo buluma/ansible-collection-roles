@@ -5,6 +5,7 @@
     dest: "{{ icingaweb2_modules_config }}/director"
     owner: "{{ icingaweb2_httpd_user }}"
     group: "{{ icingaweb2_group }}"
+    mode: 0644
   tags:
     - config
     - install
@@ -41,7 +42,7 @@
     - install
 
 - name: check if migration is pending
-  command: /usr/bin/icingacli director migration pending --verbose
+  ansible.builtin.command: /usr/bin/icingacli director migration pending --verbose
   register: pending
   changed_when: pending.rc == 0
   failed_when: "'ERROR' in pending.stdout"
@@ -50,7 +51,7 @@
     - install
 
 - name: run migration
-  command: /usr/bin/icingacli director migration run --verbose
+  ansible.builtin.command: /usr/bin/icingacli director migration run --verbose
   when:
     - pending.rc == 0
     - "'ERROR' not in pending.stdout"
@@ -59,7 +60,7 @@
     - install
 
 - name: check if kickstart is required
-  command: /usr/bin/icingacli director kickstart required --verbose || /bin/true
+  ansible.builtin.command: /usr/bin/icingacli director kickstart required --verbose || /bin/true
   register: kickstart
   changed_when: "'Kickstart has been configured and should be triggered' in kickstart.stdout"
   failed_when: "'ERROR' in kickstart.stdout"

@@ -1,0 +1,49 @@
+---
+# PostgreSQL JDBC release.
+postgresql_jdbc_release: "42.3"
+
+# PostgreSQL JDBC version.
+postgresql_jdbc_version: "{{ _postgresql_jdbc_version[postgresql_jdbc_release] }}"
+
+# PostgreSQL JDBC download details.
+postgresql_jdbc_download: "{{ _postgresql_jdbc_download[postgresql_jdbc_version] }}"
+
+# Jira release.
+jira_release: "8.22"
+
+# Jira version.
+jira_version: "{{ _jira_version[jira_release] }}"
+
+# Jira download details.
+jira_download: "{{ _jira_download[jira_version] }}"
+
+# Owner and group for Jira.
+jira_owner: "jira"
+jira_group: "jira"
+
+# Jira home directory.
+jira_home: "/var/atlassian/application-data/jira"
+
+# Jira installation directory.
+jira_catalina: "/opt/atlassian/jira"
+
+# JVM minimal and maximum memory usage.
+jira_jvm_minimum_memory: "2048m"
+jira_jvm_maximum_memory: "2048m"
+
+# Proxy and context path setup.
+jira_catalina_connector_proxyname: ~
+jira_catalina_connector_proxyport: ~
+jira_catalina_connector_scheme: "http"
+jira_catalina_connector_secure: "false"
+jira_catalina_context_path: ~
+
+# Atlassian Support recommended JVM arguments.
+jira_jvm_support_recommended_args: >-
+  -Datlassian.plugins.enable.wait=300
+  -XX:+UnlockExperimentalVMOptions
+  -XX:+UseCGroupMemoryLimitForHeap
+  -XX:MaxRAMFraction=1
+
+# Session timeout (in minutes).
+jira_session_timeout: "120"

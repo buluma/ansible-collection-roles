@@ -2,9 +2,9 @@
 
 Install and enable remi yum repositories on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-remi/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-remi/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-remi/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-remi)|[![quality](https://img.shields.io/ansible/quality/58010)](https://galaxy.ansible.com/buluma/remi)|[![downloads](https://img.shields.io/ansible/role/d/58010)](https://galaxy.ansible.com/buluma/remi)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-remi.svg)](https://github.com/buluma/ansible-role-remi/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-remi/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-remi/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-remi/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-remi)|[![quality](https://img.shields.io/ansible/quality/58010)](https://galaxy.ansible.com/buluma/remi)|[![downloads](https://img.shields.io/ansible/role/d/58010)](https://galaxy.ansible.com/buluma/remi)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-remi.svg)](https://github.com/buluma/ansible-role-remi/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-remi.svg)](https://github.com/buluma/ansible-role-remi/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-remi.svg)](https://github.com/buluma/ansible-role-remi/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -60,7 +60,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -90,6 +90,10 @@ This role [refers to a version](https://github.com/robertdebock/ansible-role-rem
 This version reference means a role may get outdated. Monthly tests occur to see if [bit-rot](https://en.wikipedia.org/wiki/Software_rot) occured. If you however find a problem, please create an issue, I'll get on it as soon as possible.
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-remi/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-remi/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

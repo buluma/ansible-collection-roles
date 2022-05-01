@@ -1,13 +1,13 @@
 ---
 - name: Ensure unzip is installed.
-  package: name=unzip state=present
+  ansible.builtin.package: name=unzip state=present
 
 - name: Ensure SQLite is installed (Red Hat).
-  package: name=sqlite state=present
+  ansible.builtin.package: name=sqlite state=present
   when: ansible_os_family == 'RedHat'
 
 - name: Ensure SQLite is installed (Debian).
-  package: name=sqlite3 state=present
+  ansible.builtin.package: name=sqlite3 state=present
   when: ansible_os_family == 'Debian'
 
 - include_tasks: install.yml

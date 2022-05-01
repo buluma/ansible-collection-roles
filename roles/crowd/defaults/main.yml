@@ -1,0 +1,51 @@
+---
+# defaults file for crowd
+
+# PostgreSQL JDBC release.
+postgresql_jdbc_release: "42.3"
+
+# PostgreSQL JDBC version.
+postgresql_jdbc_version: "{{ _postgresql_jdbc_version[postgresql_jdbc_release] }}"
+
+# PostgreSQL JDBC download details.
+postgresql_jdbc_download: "{{ _postgresql_jdbc_download[postgresql_jdbc_version] }}"
+
+# Crowd release.
+crowd_release: "4.4"
+
+# Crowd version.
+crowd_version: "{{ _crowd_version[crowd_release] }}"
+
+# Crowd download details.
+crowd_download: "{{ _crowd_download[crowd_version] }}"
+
+# Owner and group for Crowd.
+crowd_owner: "crowd"
+crowd_group: "crowd"
+
+# Crowd home directory.
+crowd_home: "/var/atlassian/application-data/crowd"
+
+# Crowd installation directory.
+crowd_catalina: "/opt/atlassian/crowd"
+
+# JVM minimal and maximum memory usage.
+crowd_jvm_minimum_memory: "1024m"
+crowd_jvm_maximum_memory: "1024m"
+
+# Proxy and context path setup.
+crowd_catalina_connector_proxyname: ~
+crowd_catalina_connector_proxyport: ~
+crowd_catalina_connector_scheme: "http"
+crowd_catalina_connector_secure: "false"
+crowd_catalina_context_path: ~
+
+# Atlassian Support recommended JVM arguments.
+crowd_jvm_support_recommended_args: >-
+  -Datlassian.plugins.enable.wait=300
+  -XX:+UnlockExperimentalVMOptions
+  -XX:+UseCGroupMemoryLimitForHeap
+  -XX:MaxRAMFraction=1
+
+# Session timeout (in minutes).
+crowd_session_timeout: "120"

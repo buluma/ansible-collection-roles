@@ -1,0 +1,28 @@
+---
+
+_apt_key:
+  - keyring: "/etc/apt/trusted.gpg.d/gitlab-ce.gpg"
+    url: "http://packages.gitlab.com/gitlab/gitlab-ce/gpgkey"
+    id: "F6403F6544A38863DAA0B6E03F01618A51312F3F"
+    state: "present"
+  - keyring: "/etc/apt/trusted.gpg.d/home_alvistack.gpg"
+    url: "http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/Release.key"
+    id: "789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD"
+    state: "present"
+
+_apt_repository:
+  - filename: "gitlab-ce"
+    repo: "deb http://packages.gitlab.com/gitlab/gitlab-ce/ubuntu focal main"
+    state: "present"
+  - filename: "home:alvistack"
+    repo: "deb http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/ /"
+    state: "present"
+
+_apt:
+  - { state: "latest", name: "ca-certificates" }
+  - { state: "latest", name: "curl" }
+  - { state: "latest", name: "gitlab-cli" }
+  - { state: "latest", name: "libssl1.1" }
+  - { state: "latest", name: "openssl" }
+  - { state: "latest", name: "python3-gitlab" }
+  - { state: "present", name: "gitlab-ce={{ gitlab_version }}*" }

@@ -2,9 +2,9 @@
 
 Upgrade a package only if it is installed otherwise do nothing.
 
-|GitHub|GitLab|Quality|Downloads|Version|
-|------|------|-------|---------|-------|
-|[![github](https://github.com/buluma/ansible-role-upgrade/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-upgrade/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-upgrade/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-upgrade)|[![quality](https://img.shields.io/ansible/quality/57817)](https://galaxy.ansible.com/buluma/upgrade)|[![downloads](https://img.shields.io/ansible/role/d/57817)](https://galaxy.ansible.com/buluma/upgrade)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-upgrade.svg)](https://github.com/buluma/ansible-role-upgrade/releases/)|
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-upgrade/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-upgrade/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-upgrade/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-upgrade)|[![quality](https://img.shields.io/ansible/quality/57817)](https://galaxy.ansible.com/buluma/upgrade)|[![downloads](https://img.shields.io/ansible/role/d/57817)](https://galaxy.ansible.com/buluma/upgrade)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-upgrade.svg)](https://github.com/buluma/ansible-role-upgrade/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-upgrade.svg)](https://github.com/buluma/ansible-role-upgrade/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-upgrade.svg)](https://github.com/buluma/ansible-role-upgrade/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -62,7 +62,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -91,6 +91,10 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-upgrade/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-upgrade/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

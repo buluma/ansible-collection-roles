@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  role_name: munin_node
+  author: Michael Buluma
+  namespace: buluma
+  description: Munin node monitoring endpoint for RedHat/CentOS or Debian/Ubuntu.
+  company: ShadowNet
+  license: "license (Apache-2.0)"
+  min_ansible_version: 2.10
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - monitoring
+    - system
+    - munin
+
+dependencies: []

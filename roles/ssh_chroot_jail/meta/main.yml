@@ -1,0 +1,35 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: ssh_chroot_jail
+  author: Michael Buluma
+  namespace: buluma
+  description: Simple SSH chroot jail management.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: 2.10
+  platforms:
+    - name: EL
+      versions:
+        - "7"
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: OpenSUSE
+      versions:
+        - all
+  galaxy_tags:
+    - system
+    - security
+    - chroot
+    - ssh
+    - jail
+    - lockdown
+    - access

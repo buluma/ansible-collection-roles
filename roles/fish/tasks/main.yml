@@ -1,0 +1,40 @@
+---
+
+- name: Print base msg
+  debug:
+    msg: >-
+      Testing with Ansible {{ ansible_version.full }} using Python {{ ansible_facts.python_version }}
+      on {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}
+
+- name: Wait for systemd   # noqa 303
+  command: systemctl is-system-running
+  register: systemd_status
+  until: systemd_status.stdout is search('running|degraded')
+  retries: 30
+  when: ansible_facts.service_mgr == 'systemd'
+  changed_when: no
+  failed_when: systemd_status.rc > 1
+
+- name: ensure fish version is valid
+  ansible.builtin.assert:
+    that:
+      - fish_release_version in _fish_valid_versions
+    fail_msg: Invalid fish_release_version '{{ fish_release_version }}'. Valid versions are {{ _fish_valid_versions | join(', ') }}.
+
+- name: include distribution specific variables
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_facts.os_family }}-{{ ansible_facts.distribution_major_version }}.yml"
+        - "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_version }}.yml"
+        - "{{ ansible_facts.distribution }}.yml"
+        - "{{ ansible_facts.os_family }}.yml"
+      paths:
+        - vars
+  tags:
+    - fish
+
+- include_tasks: "install-{{ ansible_facts.os_family }}.yml"
+  tags:
+    - fish

@@ -1,0 +1,9 @@
+---
+
+- name: test if drush_launcher_path is set correctly
+  ansible.builtin.assert:
+    that:
+      - drush_launcher_path is string
+    quiet: yes
+  when:
+    - drush_launcher_path is defined

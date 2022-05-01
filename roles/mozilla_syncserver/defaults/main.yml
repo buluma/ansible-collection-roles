@@ -1,0 +1,30 @@
+---
+# What version of the mozilla/syncserver docker image should we
+# install?
+# https://hub.docker.com/r/mozilla/syncserver
+mozilla_syncserver_docker_version: latest
+
+# A list of additional volumes to mount into the docker container.  This is
+# useful for things like SSL certificates and custom css/image assets.
+mozilla_syncserver_additional_volumes: []
+# - "/some/directory:/some/mount:ro"
+# - "/some/file.yml:/some/mount/file.yml:ro"
+
+mozilla_syncserver_port: "5000"
+
+# A key/value set of environment variables and their values, which will be
+# set on the docker container.
+mozilla_syncserver_environment_variables:
+  SYNCSERVER_PUBLIC_URL: "http://localhost:{{ mozilla_syncserver_port }}"
+  SYNCSERVER_SECRET: "<PUT YOUR SECRET KEY HERE>"
+  SYNCSERVER_SQLURI: "sqlite:////data/syncserver.db"
+  SYNCSERVER_BATCH_UPLOAD_ENABLED: "true"
+  SYNCSERVER_FORCE_WSGI_ENVIRON: "false"
+  PORT: "{{ mozilla_syncserver_port }}"
+
+# If set to a string, the created Docker container will attach to a
+# pre-existing default Docker network, instead of creating its own.
+mozilla_syncserver_network_name: ""
+
+# Labels to put on the application containers
+mozilla_syncserver_container_labels: []

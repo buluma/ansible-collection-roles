@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  role_name: bind
+  namespace: buluma
+  author: Michael Buluma
+  description: Setup ISC BIND as an authoritative DNS server for one or more domains (primary and/or secondary).
+  license: Apache-2.0
+  min_ansible_version: 2.1o
+  platforms:
+    # Build ArchLinux
+    - name: Debian
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - dns
+    - networking
+    - system
+dependencies: []

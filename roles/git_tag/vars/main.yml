@@ -1,0 +1,15 @@
+---
+# vars file for git_tag
+
+# path to the git repo, defaults to '.'
+# git_repo_location: .
+
+# remote to push to, defaults to 'origin', set to null to not push.
+# git_remote: origins
+
+# tag to apply, use templating to make it sensible!
+# git_tag:
+
+# skip_if_tag_matching: see 'Conditional Tagging' below.
+
+# update_git_tag: See 'Updating Tags' below. Defauts to false.

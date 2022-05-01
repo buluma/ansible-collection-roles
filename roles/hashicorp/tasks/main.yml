@@ -12,6 +12,7 @@
       ansible.builtin.get_url:
         url: "{{ hashicorp_repository_url }}"
         dest: /etc/yum.repos.d/hashicorp.repo
+        mode: 0644
       when:
         - ansible_os_family in [ "RedHat", "Rocky" ]
 
@@ -21,7 +22,6 @@
           ansible.builtin.apt_key:
             url: "https://apt.releases.hashicorp.com/gpg"
             state: present
-            validate_certs: no
 
         - name: install repository for Debian
           ansible.builtin.apt_repository:
@@ -36,6 +36,7 @@
           ansible.builtin.package:
             name: "{{ item.name }}"
             state: present
+            update_cache: "yes"
           loop: "{{ hashicorp_products }}"
           loop_control:
             label: "{{ item.name }}"
@@ -46,6 +47,7 @@
           ansible.builtin.package:
             name: "{{ item.name }}{{ version_coupler }}{{ item.version }}"
             state: present
+            update_cache: "yes"
           loop: "{{ hashicorp_products }}"
           loop_control:
             label: "{{ item.name }}"

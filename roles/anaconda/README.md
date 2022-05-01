@@ -49,7 +49,7 @@ anaconda_python_version: 3
 
 # The version of anaconda to install.
 # See https://www.anaconda.com/distribution/
-anaconda_version: "2018.12"
+anaconda_version: "2021.11"
 
 # What ip and port to let anaconda listen to.
 anaconda_ip: "0.0.0.0"
@@ -121,6 +121,10 @@ This role [refers to a version](https://github.com/buluma/ansible-role-anaconda/
 This version reference means a role may get outdated. Monthly tests occur to see if [bit-rot](https://en.wikipedia.org/wiki/Software_rot) occured. If you however find a problem, please create an issue, I'll get on it as soon as possible.
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-anaconda/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-anaconda/blob/main/CHANGELOG.md)
 
 ## [License](#license)
 

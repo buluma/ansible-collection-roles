@@ -3,7 +3,7 @@ roles:
   - name: buluma.bootstrap
   - name: buluma.ca_certificates
   - name: buluma.core_dependencies
-  - name: robertdebock.container_docs
+  - name: buluma.container_docs
   - name: buluma.mysql
   - name: buluma.selinux
   - name: buluma.zabbix_repository

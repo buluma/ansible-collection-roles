@@ -1,0 +1,12 @@
+{{ ansible_managed | comment }}
+
+wal_level = replica
+max_wal_senders = {{ postgresql_replication__walsenders }} # max number of walsender processes
+wal_keep_segments = {{ postgresql_replication__walsegments }} # in logfile segments, 16MB each; 0 disables
+
+archive_mode = on
+{% for host in postgresql_replication__other_nodes %}
+archive_command = 'rsync -a %p {{ postgresql__user }}@{{ hostvars[host].ansible_default_ipv4.address }}:{{ postgresql_replication__waldir }}/%f'
+{% endfor %}
+# placeholders: %p = path of file to archive
+#               %f = file name only

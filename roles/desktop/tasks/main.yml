@@ -15,7 +15,7 @@
       item.module != "command"
 
 - name: install software manually using dnf
-  command: "dnf groupinstall --allowerasing --assumeyes '{{ item.name }}'"
+  ansible.builtin.command: "dnf groupinstall --allowerasing --assumeyes '{{ item.name }}'"
   args:
     warn: no
   loop: "{{ desktop_software }}"
