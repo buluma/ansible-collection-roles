@@ -28,6 +28,7 @@
   ansible.builtin.get_url:
     url: "{{ rabbitmq_rpm_url }}"
     dest: "/tmp/{{ rabbitmq_rpm }}"
+    mode: 0755
 
 - name: Ensure RabbitMQ is installed.
   ansible.builtin.yum:

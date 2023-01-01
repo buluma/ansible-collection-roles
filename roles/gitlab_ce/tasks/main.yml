@@ -1,8 +1,8 @@
 ---
-- name: include default variables
+- name: Include default variables
   ansible.builtin.include_vars: "../vars/main.yml"
 
-- name: include release specific variables
+- name: Include release specific variables
   ansible.builtin.include_vars: "{{ _loop_var }}"
   loop: "{{ query('first_found', _params) }}"
   loop_control:
@@ -20,7 +20,94 @@
         - "../vars"
       skip: true
 
-- name: include release specific tasks
+
+# prepare
+- name: Cp -rfT /etc/skel /root
+  ansible.builtin.raw: |
+    set -eu
+    cp -rfT /etc/skel /root
+  changed_when: false
+  failed_when: false
+
+- name: Setenforce 0
+  ansible.builtin.raw: |
+    set -eu
+    setenforce 0
+    sed -i 's/^SELINUX=.*$/SELINUX=permissive/g' /etc/selinux/config
+  changed_when: false
+  failed_when: false
+
+# - name: Systemctl stop firewalld.service
+#   ansible.builtin.raw: |
+#     set -eu
+#     systemctl stop firewalld.service
+#     systemctl disable firewalld.service
+#   changed_when: false
+#   failed_when: false
+#
+# - name: Systemctl stop ufw.service
+#   ansiblse.builtin.raw: |
+#     set -eu
+#     systemctl stop ufw.service
+#     systemctl disable ufw.service
+#   changed_when: false
+#   failed_when: false
+
+- name: Debian | apt-get install *.deb
+  ansible.builtin.raw: |
+    set -eu
+    DEBIAN_FRONTEND=noninteractive apt-get install -y bzip2 ca-certificates curl gcc gnupg gzip hostname iproute2 passwd procps python3 python3-apt python3-jmespath python3-lxml python3-pip python3-setuptools python3-venv python3-virtualenv python3-wheel rsync sudo tar unzip util-linux xz-utils zip
+  when: ansible_os_family | lower == "debian"
+  changed_when: false
+  failed_when: false
+
+- name: Fedora | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_distribution | lower == "fedora"
+  changed_when: false
+  failed_when: false
+
+- name: Redhat-9 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum-config-manager --enable crb || echo $?
+    yum-config-manager --enable codeready-builder-beta-for-rhel-9-x86_64-rpms || echo $?
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "9"
+  changed_when: false
+  failed_when: false
+
+- name: Redhat-8 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-dnf-plugin-versionlock python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "8"
+  changed_when: false
+  failed_when: false
+
+- name: Redhat-7 | yum install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    subscription-manager repos --enable=rhel-7-server-optional-rpms || echo $?
+    yum install -y http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    yum install -y bzip2 ca-certificates curl gcc gnupg2 gzip hostname iproute procps-ng python3 python3-jmespath python3-libselinux python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow-utils sudo tar unzip util-linux xz yum-plugin-versionlock yum-utils zip
+  when: ansible_os_family | lower == "redhat" and ansible_distribution_major_version | lower == "7"
+  changed_when: false
+  failed_when: false
+
+- name: Suse | zypper -n install *.rpm
+  ansible.builtin.raw: |
+    set -eu
+    zypper -n install -y bzip2 ca-certificates curl gcc gpg2 gzip hostname iproute2 procps python3 python3-jmespath python3-lxml python3-pip python3-setuptools python3-virtualenv python3-wheel rsync shadow sudo tar unzip util-linux xz zip
+  when: ansible_os_family | lower == "suse"
+  changed_when: false
+  failed_when: false
+
+- name: Include release specific tasks
   ansible.builtin.include_tasks: "{{ _loop_var }}"
   loop: "{{ query('first_found', _params) }}"
   loop_control:
@@ -38,13 +125,14 @@
         - "."
       skip: true
 
-- name: Install required pip packages
-  ansible.builtin.pip:
-    name:
-      - setuptools
-      - dataclasses
+# TODO: move install to os packaged installs
+# - name: Install required pip packages | main
+#   ansible.builtin.pip:
+#     name:
+#       - setuptools
+#       - dataclasses
 
-- name: groupadd
+- name: Groupadd
   ansible.builtin.group:
     name: "{{ item.name }}"
     system: true
@@ -59,7 +147,7 @@
     - { name: "gitlab-prometheus" }
     - { name: "gitlab-consul" }
 
-- name: useradd
+- name: Useradd
   ansible.builtin.user:
     name: "{{ item.name }}"
     group: "{{ item.group }}"
@@ -79,7 +167,7 @@
     - { name: "gitlab-prometheus", group: "gitlab-prometheus", home: "/var/opt/gitlab/prometheus", shell: "/bin/sh" }
     - { name: "gitlab-consul", group: "gitlab-consul", home: "/var/opt/gitlab/consul", shell: "/bin/sh" }
 
-- name: prepare directories
+- name: Prepare directories
   ansible.builtin.file:
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"
@@ -98,7 +186,7 @@
     - { dest: "/var/opt/gitlab/redis", owner: "gitlab-redis", group: "git", mode: "0750" }
     - { dest: "/var/opt/gitlab/registry", owner: "registry", group: "registry" }
 
-- name: copy templates
+- name: Copy templates
   ansible.builtin.template:
     dest: "{{ item.dest }}"
     src: "{{ item.src | default('./templates' + item.dest + '.j2') }}"
@@ -108,10 +196,10 @@
   loop:
     - { dest: "/etc/gitlab/gitlab.rb" }
   notify:
-    - gitlab_ce | gitlab-ctl reconfigure
-    - gitlab_ce | systemctl restart gitlab-runsvdir.service
+    - Gitlab_ce | gitlab-ctl reconfigure
+    - Gitlab_ce | systemctl restart gitlab-runsvdir.service
 
-- name: prepare files
+- name: Prepare files
   ansible.builtin.file:
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"
@@ -121,13 +209,13 @@
   loop:
     - { dest: "/etc/gitlab/gitlab.rb" }
   notify:
-    - gitlab_ce | gitlab-ctl reconfigure
-    - gitlab_ce | systemctl restart gitlab-runsvdir.service
+    - Gitlab_ce | gitlab-ctl reconfigure
+    - Gitlab_ce | systemctl restart gitlab-runsvdir.service
 
-- name: flush handlers
+- name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: systemctl start gitlab-runsvdir.service
+- name: Systemctl start gitlab-runsvdir.service
   ansible.builtin.service:
     name: "gitlab-runsvdir.service"
     state: "started"

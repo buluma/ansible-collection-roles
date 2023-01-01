@@ -1,12 +1,12 @@
 ---
 - name: Set the stable docker repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} edge"
     state: present
     update_cache: yes
 
 - name: InfluxDB configuration
-  copy:
+  ansible.builtin.copy:
     src: influxdb.conf
     dest: "/home/{{ remote_user }}/influxdb.conf"
     owner: "{{ remote_user }}"
@@ -26,7 +26,7 @@
       - "/home/{{ remote_user }}/influxdb.conf:/etc/influxdb/influxdb.conf"
 
 - name: Telegraf configuration
-  copy:
+  ansible.builtin.copy:
     src: telegraf.conf
     dest: "/home/{{ remote_user }}/telegraf.conf"
     owner: "{{ remote_user }}"
@@ -46,7 +46,7 @@
       - "/var/run/docker.sock:/var/run/docker.sock"
 
 - name: Kapacitor configuration
-  copy:
+  ansible.builtin.copy:
     src: kapacitor.conf
     dest: "/home/{{ remote_user }}/kapacitor.conf"
     owner: "{{ remote_user }}"

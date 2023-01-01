@@ -2,7 +2,7 @@
 # tasks file for bind
 
 # Initialise distribution-specific variables
-- name: incluse source specific variables
+- name: Incluse source specific variables
   ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
@@ -13,7 +13,7 @@
     - "{{ ansible_distribution_file_variety }}.yml"
   tags: bind
 
-- name: check `primaries` or `forwarders` was set for each zone
+- name: Check `primaries` or `forwarders` was set for each zone
   ansible.builtin.assert:
     that:
       - item.primaries is defined or item.forwarders is defined
@@ -23,8 +23,7 @@
     label: "{{ item.name }}"
   tags: bind
 
-# Fix molecule and ci failures
-- name: update package cache for Debian based distros
+- name: Update package cache for Debian based distros
   ansible.builtin.apt:
     update_cache: yes
   become: yes
@@ -33,13 +32,13 @@
   tags: bind
 
 # TODO: Move to assert
-- name: assert that all XFR keys exist in the key list
+- name: Assert that all XFR keys exist in the key list
   ansible.builtin.assert:
     that: bind_dns_keys | selectattr("name","equalto",bind_key_mapping[item]) | list | count > 0
   loop: "{{ bind_key_mapping.keys() | list }}"
   when: bind_key_mapping | list | count > 0
 
-- name: install BIND
+- name: Install BIND
   ansible.builtin.package:
     pkg: "{{ item }}"
     state: present
@@ -48,7 +47,7 @@
     - "{{ bind_packages }}"
   tags: bind
 
-- name: ensure runtime directories referenced in config exist
+- name: Ensure runtime directories referenced in config exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -62,7 +61,7 @@
     - "{{ bind_zone_dir }}"
   tags: bind
 
-- name: ensure Directory for Cached Secondary Zones exists
+- name: Ensure Directory for Cached Secondary Zones exists
   ansible.builtin.file:
     path: "{{ bind_secondary_dir }}"
     state: directory
@@ -73,7 +72,7 @@
   become: yes
   tags: bind
 
-- name: create serial, based on UTC UNIX time
+- name: Create serial, based on UTC UNIX time
   ansible.builtin.command: date -u +%s
   register: timestamp
   changed_when: false
@@ -82,7 +81,7 @@
   tags: bind
 
 # file to set keys for XFR authentication
-- name: create extra config for authenticated XFR request
+- name: Create extra config for authenticated XFR request
   ansible.builtin.template:
     src: auth_transfer.j2
     dest: "{{ bind_conf_dir }}/{{ auth_file }}"
@@ -91,14 +90,14 @@
     group: "{{ bind_group }}"
   become: yes
   when: bind_dns_keys is defined and bind_dns_keys|length > 0
-  notify: reload bind
+  notify: Reload bind
   tags: bind
 
-- name: configure zones
+- name: Configure zones
   ansible.builtin.include_tasks: zones.yml
   tags: bind
 
-- name: main BIND config file
+- name: Main BIND config file
   ansible.builtin.template:
     src: etc_named.conf.j2
     dest: "{{ bind_config }}"
@@ -108,10 +107,10 @@
     setype: named_conf_t
     validate: 'named-checkconf %s'
   become: yes
-  notify: reload bind
+  notify: Reload bind
   tags: bind
 
-- name: start BIND service
+- name: Start BIND service
   ansible.builtin.systemd:
     name: "{{ bind_service }}"
     state: started

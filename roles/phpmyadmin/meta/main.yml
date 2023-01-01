@@ -1,16 +1,16 @@
 ---
-dependencies:
-  - buluma.apache
-  - buluma.mysql
-  - geerlingguy.php-mysql
-  - buluma.php
+# dependencies:
+#   - buluma.apache
+#   - buluma.mysql
+#   - geerlingguy.php-mysql
+#   - buluma.php
 
 galaxy_info:
   role_name: phpmyadmin
   author: buluma
   description: phpMyAdmin installation for Linux
   company: "ShadowNet"
-  license: "license (Apache-2.0)"
+  license: Apache-2.0
   min_ansible_version: 2.4
   platforms:
     - name: EL
@@ -30,3 +30,8 @@ galaxy_info:
     - mariadb
     - php
     - phpmyadmin
+dependencies:
+  - geerlingguy.apache
+  - geerlingguy.mysql
+  - geerlingguy.php-mysql
+  - geerlingguy.php

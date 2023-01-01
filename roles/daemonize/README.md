@@ -4,7 +4,7 @@ Install and configure daemonize on your systems.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-daemonize/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-daemonize/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-daemonize/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-daemonize)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/daemonize)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/daemonize)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-daemonize.svg)](https://github.com/buluma/ansible-role-daemonize/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-daemonize.svg)](https://github.com/buluma/ansible-role-daemonize/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-daemonize.svg)](https://github.com/buluma/ansible-role-daemonize/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-daemonize/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-daemonize/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-daemonize/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-daemonize)|[![quality](https://img.shields.io/ansible/quality/58976)](https://galaxy.ansible.com/buluma/daemonize)|[![downloads](https://img.shields.io/ansible/role/d/58976)](https://galaxy.ansible.com/buluma/daemonize)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-daemonize.svg)](https://github.com/buluma/ansible-role-daemonize/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-daemonize.svg)](https://github.com/buluma/ansible-role-daemonize/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-daemonize.svg)](https://github.com/buluma/ansible-role-daemonize/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -13,10 +13,24 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 ---
 - name: Converge
   hosts: all
-  tasks:
-    - name: "Include buluma.daemonize"
-      ansible.builtin.include_role:
-        name: "buluma.daemonize"
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: buluma.daemonize
+```
+
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  roles:
+    - role: buluma.bootstrap
+    - role: buluma.ca_certificates
 ```
 
 
@@ -37,6 +51,14 @@ daemonize_install_path: "/usr"
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-daemonize/blob/main/requirements.txt).
 
+## [Status of used roles](#status-of-requirements)
+
+The following roles are used to prepare a system. You can prepare your system in another way.
+
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.ca_certificates](https://galaxy.ansible.com/buluma/ca_certificates)|[![Build Status GitHub](https://github.com/buluma/ansible-role-ca_certificates/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca_certificates/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-ca_certificates/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ca_certificates)|
 
 ## [Context](#context)
 
@@ -52,12 +74,12 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|fedora|all|
+|fedora|34, 35|
 |ubuntu|all|
 |el|all|
 |debian|all|
 
-The minimum version of Ansible required is 2.1, tests have been done to:
+The minimum version of Ansible required is 2.10, tests have been done to:
 
 - The previous version.
 - The current version.
@@ -73,8 +95,8 @@ If you find issues, please register them in [GitHub](https://github.com/buluma/a
 
 ## [License](#license)
 
-license (Apache-2.0)
+Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

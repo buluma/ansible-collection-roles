@@ -1,5 +1,5 @@
 ---
-- name: configure apache.
+- name: Configure apache.
   ansible.builtin.lineinfile:
     dest: "{{ apache_server_root }}/listen.conf"
     regexp: "{{ item.regexp }}"
@@ -7,19 +7,19 @@
     state: present
     mode: 0644
   with_items: "{{ apache_ports_configuration_items }}"
-  notify: restart apache
+  notify: Restart apache
 
-- name: check whether certificates defined in vhosts exist.
+- name: Check whether certificates defined in vhosts exist.
   ansible.builtin.stat: path={{ item.certificate_file }}
   register: apache_ssl_certificates
   with_items: "{{ apache_vhosts_ssl }}"
 
-- name: add apache vhosts configuration.
+- name: Add apache vhosts configuration.
   ansible.builtin.template:
     src: "{{ apache_vhosts_template }}"
     dest: "{{ apache_conf_path }}/{{ apache_vhosts_filename }}"
     owner: root
     group: root
     mode: 0644
-  notify: restart apache
+  notify: Restart apache
   when: apache_create_vhosts | bool

@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Installs and configures Icinga Web 2 on Rhel, Debian and Ubuntu
+    description: >
+      Installs and configures Icinga Web 2 on Rhel, Debian and Ubuntu
+    author: Michael Buluma

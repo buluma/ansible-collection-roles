@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: selinux
   description: Install and configure selinux and its required libraries on your system.
   license: Apache-2.0
@@ -17,15 +16,15 @@ galaxy_info:
         - Candidate
     - name: EL
       versions:
-        - 7
-        - 8
+        - "7"
+        - "8"
     - name: Debian
       versions:
         - all
     - name: Fedora
       versions:
         - all
-    - name: OpenSUSE
+    - name: opensuse
       versions:
         - all
     - name: Ubuntu

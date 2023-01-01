@@ -1,15 +1,11 @@
 ---
-dependencies:
-  - elliotweiser.osx-command-line-tools
-
 galaxy_info:
   role_name: homebrew
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   description: Homebrew for macOS
-  company: "ShadowNet"
-  license: "Apache-2.0"
-  min_ansible_version: 2.5
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.5"
   platforms:
     - name: MacOSX
       versions:
@@ -22,3 +18,6 @@ galaxy_info:
     - homebrew
     - brew
     - cask
+
+dependencies:
+  - elliotweiser.osx-command-line-tools

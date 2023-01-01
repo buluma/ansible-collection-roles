@@ -2,4 +2,4 @@
 - include_tasks: setup.yml
 
 - include_tasks: configure.yml
-  when: influxdb_service_state == "started"
+  when: influxdb_service_state == "started" and not influxdb_skip_onboarding

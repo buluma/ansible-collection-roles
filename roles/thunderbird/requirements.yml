@@ -1,8 +1,6 @@
 ---
 roles:
   - name: buluma.bootstrap
-
 collections:
   - name: operator_sdk.util
-    src: https://galaxy.ansible.com
     version: ">=0.0.0,<1.0.0"

@@ -4,7 +4,7 @@ Install and configure artifactory on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-artifactory/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-artifactory/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-artifactory/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-artifactory)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/artifactory)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/artifactory)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-artifactory.svg)](https://github.com/buluma/ansible-role-artifactory/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-artifactory.svg)](https://github.com/buluma/ansible-role-artifactory/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-artifactory.svg)](https://github.com/buluma/ansible-role-artifactory/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-artifactory/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-artifactory/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-artifactory/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-artifactory)|[![quality](https://img.shields.io/ansible/quality/59757)](https://galaxy.ansible.com/buluma/artifactory)|[![downloads](https://img.shields.io/ansible/role/d/59757)](https://galaxy.ansible.com/buluma/artifactory)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-artifactory.svg)](https://github.com/buluma/ansible-role-artifactory/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-artifactory.svg)](https://github.com/buluma/ansible-role-artifactory/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-artifactory.svg)](https://github.com/buluma/ansible-role-artifactory/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -86,12 +86,6 @@ The minimum version of Ansible required is 2.10, tests have been done to:
 - The development version.
 
 
-## [Included version(s)](#included-versions)
-
-This role [refers to a version](https://github.com/robertdebock/ansible-role-artifactory/blob/master/defaults/main.yml) released by JFrog. Check the released version(s) here:
-- [Artifactory](https://dl.bintray.com/jfrog/artifactory/).
-
-This version reference means a role may get outdated. Monthly tests occur to see if [bit-rot](https://en.wikipedia.org/wiki/Software_rot) occured. If you however find a problem, please create an issue, I'll get on it as soon as possible.
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-artifactory/issues)
 
@@ -105,4 +99,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

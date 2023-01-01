@@ -1,13 +1,12 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
-  description: Set alternatives
+  author: buluma
   role_name: alternatives
+  description: Set alternatives
   company: ShadowNet
   license: Apache-2.0
 
-  min_ansible_version: 2.10
+  min_ansible_version: "2.10"
 
   platforms:
     - name: Alpine
@@ -18,14 +17,14 @@ galaxy_info:
         - Candidate
     - name: EL
       versions:
-        - 8
+        - "8"
     - name: Debian
       versions:
         - all
     - name: Fedora
       versions:
         - all
-    - name: OpenSUSE
+    - name: opensuse
       versions:
         - all
     - name: Ubuntu

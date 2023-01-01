@@ -13,9 +13,30 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 ---
 - name: Converge
   hosts: all
+  gather_facts: true
+  become: yes
+  vars:
+    apt_autostart_state: enabled
+    pip_package: python3-pip
+    pip_executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
+    pip_install_packages:
+      - name: setuptools
+      - name: requests
+
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+
+    - name: Set package name for older OSes.
+      ansible.builtin.set_fact:
+        pip_package: python-pip
+      when: >
+        (ansible_os_family == 'RedHat') and (ansible_distribution_major_version | int < 8)
+        or (ansible_distribution == 'Debian') and (ansible_distribution_major_version | int < 10)
+        or (ansible_distribution == 'Ubuntu') and (ansible_distribution_major_version | int < 18)
   roles:
     - role: buluma.influxdb2
-
       influxdb_orgs:
         - name: main-org
           description: Main organization
@@ -44,9 +65,23 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
 - name: prepare container
   hosts: all
   gather_facts: true
+  become: yes
+  serial: 30%
+  vars:
+    apt_autostart_state: enabled
+
   roles:
     - role: buluma.bootstrap
-    - role: buluma.influxdb2
+    - role: buluma.apt_autostart
+    - role: buluma.pip
+    - name: buluma.influxdb2
+
+  post_tasks:
+    - name: place /environmentfile.txt
+      ansible.builtin.copy:
+        content: "value=influxdb"
+        dest: /environmentfile.txt
+        mode: "0644"
 ```
 
 
@@ -109,6 +144,8 @@ influxdb_buckets: []
 influxdb_service_enabled: true
 
 influxdb_service_state: started
+
+influxdb_skip_onboarding: false
 ```
 
 ## [Requirements](#requirements)
@@ -121,12 +158,13 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.influxdb2](https://galaxy.ansible.com/buluma/influxdb2)|[![Build Status GitHub](https://github.com/buluma/ansible-role-influxdb2/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-influxdb2/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-influxdb2/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-influxdb2)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.apt_autostart](https://galaxy.ansible.com/buluma/apt_autostart)|[![Build Status GitHub](https://github.com/buluma/ansible-role-apt_autostart/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-apt_autostart/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-apt_autostart/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-apt_autostart)|
+|[buluma.pip](https://galaxy.ansible.com/buluma/pip)|[![Build Status GitHub](https://github.com/buluma/ansible-role-pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-pip/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-pip/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-pip)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -138,14 +176,9 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|amazon|Candidate|
-|el|7, 8|
 |debian|all|
-|fedora|all|
-|opensuse|all|
-|ubuntu|all|
 
-The minimum version of Ansible required is 2.7, tests have been done to:
+The minimum version of Ansible required is 2.10, tests have been done to:
 
 - The previous version.
 - The current version.
@@ -155,10 +188,14 @@ The minimum version of Ansible required is 2.7, tests have been done to:
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-influxdb2/issues)
 
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-influxdb2/blob/master/CHANGELOG.md)
+
 ## [License](#license)
 
 MIT
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

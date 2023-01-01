@@ -1,5 +1,5 @@
 ---
-- name: Ensure NFS utilities are installed.
+- name: ensure NFS utilities are installed.
   ansible.builtin.apt:
     name:
       - nfs-common

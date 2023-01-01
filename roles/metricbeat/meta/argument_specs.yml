@@ -4,7 +4,7 @@ argument_specs:
   main:
     short_description: Install and configure Metricbeat on your system.
     description: Install and configure Metric on your system.
-    author: Robert de Bock
+    author: Michael Buluma
     options:
       metricbeat_version:
         type: "str"

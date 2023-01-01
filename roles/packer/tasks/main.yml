@@ -1,9 +1,9 @@
 ---
 - name: Ensure unzip is installed.
-  package: name=unzip state=present
+  ansible.builtin.package: name=unzip state=present
 
 - name: Download and unarchive Packer.
-  unarchive:
+  ansible.builtin.unarchive:
     src: https://releases.hashicorp.com/packer/{{ packer_version }}/packer_{{ packer_version }}_linux_{{ packer_arch }}.zip
     dest: "{{ packer_bin_path }}"
     remote_src: true

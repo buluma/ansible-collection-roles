@@ -21,10 +21,25 @@
 
 - name: Create systemd unit file for vmstorage nodes
   ansible.builtin.template:
-    src: victoriametrics-storage.service.j2
-    dest: /etc/systemd/system/victoriametrics-storage.service
+    src: victoriametrics-vmstorage.service.j2
+    dest: /etc/systemd/system/victoriametrics-vmstorage.service
     owner: root
     group: root
     mode: 0644
   notify: Restart victoriametrics-storage service
   when: inventory_hostname in groups['vmstorage']
+
+- name: Ensure vminsert service is running as configured.
+  service:
+    name: victoriametrics-vminsert
+    enabled: "{{ victoriametrics_vminsert_service_enabled }}"
+
+- name: Ensure vmselect service is running as configured.
+  service:
+    name: victoriametrics-vmselect
+    enabled: "{{ victoriametrics_vmselect_service_enabled }}"
+
+- name: Ensure storage service is running as configured.
+  service:
+    name: victoriametrics-storage
+    enabled: "{{ victoriametrics_vmstorage_service_enabled }}"

@@ -28,7 +28,8 @@
   ansible.builtin.setup:
     filter: ansible_local
 
-- block:
+- name: rclone version checks
+  block:
     - name: Check latest stable rclone version number
       ansible.builtin.uri:
         url: https://downloads.rclone.org/version.txt
@@ -43,7 +44,8 @@
     - rclone_version | length == 0 or rclone_version == "0.0.0"
     - rclone_release == 'stable'
 
-- block:
+- name: rclone beta version checks
+  block:
     - name: Check latest beta rclone version number
       ansible.builtin.uri:
         url: https://beta.rclone.org/version.txt

@@ -1,9 +1,9 @@
 ---
 
-- name: include default variables
+- name: Include default variables
   ansible.builtin.include_vars: "../vars/main.yml"
 
-- name: include release specific variables
+- name: Include release specific variables
   ansible.builtin.include_vars: "{{ _loop_var }}"
   loop: "{{ query('first_found', _params) }}"
   loop_control:
@@ -21,7 +21,7 @@
         - "../vars"
       skip: true
 
-- name: include release specific tasks
+- name: Include release specific tasks
   ansible.builtin.include_tasks: "{{ _loop_var }}"
   loop: "{{ query('first_found', _params) }}"
   loop_control:
@@ -39,7 +39,7 @@
         - "."
       skip: true
 
-- name: groupadd
+- name: Groupadd
   ansible.builtin.group:
     name: "{{ item.name }}"
     system: true
@@ -54,7 +54,7 @@
     - { name: "gitlab-prometheus" }
     - { name: "gitlab-consul" }
 
-- name: useradd
+- name: Useradd
   ansible.builtin.user:
     name: "{{ item.name }}"
     group: "{{ item.group }}"
@@ -74,7 +74,7 @@
     - { name: "gitlab-prometheus", group: "gitlab-prometheus", home: "/var/opt/gitlab/prometheus", shell: "/bin/sh" }
     - { name: "gitlab-consul", group: "gitlab-consul", home: "/var/opt/gitlab/consul", shell: "/bin/sh" }
 
-- name: prepare directories
+- name: Prepare directories
   ansible.builtin.file:
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"
@@ -93,7 +93,7 @@
     - { dest: "/var/opt/gitlab/redis", owner: "gitlab-redis", group: "git", mode: "0750" }
     - { dest: "/var/opt/gitlab/registry", owner: "registry", group: "registry" }
 
-- name: copy templates
+- name: Copy templates
   ansible.builtin.template:
     dest: "{{ item.dest }}"
     src: "{{ item.src | default('./templates' + item.dest + '.j2') }}"
@@ -103,10 +103,10 @@
   loop:
     - { dest: "/etc/gitlab/gitlab.rb" }
   notify:
-    - gitlab_ee | gitlab-ctl reconfigure
-    - gitlab_ee | systemctl restart gitlab-runsvdir.service
+    - Gitlab_ee | gitlab-ctl reconfigure
+    - Gitlab_ee | systemctl restart gitlab-runsvdir.service
 
-- name: prepare files
+- name: Prepare files
   ansible.builtin.file:
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"
@@ -116,13 +116,13 @@
   loop:
     - { dest: "/etc/gitlab/gitlab.rb" }
   notify:
-    - gitlab_ee | gitlab-ctl reconfigure
-    - gitlab_ee | systemctl restart gitlab-runsvdir.service
+    - Gitlab_ee | gitlab-ctl reconfigure
+    - Gitlab_ee | systemctl restart gitlab-runsvdir.service
 
-- name: flush handlers
+- name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: systemctl start gitlab-runsvdir.service
+- name: Systemctl start gitlab-runsvdir.service
   ansible.builtin.service:
     name: "gitlab-runsvdir.service"
     state: "started"

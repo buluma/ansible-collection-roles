@@ -1,8 +1,8 @@
 ---
 collections:
+  - name: alvistack.openjdk
   - name: amazon.aws
   - name: andrewrothstein.unarchive-deps
-  - name: ansible.netcommon
   - name: ansible.posix
   - name: bngsudheer.centos_base
   - name: bngsudheer.ruby
@@ -15,25 +15,21 @@ collections:
   - name: community.postgresql
   - name: community.zabbix
   - name: containers.podman
-  - name: duologic.postgresql_repository
-  - name: duologic.sentry  # TODO: localise on release
   - name: elastic.elasticsearch
   - name: elliotweiser.osx-command-line-tools
   - name: enix.postgresql
-  - name: f5networks.f5_modules
+  - name: geerlingguy.apache
   - name: geerlingguy.mysql
   - name: geerlingguy.nginx
+  - name: geerlingguy.php
   - name: geerlingguy.php-mysql
   - name: geerlingguy.postgresql
-  - name: geerlingguy.redis
-  - name: geerlingguy.repo-epel
   - name: geerlingguy.repo-remi
   - name: gluster.gluster
   - name: jonaspammer.apache2
   - name: jonaspammer.bootstrap
   - name: lean_delivery.java
   - name: nginxinc.nginx
-  - name: openjdk
   - name: operator_sdk.util
   - name: robertdebock.bootstrap
   - name: robertdebock.container_docs

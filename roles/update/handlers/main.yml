@@ -1,8 +1,8 @@
 ---
 # handlers file for update
 
-- name: reboot
+- name: Reboot
   ansible.builtin.reboot:
   when:
-    - update_reboot | bool
+    - update_reboot
     - ansible_connection not in [ "container", "docker", "community.docker.docker" ]

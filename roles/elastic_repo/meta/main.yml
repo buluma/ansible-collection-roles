@@ -17,13 +17,15 @@ galaxy_info:
         - all
     - name: EL
       versions:
-        - all
+        - "7"
+        - "8"
     - name: Fedora
       versions:
         - all
     - name: Ubuntu
       versions:
-        - all
+        - focal
+        - bionic
 
   galaxy_tags:
     - elasticrepo

@@ -25,4 +25,4 @@ galaxy_info:
     - system
 
 dependencies:
-  - buluma.httpd
+  - role: buluma.httpd

@@ -1,24 +1,23 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: haproxy
   description: Install and configure haproxy on your system.
   license: Apache-2.0
-  company: none
+  company: ShadowNet
   min_ansible_version: "2.10"
 
   platforms:
     - name: EL
       versions:
-        - 8
+        - "8"
     - name: Debian
       versions:
         - all
     - name: Fedora
       versions:
         - all
-    - name: OpenSUSE
+    - name: opensuse
       versions:
         - all
     - name: Ubuntu

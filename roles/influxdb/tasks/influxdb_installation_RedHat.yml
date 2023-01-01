@@ -6,16 +6,34 @@
     baseurl: "{{ influxdb_yum_url }}"
     gpgkey: "{{ influxdb_yum_key }}"
     gpgcheck: yes
+    enabled: yes
   when: influxdb_manage_repository
+
+- name: update cache
+  command: |
+    yum makecache
+  become: true
 
 - name: RedHat - Ensure InfluxDB is installed
   ansible.builtin.yum:
-    name: "{{ item }}"
+    name:
+      - vim
+      - curl
+      - influxdb
     state: present
   when: influxdb_manage_package
   notify: start-influxdb
-  loop:
-    - influxdb
+
+# - name: RedHat - Ensure InfluxDB is installed
+#   ansible.builtin.yum:
+#     name: "{{ item }}"
+#     state: present
+#   when: influxdb_manage_package
+#   notify: start-influxdb
+#   loop:
+#     - vim
+#     - curl
+#     - influxdb
 
 - name: RedHat - Ensure python influxdb library
   ansible.builtin.pip:

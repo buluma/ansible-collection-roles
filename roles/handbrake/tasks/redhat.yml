@@ -1,5 +1,5 @@
 ---
-- name: rpm --import
+- name: Rpm --import
   ansible.builtin.rpm_key:
     key: "{{ item.key }}"
     fingerprint: "{{ item.fingerprint }}"
@@ -8,7 +8,7 @@
   register: result
   until: result is succeeded
 
-- name: download archive
+- name: Download archive
   ansible.builtin.shell: |
     set -euxo pipefail
     mkdir -p /var/log/ansible
@@ -28,7 +28,7 @@
   register: result
   until: result is succeeded
 
-- name: yum install
+- name: Yum install
   ansible.builtin.shell: |
     set -euxo pipefail
     mkdir -p /var/log/ansible
@@ -41,7 +41,7 @@
   changed_when: false
   failed_when: false
 
-- name: yum install
+- name: Yum install
   ansible.builtin.yum:
     name: "{{ item.name }}"
     state: "{{ item.state }}"

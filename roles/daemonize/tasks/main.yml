@@ -2,7 +2,7 @@
 # tasks file for daemonize
 
 # pretasks
-- name: ensure build dependencies are installed (RedHat).
+- name: Ensure build dependencies are installed (RedHat).
   ansible.builtin.yum: 'name="{{ item }}" state=present'
   with_items:
     - "@Development tools"
@@ -10,12 +10,12 @@
     - unzip
   when: ansible_os_family == 'RedHat'
 
-- name: update apt cache.
+- name: Update apt cache.
   ansible.builtin.apt: update_cache=yes cache_valid_time=600
   when: ansible_os_family == 'Debian'
   changed_when: false
 
-- name: ensure build dependencies are installed (Debian).
+- name: Ensure build dependencies are installed (Debian).
   ansible.builtin.apt: 'name="{{ item }}" state=present'
   with_items:
     - build-essential
@@ -24,13 +24,13 @@
     - sudo
   when: ansible_os_family == 'Debian'
 
-- name: download daemonize archive.
+- name: Download daemonize archive.
   ansible.builtin.get_url:
     url: "https://github.com/bmc/daemonize/archive/release-{{ daemonize_version }}.tar.gz"
     dest: "{{ workspace }}/daemonize-{{ daemonize_version }}.tar.gz"
     mode: 0644
 
-- name: expand daemonize archive.
+- name: Expand daemonize archive.
   ansible.builtin.unarchive:
     src: "{{ workspace }}/daemonize-{{ daemonize_version }}.tar.gz"
     dest: "{{ workspace }}"
@@ -38,13 +38,13 @@
     copy: false
     mode: 0755
 
-- name: check if daemonize is installed.
+- name: Check if daemonize is installed.
   ansible.builtin.command: which daemonize
   changed_when: false
   failed_when: false
   register: daemonize_installed
 
-- name: build daemonize.
+- name: Build daemonize.
   ansible.builtin.command: >
     {{ item }}
     chdir={{ workspace }}/daemonize-release-{{ daemonize_version }}

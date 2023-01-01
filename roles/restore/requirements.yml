@@ -8,3 +8,6 @@ roles:
   - name: buluma.epel
   - name: buluma.python_pip
   - name: buluma.postgres
+collections:
+  - name: community.mysql
+  - name: community.postgresql

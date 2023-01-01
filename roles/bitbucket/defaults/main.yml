@@ -1,22 +1,10 @@
 ---
 
-# PostgreSQL JDBC release.
-postgresql_jdbc_release: "42.3"
-
-# PostgreSQL JDBC version.
-postgresql_jdbc_version: "{{ _postgresql_jdbc_version[postgresql_jdbc_release] }}"
-
-# PostgreSQL JDBC download details.
-postgresql_jdbc_download: "{{ _postgresql_jdbc_download[postgresql_jdbc_version] }}"
-
 # Bitbucket release.
-bitbucket_release: "7.21"
+bitbucket_release: "8.3"
 
 # Bitbucket version.
 bitbucket_version: "{{ _bitbucket_version[bitbucket_release] }}"
-
-# Bitbucket download details.
-bitbucket_download: "{{ _bitbucket_download[bitbucket_version] }}"
 
 # Owner and group for Bitbucket.
 bitbucket_owner: "bitbucket"
@@ -45,6 +33,5 @@ bitbucket_jvm_support_recommended_args: >-
   -XX:+UnlockExperimentalVMOptions
   -XX:+UseCGroupMemoryLimitForHeap
   -XX:MaxRAMFraction=1
-
 # Session timeout (in mintues).
 bitbucket_session_timeout: "120"

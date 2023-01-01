@@ -18,8 +18,8 @@
   when: php_version == "8.0"
 
 # See: https://github.com/ansible/ansible/issues/64852
-- block:
-
+- name: dnf based setup
+  block:
   - name: Ensure dnf-plugins are installed on CentOS 8+.
     yum:
       name: dnf-plugins-core

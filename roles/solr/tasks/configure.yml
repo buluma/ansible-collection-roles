@@ -4,7 +4,7 @@
     dest: "{{ solr_config_file }}"
     regexp: "^SOLR_HEAP"
     state: absent
-  notify: restart solr
+  notify: Restart solr
 
 - name: Apply Solr configuration changes.
   lineinfile:
@@ -20,4 +20,4 @@
       line: 'SOLR_PORT="{{ solr_port }}"'
     - regexp: "^.?SOLR_TIMEZONE="
       line: 'SOLR_TIMEZONE="{{ solr_timezone }}"'
-  notify: restart solr
+  notify: Restart solr

@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: The purpose of this role is to install and configure php_fpm on your system.
+    description: >
+      The purpose of this role is to install and configure php_fpm on your system.
+    author: Michael Buluma

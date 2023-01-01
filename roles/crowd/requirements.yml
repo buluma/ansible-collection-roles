@@ -1,5 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.java
-collections:

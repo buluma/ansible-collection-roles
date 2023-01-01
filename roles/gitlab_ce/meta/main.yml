@@ -1,9 +1,8 @@
 ---
 galaxy_info:
-  namespace: buluma
+  author: buluma
   role_name: gitlab_ce
-  author: Michael Buluma
-  description: Ansible Role for GitLab CE Installation
+  description: Ansible Role for GitLab CE Installation.
   company: ShadowNet
   license: Apache-2.0
   min_ansible_version: "4.10"
@@ -13,14 +12,21 @@ galaxy_info:
         - all
     - name: EL
       versions:
-        - all
+        - "8"
     - name: Debian
       versions:
-        - all
+        - bookworm
     - name: Fedora
       versions:
+        - "35"
+        - "36"
+    - name: opensuse
+      versions:
         - all
-    - name: OpenSUSE
+    - name: CentOS
+      versions:
+        - all
+    - name: OracleLinux
       versions:
         - all
   galaxy_tags:

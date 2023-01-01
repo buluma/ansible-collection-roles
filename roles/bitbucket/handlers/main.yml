@@ -1,12 +1,6 @@
 ---
 
-- name: bitbucket | systemctl daemon-reload
-  ansible.builtin.systemd:
-    daemon_reload: true
-  changed_when: false
-  failed_when: false
-
-- name: bitbucket | systemctl restart bitbucket.service
+- name: Bitbucket | systemctl restart bitbucket.service
   ansible.builtin.service:
     name: "bitbucket.service"
     state: "restarted"

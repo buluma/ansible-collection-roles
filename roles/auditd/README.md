@@ -4,7 +4,7 @@ Install and configure auditd on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-auditd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-auditd/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-auditd/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-auditd)|[![quality](https://img.shields.io/ansible/quality/57876)](https://galaxy.ansible.com/buluma/auditd)|[![downloads](https://img.shields.io/ansible/role/d/57876)](https://galaxy.ansible.com/buluma/auditd)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-auditd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-auditd/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-auditd/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-auditd)|[![quality](https://img.shields.io/ansible/quality/57876)](https://galaxy.ansible.com/buluma/auditd)|[![downloads](https://img.shields.io/ansible/role/d/57876)](https://galaxy.ansible.com/buluma/auditd)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -141,7 +141,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
 
 ## [Context](#context)
 
@@ -183,7 +183,7 @@ If you find issues, please register them in [GitHub](https://github.com/buluma/a
 
 ## [Changelog](#changelog)
 
-[Role History](https://github.com/buluma/ansible-role-auditd/blob/main/CHANGELOG.md)
+[Role History](https://github.com/buluma/ansible-role-auditd/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 

@@ -4,7 +4,7 @@ Install pythons pip on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-python_pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-python_pip/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-python_pip/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-python_pip)|[![quality](https://img.shields.io/ansible/quality/57863)](https://galaxy.ansible.com/buluma/python_pip)|[![downloads](https://img.shields.io/ansible/role/d/57863)](https://galaxy.ansible.com/buluma/python_pip)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-python_pip.svg)](https://github.com/buluma/ansible-role-python_pip/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-python_pip.svg)](https://github.com/buluma/ansible-role-python_pip/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-python_pip.svg)](https://github.com/buluma/ansible-role-python_pip/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-python_pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-python_pip/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-python_pip/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-python_pip)|[![quality](https://img.shields.io/ansible/quality/57863)](https://galaxy.ansible.com/buluma/python_pip)|[![downloads](https://img.shields.io/ansible/role/d/57863)](https://galaxy.ansible.com/buluma/python_pip)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-python_pip.svg)](https://github.com/buluma/ansible-role-python_pip/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-python_pip.svg)](https://github.com/buluma/ansible-role-python_pip/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-python_pip.svg)](https://github.com/buluma/ansible-role-python_pip/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -68,9 +68,9 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
-|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
 
 ## [Context](#context)
 
@@ -88,7 +88,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |---------|----|
 |alpine|all|
 |el|8|
-|debian|all|
+|debian|buster, bullseye|
 |fedora|all|
 |opensuse|all|
 |ubuntu|all|
@@ -114,7 +114,7 @@ If you find issues, please register them in [GitHub](https://github.com/buluma/a
 
 ## [Changelog](#changelog)
 
-[Role History](https://github.com/buluma/ansible-role-python_pip/blob/main/CHANGELOG.md)
+[Role History](https://github.com/buluma/ansible-role-python_pip/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 
@@ -122,4 +122,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

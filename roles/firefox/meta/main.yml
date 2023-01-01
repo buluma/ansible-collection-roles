@@ -6,7 +6,7 @@ galaxy_info:
   role_name: firefox
   namespace: buluma
   description: Firefox Installation.
-  license: license (Apache-2.0)
+  license: Apache-2.0
   min_ansible_version: 2.10
   platforms:
     - name: EL

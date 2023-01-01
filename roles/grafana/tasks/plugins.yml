@@ -1,12 +1,12 @@
 ---
-- name: check which plugins are installed
+- name: Check which plugins are installed
   ansible.builtin.find:
     file_type: directory
     recurse: false
     paths: "{{ grafana_data_dir }}/plugins"
   register: installed_plugins
 
-- name: install plugins
+- name: Install plugins
   become: true
   ansible.builtin.command: "grafana-cli --pluginsDir {{ grafana_data_dir }}/plugins plugins install {{ item }}"
   args:
@@ -17,4 +17,4 @@
   retries: 5
   delay: 2
   notify:
-    - restart grafana
+    - Restart grafana

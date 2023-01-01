@@ -18,8 +18,12 @@ JVM_SUPPORT_RECOMMENDED_ARGS="{{ bitbucket_jvm_support_recommended_args }}"
 # The following 2 settings control the minimum and maximum memory allocated to the Java virtual machine.
 # For larger instances, the maximum amount will need to be increased.
 #
-JVM_MINIMUM_MEMORY="{{ bitbucket_jvm_minimum_memory }}"
-JVM_MAXIMUM_MEMORY="{{ bitbucket_jvm_maximum_memory }}"
+if [ -z "${JVM_MINIMUM_MEMORY}" ]; then
+    JVM_MINIMUM_MEMORY="{{ bitbucket_jvm_minimum_memory }}"
+fi
+if [ -z "${JVM_MAXIMUM_MEMORY}" ]; then
+    JVM_MAXIMUM_MEMORY="{{ bitbucket_jvm_maximum_memory }}"
+fi
 
 # Uncommenting the following will set the umask for the webapp. It can be used to override the default
 # settings for the service user if they are not sufficiently secure.

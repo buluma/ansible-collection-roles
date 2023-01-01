@@ -1,5 +1,5 @@
 ---
-- name: test if firefox_desktop_icon is set correctly
+- name: Test if firefox_desktop_icon is set correctly
   ansible.builtin.assert:
     that:
       - firefox_desktop_icon is defined

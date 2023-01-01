@@ -13,12 +13,12 @@
     state: started
 
 - name: check if user exists
-  ansible.builtin.command: "/usr/bin/influx -execute 'SHOW USERS' -username '{{ influxdb_admin_username }}' -password '{{ influxdb_admin_password }}' -format csv"
+  command: "/usr/bin/influx -execute 'SHOW USERS' -username '{{ influxdb_admin_username }}' -password '{{ influxdb_admin_password }}' -format csv"
   register: _influxdb_check_user
   failed_when: false
   changed_when: false
 
 - name: create admin user
-  ansible.builtin.command: /usr/bin/influx -execute "CREATE USER {{ influxdb_admin_username }} WITH PASSWORD '{{ influxdb_admin_password }}' WITH ALL PRIVILEGES"
+  command: /usr/bin/influx -execute "CREATE USER {{ influxdb_admin_username }} WITH PASSWORD '{{ influxdb_admin_password }}' WITH ALL PRIVILEGES"
   when:
     - '"create admin user first or disable authentication" in _influxdb_check_user.stdout'

@@ -17,7 +17,7 @@
       community.general.apk:
         upgrade: yes
       notify:
-        - reboot
+        - Reboot
   when:
     - ansible_pkg_mgr == "apk"
 
@@ -29,14 +29,14 @@
         upgrade: "{{ update_upgrade_command }}"
         cache_valid_time: "{{ update_cache_valid_time }}"
       notify:
-        - reboot
+        - Reboot
 
     - name: apt autoremove (apt)
       ansible.builtin.apt:
         autoremove: "{{ update_autoremove }}"
       when:
         - ansible_pkg_mgr == "apt"
-        - update_autoremove == "yes"
+        - update_autoremove
   when:
     - ansible_pkg_mgr == "apt"
 
@@ -45,7 +45,7 @@
     name: "*"
     state: latest  # noqa package-latest This role is to update packages.
   notify:
-    - reboot
+    - Reboot
   when:
     - ansible_pkg_mgr == "dnf"
 
@@ -54,7 +54,7 @@
     update_cache: yes
     upgrade: yes
   notify:
-    - reboot
+    - Reboot
   when:
     - ansible_pkg_mgr == "pacman"
 
@@ -65,22 +65,22 @@
         name: "*"
         state: latest  # noqa package-latest This role is to update packages.
       notify:
-        - reboot
+        - Reboot
       when:
         - ansible_distribution_major_version == "6"
 
-    - name: configure 7
-      block:
-        - name: update all software (yum/7)
-          ansible.builtin.yum:
-            name: "*"
-            state: latest
-          notify:
-            - reboot
+    - name: update all software (yum/7)
+      ansible.builtin.yum:
+        name: "*"
+        state: latest  # noqa package-latest This role is to update packages.
+      notify:
+        - Reboot
+      when:
+        - ansible_distribution_major_version == "7"
 
-        - name: install yum-utils
-          ansible.builtin.package:
-            name: yum-utils
+    - name: install yum-utils
+      ansible.builtin.package:
+        name: yum-utils
       when:
         - ansible_distribution_major_version == "7"
   when:
@@ -89,8 +89,8 @@
 - name: update all software (zypper)
   community.general.zypper:
     name: "*"
-    state: latest
+    state: latest  # noqa package-latest This role is to update packages.
   notify:
-    - reboot
+    - Reboot
   when:
     - ansible_pkg_mgr == "zypper"

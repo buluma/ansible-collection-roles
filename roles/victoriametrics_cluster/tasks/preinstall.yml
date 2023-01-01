@@ -74,7 +74,7 @@
   with_items: "{{ custom_sysctl }}"
   when: custom_sysctl is defined
   notify:
-    - reload sysctl.conf
+    - Reload sysctl.conf
 
 - name: Create VictoriaMetrics system group
   ansible.builtin.group:
@@ -93,7 +93,7 @@
     createhome: false
   when: victoriametrics_system_user != "root"
 
-- name: configure /etc/security/limits.conf for {{ victoriametrics_system_user }} user
+- name: Configure /etc/security/limits.conf for {{ victoriametrics_system_user }} user
   community.general.pam_limits:
     domain: "{{ victoriametrics_system_user }}"
     limit_type: "{{ item.limit_type }}"

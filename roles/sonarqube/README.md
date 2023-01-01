@@ -4,7 +4,7 @@ An Ansible Role that install SonarQube.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-sonarqube/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sonarqube/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-sonarqube/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sonarqube)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/sonarqube)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/sonarqube)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-sonarqube.svg)](https://github.com/buluma/ansible-role-sonarqube/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-sonarqube.svg)](https://github.com/buluma/ansible-role-sonarqube/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-sonarqube.svg)](https://github.com/buluma/ansible-role-sonarqube/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-sonarqube/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sonarqube/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-sonarqube/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sonarqube)|[![quality](https://img.shields.io/ansible/quality/59181)](https://galaxy.ansible.com/buluma/sonarqube)|[![downloads](https://img.shields.io/ansible/role/d/59181)](https://galaxy.ansible.com/buluma/sonarqube)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-sonarqube.svg)](https://github.com/buluma/ansible-role-sonarqube/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-sonarqube.svg)](https://github.com/buluma/ansible-role-sonarqube/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-sonarqube.svg)](https://github.com/buluma/ansible-role-sonarqube/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -15,6 +15,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
   hosts: all
   vars:
     sonar_version: 7.9.6
+    sonar_web_host: 127.0.0.1
     sonar_plugins:
       - name: "sonar-l10n-pt"
         version: "6.4"
@@ -24,26 +25,46 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
         version: "3.2.0.2082"
         commercial: false
       - name: "ansible"
-        version: "2.4.0"
+        version: "2.5.1"
         marketplace: true
-  pre_tasks:
-    - name: install openjdk (redhat)
-      ansible.builtin.package:
-        name: java-11-openjdk
-        state: present
-      when: ansible_facts['os_family'] == "RedHat"
-    - name: add backports repository
-      ansible.builtin.apt_repository:
-        repo: deb http://ftp.debian.org/debian stretch-backports main
-        state: present
-        update_cache: yes
-      when: ansible_facts['os_family'] == "Debian"
-    - name: install openjdk (debian)
-      ansible.builtin.apt:
-        name: openjdk-11-jdk
-        state: present
-      when: ansible_facts['os_family'] == "Debian"
+      - name: "ha"
+        version: "7.1"
+        marketplace: true
+      - name: "ha"
+        version: "7.1"
+        marketplace: true
+      - name: "authgithub"
+        version: "1.5"
+        marketplace: true
+      - name: "authgitlab"
+        version: "1.3.2"
+        marketplace: true
+      - name: "authgoogleoauth"
+        version: "1.6.1"
+        marketplace: true
+  # pre_tasks:
+  #   # TODO: Prepare Java 11
+  #   - name: install openjdk (redhat)
+  #     ansible.builtin.package:
+  #       name: java-11-openjdk
+  #       state: present
+  #     when: ansible_facts['os_family'] == "RedHat"
+  #   - name: add backports repository
+  #     ansible.builtin.apt_repository:
+  #       repo: deb http://ftp.debian.org/debian stretch-backports main
+  #       state: present
+  #       update_cache: yes
+  #     when: ansible_facts['os_family'] == "Debian"
+  #   - name: install openjdk (debian)
+  #     ansible.builtin.apt:
+  #       name: openjdk-11-jdk
+  #       state: present
+  #     when: ansible_facts['os_family'] == "Debian"
   roles:
+    - role: buluma.java
+      java_vendor: openjdk
+      java_type: jdk
+      java_version: "11"
     - role: buluma.sonarqube
 ```
 
@@ -55,6 +76,8 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
 
   roles:
     - name: buluma.bootstrap
+    - name: buluma.epel
+    # - name: buluma.java
 
   tasks:
     - name: "ensure apt cache is up to date"
@@ -124,21 +147,21 @@ sonar_db_pass: ""
 
 # SonarQube JDBC URL
 # examples (from default sonar.properties file):
-#----- MySQL 5.6 or greater
+# ----- MySQL 5.6 or greater
 # Only InnoDB storage engine is supported (not myISAM).
 # Only the bundled driver is supported. It can not be changed.
-#sonar_jdbc_url=jdbc:mysql://localhost:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance
-#----- Oracle 11g/12c
+# sonar_jdbc_url=jdbc:mysql://localhost:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance
+# ----- Oracle 11g/12c
 # - Only thin client is supported
 # - Only versions 11.2.x and 12.x of Oracle JDBC driver are supported
 # - The JDBC driver must be copied into the directory extensions/jdbc-driver/oracle/
 # - If you need to set the schema, please refer to http://jira.sonarsource.com/browse/SONAR-5000
-#sonar_jdbc_url=jdbc:oracle:thin:@localhost:1521/XE
-#----- PostgreSQL 8.x/9.x
+# sonar_jdbc_url=jdbc:oracle:thin:@localhost:1521/XE
+# ----- PostgreSQL 8.x/9.x
 # If you don't use the schema named "public", please refer to http://jira.sonarsource.com/browse/SONAR-5000
-#sonar_jdbc_url=jdbc:postgresql://localhost/sonar
+# sonar_jdbc_url=jdbc:postgresql://localhost/sonar
 
-#----- Microsoft SQLServer 2008/2012/2014 and SQL Azure
+# ----- Microsoft SQLServer 2008/2012/2014 and SQL Azure
 # A database named sonar must exist and its collation must be case-sensitive (CS) and accent-sensitive (AS)
 # Use the following connection string if you want to use integrated security with Microsoft Sql Server
 # Do not set sonar.jdbc.username or sonar.jdbc.password property if you are using Integrated Security
@@ -147,10 +170,10 @@ sonar_db_pass: ""
 # and copy sqljdbc_auth.dll to your path. You have to copy the 32 bit or 64 bit version of the dll
 # depending upon the architecture of your server machine.
 # This version of SonarQube has been tested with Microsoft SQL JDBC version 4.1
-#sonar_jdbc_url=jdbc:sqlserver://localhost;databaseName=sonar;integratedSecurity=true
+# sonar_jdbc_url=jdbc:sqlserver://localhost;databaseName=sonar;integratedSecurity=true
 # Use the following connection string if you want to use SQL Auth while connecting to MS Sql Server.
 # Set the sonar.jdbc.username and sonar.jdbc.password appropriately.
-#sonar_jdbc_url=jdbc:sqlserver://localhost;databaseName=sonar
+# sonar_jdbc_url=jdbc:sqlserver://localhost;databaseName=sonar
 
 sonar_jdbc_url: ""
 
@@ -211,7 +234,7 @@ sonar_web_http_accept_count: 25
 # TCP port for incoming AJP connections. Disabled if value is -1. Disabled by default.
 sonar_ajp_port: -1
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # COMPUTE ENGINE
 # The Compute Engine is responsible for processing background tasks.
 # Compute Engine is executed in a dedicated Java process. Default heap size is 512Mb.
@@ -237,7 +260,7 @@ sonar_ce_java_additional_opts: ""
 #    Elasticsearch. The number of workers must suit your environment.
 sonar_ce_worker_count: 1
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # ELASTICSEARCH
 # Elasticsearch is used to facilitate fast and accurate information retrieval.
 # It is executed in a dedicated Java process. Default heap size is 1Gb.
@@ -265,7 +288,7 @@ sonar_search_port: 9001
 sonar_search_host: 127.0.0.1
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # UPDATE CENTER
 
 # Update Center requires an internet connection to request https://update.sonarsource.org
@@ -290,7 +313,7 @@ socks_proxy_port: ""
 http_proxy_user: ""
 http_proxy_password: ""
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # LOGGING
 
 # Level of logs. Supported values are INFO(default), DEBUG and TRACE (DEBUG + SQL + ES requests)
@@ -320,7 +343,7 @@ sonar_web_access_logs_enable: true
 # If SonarQube is behind a reverse proxy, then the following value allows to display the correct remote IP address:
 sonar_web_access_logs_pattern: "%i{X-Forwarded-For} %l %u [%t] \"%r\" %s %b \"%i{Referer}\" \"%i{User-Agent}\""
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # LDAP
 # Ldap configuration for ldap auth plugin
 # see https://docs.sonarqube.org/latest/instance-administration/delegated-auth/ for more details and description of properties
@@ -348,7 +371,7 @@ sonar_web_access_logs_pattern: "%i{X-Forwarded-For} %l %u [%t] \"%r\" %s %b \"%i
 # default: undefined
 # sonar_ldap:
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # OTHERS
 
 # Delay in seconds between processing of notification queue. Default is 60 seconds.
@@ -357,7 +380,7 @@ sonar_notifications_delay: 60
 # Pass any custom Java properties to sonar.properties
 sonar_additional_properties: {}
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # DEVELOPMENT - only for developers
 # The following properties MUST NOT be used in production environments.
 
@@ -385,6 +408,9 @@ The following roles are used to prepare a system. You can prepare your system in
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
 |[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.java](https://galaxy.ansible.com/buluma/java)|[![Build Status GitHub](https://github.com/buluma/ansible-role-java/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-java/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-java/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-java)|
+|[buluma.service](https://galaxy.ansible.com/buluma/service)|[![Build Status GitHub](https://github.com/buluma/ansible-role-service/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-service/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-service/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-service)|
 
 ## [Context](#context)
 
@@ -400,7 +426,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|el|7|
+|el|7, 8|
 |ubuntu|all|
 |debian|all|
 
@@ -420,8 +446,8 @@ If you find issues, please register them in [GitHub](https://github.com/buluma/a
 
 ## [License](#license)
 
-Apache License Version 2.0
+Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

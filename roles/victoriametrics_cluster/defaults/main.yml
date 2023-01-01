@@ -26,6 +26,11 @@ victoriametrics_vmstorage_listen_address: "{{ ansible_default_ipv4.address }}"
 victoriametrics_vmselect_listen_address: "{{ ansible_default_ipv4.address }}"
 victoriametrics_vminsert_listen_address: "{{ ansible_default_ipv4.address }}"
 
+# variables for service's enabling
+victoriametrics_vminsert_service_enabled: true
+victoriametrics_vmselect_service_enabled: true
+victoriametrics_vmstorage_service_enabled: true
+
 # sysctl settings. more info :
 custom_sysctl:
 # http://www.nateware.com/linux-network-tuning-for-2013.html

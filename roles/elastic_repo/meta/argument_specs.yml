@@ -4,7 +4,7 @@ argument_specs:
   main:
     short_description: "Install the Elastic repository on your system."
     description: Add the Elastic repository so software can be installed.
-    author: Robert de Bock
+    author: Michael Buluma
     options:
       elastic_repo_license:
         type: "str"

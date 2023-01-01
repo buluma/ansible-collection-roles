@@ -18,7 +18,7 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 
   roles:
     - role: buluma.certbot
-      certbot_email: michael@buluma.me.ke
+      certbot_email: mail@email.com
       certbot_domains:
         - buluma.me.ke
         - buluma.co.ke

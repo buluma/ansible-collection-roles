@@ -1,5 +1,5 @@
 ---
-- name: apt-key add
+- name: Apt-key add
   ansible.builtin.apt_key:
     keyring: "{{ item.keyring }}"
     url: "{{ item.url }}"
@@ -9,7 +9,7 @@
   register: result
   until: result is succeeded
 
-- name: apt-add-repository
+- name: Apt-add-repository
   ansible.builtin.apt_repository:
     filename: "{{ item.filename }}"
     repo: "{{ item.repo }}"
@@ -19,7 +19,7 @@
   register: result
   until: result is succeeded
 
-- name: apt-get install
+- name: Apt-get install
   ansible.builtin.apt:
     name: "{{ item.name }}"
     state: "{{ item.state }}"

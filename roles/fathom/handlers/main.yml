@@ -1,5 +1,0 @@
----
-# handlers file for fathom
-- name: restart fathom
-  ansible.builtin.service: name=fathom state=restarted
-  when: fathom_manage_service

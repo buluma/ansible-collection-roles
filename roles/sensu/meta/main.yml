@@ -1,15 +1,15 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: sensu
   description: Installs and configures latest sensu
   license: 'Apache-2.0'
-  min_ansible_version: 2.1
+  min_ansible_version: "2.1"
   platforms:
     - name: Ubuntu
       versions:
-        - all
+        - focal
+        - bionic
   galaxy_tags:
     - monitoring
     - sensu

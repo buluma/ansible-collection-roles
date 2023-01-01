@@ -1,14 +1,14 @@
 ---
 
-- name: Install required pip packages
+- name: Install required pip packages | rhel
   vars:
     ansible_python_interpreter: "python3"
   ansible.builtin.pip:
     name:
-      - setuptools
+      # - setuptools
       - dataclasses
 
-- name: rpm --import
+- name: Rpm --import | rhel
   ansible.builtin.rpm_key:
     key: "{{ item.key }}"
     fingerprint: "{{ item.fingerprint }}"
@@ -17,7 +17,7 @@
   register: result
   until: result is succeeded
 
-- name: yum-config-manager --add-repo
+- name: Yum-config-manager --add-repo | rhel
   ansible.builtin.yum_repository:
     file: "{{ item.file }}"
     name: "{{ item.name }}"
@@ -31,7 +31,7 @@
     state: "{{ item.state }}"
   loop: "{{ _yum_repository }}"
 
-- name: yum versionlock delete
+- name: Yum versionlock delete | rhel
   community.general.yum_versionlock:
     name: "{{ item.name | regex_replace('^(.*)-[0-9]*:*[0-9]+\\..*$', '\\1-*') }}"
     state: "absent"
@@ -40,7 +40,7 @@
   changed_when: false
   failed_when: false
 
-- name: yum install
+- name: Yum install | rhel
   ansible.builtin.yum:
     name: "{{ item.name }}"
     state: "{{ item.state }}"
@@ -48,10 +48,10 @@
   register: result
   until: result is succeeded
   notify:
-    - gitlab_ce | gitlab-ctl reconfigure
-    - gitlab_ce | systemctl restart gitlab-runsvdir.service
+    - Gitlab_ce | gitlab-ctl reconfigure
+    - Gitlab_ce | systemctl restart gitlab-runsvdir.service
 
-- name: yum versionlock add
+- name: Yum versionlock add | rhel
   community.general.yum_versionlock:
     name: "{{ item.name | regex_replace('^(.*)-[0-9]*:*[0-9]+\\..*$', '\\1-*') }}"
     state: "present"

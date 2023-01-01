@@ -1,12 +1,11 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: systemd
   description: Systemd, a system and service manager for Linux operating systems
-  company: "O1.IO"
-  license: (Apache-2.0)
-  min_ansible_version: 2.10
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.10"
   platforms:
     - name: EL
       versions:

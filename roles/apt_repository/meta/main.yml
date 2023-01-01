@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: apt_repository
   description: Manage apt repositor(y|ies).
   license: Apache-2.0

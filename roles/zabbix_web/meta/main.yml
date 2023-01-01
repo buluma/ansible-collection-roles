@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: zabbix_web
   description: Install and configure zabbix_web on your system.
   license: Apache-2.0
@@ -17,7 +16,8 @@ galaxy_info:
         - all
     - name: Ubuntu
       versions:
-        - all
+        - focal
+        - bionic
 
   galaxy_tags:
     - zabbix

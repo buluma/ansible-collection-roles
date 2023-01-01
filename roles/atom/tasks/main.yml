@@ -1,12 +1,12 @@
 ---
 # tasks file for atom
 
-- name: import assert.yml
+- name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
   run_once: yes
   delegate_to: localhost
 
-- name: install requirements
+- name: Install requirements
   ansible.builtin.package:
     name: "{{ atom_requirements }}"
     state: present
@@ -14,7 +14,7 @@
     - atom_requirements is defined
     - ansible_pkg_mgr == "apt"
 
-- name: download atom
+- name: Download atom
   ansible.builtin.get_url:
     url: "{{ atom_package_url }}"
     dest: "/tmp/{{ atom_package }}"
@@ -24,14 +24,14 @@
   when:
     - ansible_pkg_mgr in [ "apt", "dnf", "yum", "zypper" ]
 
-- name: install atom deb
+- name: Install atom deb
   ansible.builtin.apt:
     deb: "/tmp/{{ atom_package }}"
     state: present
   when:
     - ansible_pkg_mgr == "apt"
 
-- name: install atom rpm dnf
+- name: Install atom rpm dnf
   ansible.builtin.dnf:
     name: "/tmp/{{ atom_package }}"
     state: present
@@ -39,7 +39,7 @@
   when:
     - ansible_pkg_mgr == "dnf"
 
-- name: install atom rpm yum
+- name: Install atom rpm yum
   ansible.builtin.yum:
     name: "/tmp/{{ atom_package }}"
     state: present
@@ -47,7 +47,7 @@
   when:
     - ansible_pkg_mgr == "yum"
 
-- name: install atom rpm zypper
+- name: Install atom rpm zypper
   community.general.zypper:
     name: "/tmp/{{ atom_package }}"
     state: present

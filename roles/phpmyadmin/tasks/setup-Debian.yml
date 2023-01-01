@@ -1,12 +1,12 @@
 ---
 - name: Ensure phpMyAdmin is installed.
-  apt:
+  ansible.builtin.apt:
     name: phpmyadmin
     state: present
   notify: restart apache
 
 - name: Ensure phpMyAdmin config file is included in Apache config.
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/apache2/apache2.conf
     state: present
     regexp: "^Include.+phpmyadmin.+$"

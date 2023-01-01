@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: vim
   description: Install vim on your system.
   license: Apache-2.0
@@ -11,8 +10,10 @@ galaxy_info:
   platforms:
     - name: Fedora
       versions:
-        - 33
-    - name: OpenSUSE
+        - "34"
+        - "35"
+        - "36"
+    - name: opensuse
       versions:
         - all
     - name: Ubuntu

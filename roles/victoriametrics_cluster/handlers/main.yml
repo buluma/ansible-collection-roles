@@ -18,5 +18,5 @@
     name: victoriametrics-storage
     state: restarted
 
-- name: reload sysctl.conf
+- name: Reload sysctl.conf
   ansible.builtin.command: /sbin/sysctl --system

@@ -11,28 +11,27 @@ Kibana for Linux.
 This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
 ```yaml
 ---
-- name: Converge
+- name: converge
   hosts: all
-  become: true
-
-  pre_tasks:
-    - name: Update apt cache.
-      apt: update_cache=true cache_valid_time=600
-      when: ansible_os_family == 'Debian'
+  become: yes
+  gather_facts: yes
 
   roles:
-    - role: buluma.elasticsearch
     - role: buluma.kibana
+```
 
-  post_tasks:
-    - name: Ensure Kibana is running.
-      ansible.builtin.uri:
-        url: http://127.0.0.1:5601/login
-        status_code: 200
-      register: result
-      until: result.status == 200
-      retries: 60
-      delay: 1
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: prepare
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  roles:
+    - role: buluma.bootstrap
+    - role: buluma.core_dependencies
+    - role: robertdebock.elastic_repo
 ```
 
 
@@ -41,33 +40,39 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
 The default values for the variables are set in `defaults/main.yml`:
 ```yaml
 ---
-kibana_version: "7.x"
+# Elastic offers both "oss" (Apache 2.0 license) and "elastic"
+# (Elastic license). Select the type here. Either "oss" or "elastic"
+kibana_type: oss
 
-kibana_package: kibana
-kibana_package_state: present
-
-kibana_service_state: started
-kibana_service_enabled: true
-
-kibana_config_template: kibana.yml.j2
-kibana_config_file_path: /etc/kibana/kibana.yml
-
-kibana_server_port: 5601
+# The IP addres to bind on.
 kibana_server_host: "0.0.0.0"
 
-kibana_elasticsearch_url: "http://localhost:9200"
-kibana_elasticsearch_username: ""
-kibana_elasticsearch_password: ""
+# The TCP port to bind on.
+kibana_server_port: 5601
+
+# A list of elasticsearch urls.
+kibana_elasticsearch_hosts:
+  - "http://localhost:9200"
 ```
 
 ## [Requirements](#requirements)
 
 - pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-kibana/blob/main/requirements.txt).
 
+## [Status of used roles](#status-of-requirements)
+
+The following roles are used to prepare a system. You can prepare your system in another way.
+
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[robertdebock.elasticsearch](https://galaxy.ansible.com/buluma/robertdebock.elasticsearch)|[![Build Status GitHub](https://github.com/buluma/robertdebock.elasticsearch/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/robertdebock.elasticsearch/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/robertdebock.elasticsearch/badges/master/pipeline.svg)](https://gitlab.com/buluma/robertdebock.elasticsearch)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.core_dependencies](https://galaxy.ansible.com/buluma/core_dependencies)|[![Build Status GitHub](https://github.com/buluma/ansible-role-core_dependencies/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-core_dependencies/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-core_dependencies/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-core_dependencies)|
+|[robertdebock.elastic_repo](https://galaxy.ansible.com/buluma/robertdebock.elastic_repo)|[![Build Status GitHub](https://github.com/buluma/robertdebock.elastic_repo/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/robertdebock.elastic_repo/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/robertdebock.elastic_repo/badges/master/pipeline.svg)](https://gitlab.com/buluma/robertdebock.elastic_repo)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.co.ke/) for further information.
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -79,11 +84,13 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|el|all|
+|amazon|all|
 |debian|all|
-|ubuntu|all|
+|el|7, 8|
+|fedora|all|
+|ubuntu|focal, bionic|
 
-The minimum version of Ansible required is 2.0, tests have been done to:
+The minimum version of Ansible required is 2.10, tests have been done to:
 
 - The previous version.
 - The current version.
@@ -93,10 +100,14 @@ The minimum version of Ansible required is 2.0, tests have been done to:
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-kibana/issues)
 
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-kibana/blob/master/CHANGELOG.md)
+
 ## [License](#license)
 
 Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

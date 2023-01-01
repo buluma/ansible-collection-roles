@@ -1,16 +1,16 @@
 ---
-- name: include common preflight tasks
+- name: Include common preflight tasks
   include_tasks: "common/preflight.yml"
   tags:
     - preflight
 
-- name: include common config tasks
+- name: Include common config tasks
   include_tasks: "common/config.yml"
   when: not perform_uninstall | bool
   tags:
     - config
 
-- name: include common launch tasks
+- name: Include common launch tasks
   include_tasks: "common/launch.yml"
   when: not perform_uninstall | bool
   tags:

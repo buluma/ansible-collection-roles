@@ -1,4 +1,7 @@
 ---
 roles:
   - name: robertdebock.elasticsearch
+  - name: buluma.bootstrap
+  - name: buluma.core_dependencies
+  - name: robertdebock.elastic_repo
 collections:

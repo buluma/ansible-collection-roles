@@ -1,26 +1,26 @@
 ---
-- include: setup-RedHat.yml
-  when: ansible_os_family == 'RedHat'
+- name: Include assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: yes
+  delegate_to: localhost
 
-- include: setup-Debian.yml
-  when: ansible_os_family == 'Debian'
-
-- name: Install Kibana.
+- name: Install kibana
   ansible.builtin.package:
-    name: "{{ kibana_package }}"
-    state: "{{ kibana_package_state }}"
+    name: "{{ kibana_requirements + kibana_package }}"
+    state: present
 
-- name: Ensure Kibana is started and enabled at boot.
+- name: Configure kibana
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: kibana
+    group: kibana
+    mode: "0660"
+  notify:
+    - Restart kibana
+
+- name: Start kibana
   ansible.builtin.service:
     name: kibana
-    state: "{{ kibana_service_state }}"
-    enabled: "{{ kibana_service_enabled }}"
-
-- name: Copy Kibana configuration.
-  ansible.builtin.template:
-    src: "{{ kibana_config_template }}"
-    dest: "{{ kibana_config_file_path }}"
-    owner: root
-    group: root
-    mode: 0644
-  notify: restart kibana
+    state: started
+    enabled: yes

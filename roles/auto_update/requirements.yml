@@ -3,3 +3,4 @@ roles:
   - name: buluma.bootstrap
   - name: buluma.cron
 collections:
+  - name: community.general

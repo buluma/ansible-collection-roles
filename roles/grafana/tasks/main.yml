@@ -1,5 +1,5 @@
 ---
-- name: gather variables for each operating system
+- name: Gather variables for each operating system
   ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
@@ -37,7 +37,7 @@
   tags:
     - grafana_configure
 
-- name: restart grafana before configuring datasources and dashboards
+- name: Restart grafana before configuring datasources and dashboards
   ansible.builtin.meta: flush_handlers
   tags:
     - grafana_install
@@ -47,7 +47,7 @@
     - grafana_dashboards
     - grafana_run
 
-- name: wait for grafana to start (http/s)
+- name: Wait for grafana to start (http/s)
   ansible.builtin.wait_for:
     host: "{{ grafana_address }}"
     port: "{{ grafana_port }}"
@@ -60,7 +60,7 @@
     - grafana_dashboards
     - grafana_run
 
-- name: wait for grafana to start (socket)
+- name: Wait for grafana to start (socket)
   ansible.builtin.wait_for:
     path: "{{ grafana_server.socket }}"
   when: grafana_server.protocol is defined and grafana_server.protocol == 'socket'
@@ -92,7 +92,7 @@
     - grafana_notifications
     - grafana_run
 
-- name: "check if there are any dashboards in local {{ grafana_dashboards_dir }}"
+- name: "Check if there are any dashboards in local {{ grafana_dashboards_dir }}"
   become: false
   ansible.builtin.set_fact:
     found_dashboards: "{{ lookup('fileglob', grafana_dashboards_dir + '/*.json', wantlist=True) }}"

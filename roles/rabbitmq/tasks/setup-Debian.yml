@@ -2,7 +2,7 @@
 # See: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199 and
 # https://github.com/geerlingguy/ansible-role-java/issues/64
 - name: Ensure 'man' directory exists.
-  file:  # noqa 208
+  ansible.builtin.file:  # noqa 208
     path: /usr/share/man/man1
     state: directory
     mode: 0755
@@ -20,6 +20,7 @@
   ansible.builtin.get_url:
     url: "{{ rabbitmq_deb_url }}"
     dest: "/tmp/{{ rabbitmq_deb }}"
+    mode: 0755
 
 - name: Ensure RabbitMQ is installed.
   ansible.builtin.apt:

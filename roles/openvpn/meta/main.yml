@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: openvpn
   description: Install and configure openvpn server or client on your system.
   license: Apache-2.0
@@ -17,11 +16,11 @@ galaxy_info:
         - all
     - name: EL
       versions:
-        - 8
+        - "8"
     - name: Fedora
       versions:
-        - 34
-        - 35
+        - "35"
+        - "36"
     - name: Debian
       versions:
         - bullseye

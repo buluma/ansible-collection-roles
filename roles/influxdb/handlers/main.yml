@@ -4,6 +4,8 @@
     name: influxdb
     state: started
     enabled: yes
+    retries: 10
+    delay: 5
 
 - name: restart-influxdb
   ansible.builtin.service:

@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: ara
   description: Install and configure ara on your system.
   license: Apache-2.0
@@ -11,7 +10,7 @@ galaxy_info:
   platforms:
     - name: EL
       versions:
-        - 8
+        - "8"
     - name: Debian
       versions:
         - all

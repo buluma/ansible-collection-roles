@@ -1,8 +1,7 @@
 ---
 galaxy_info:
-  author: Michael Buluma
+  author: buluma
   role_name: podman
-  namespace: buluma
   description: Install and configure Podman on your system.
   license: Apache-2.0
   company: none
@@ -14,18 +13,23 @@ galaxy_info:
         - all
     - name: Debian
       versions:
-        - all
+        - bullseye
     - name: EL
       versions:
-        - 8
+        - all
     - name: Fedora
       versions:
-        - all
-    - name: OpenSUSE
+        - "35"
+        - "36"
+    - name: opensuse
       versions:
         - all
+    - name: Ubuntu
+      versions:
+        - jammy
 
   galaxy_tags:
     - podman
 
-dependencies: []
+dependencies:
+  - role: buluma.bootstrap

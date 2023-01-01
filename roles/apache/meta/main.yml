@@ -1,12 +1,10 @@
 ---
-dependencies: []
-
 galaxy_info:
-  role_name: apache
   author: buluma
+  role_name: apache
   description: Apache 2.x for Linux.
-  license: "license (Apache-2.0)"
-  min_ansible_version: 2.4
+  license: Apache-2.0
+  min_ansible_version: "2.4"
   platforms:
     - name: EL
       versions:
@@ -29,5 +27,7 @@ galaxy_info:
     - webserver
     - html
     - httpd
+
+dependencies: []
 
 allow_duplicates: true

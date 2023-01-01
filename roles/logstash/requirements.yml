@@ -1,6 +1,0 @@
----
-roles:
-  - name: buluma.java
-  - name: buluma.elasticsearch
-  - name: buluma.logstash
-collections:

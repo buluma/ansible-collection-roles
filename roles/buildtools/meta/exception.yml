@@ -2,3 +2,5 @@
 exceptions:
   - variation: EL
     reason: "No package matching 'bison' found available, installed or updated"
+  - variation: Debian:bookworm
+    reason: "No package matching 'bison' is available"

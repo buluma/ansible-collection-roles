@@ -55,4 +55,4 @@ _yum:
   - { state: "latest", name: "libxcrypt-compat" }
   - { state: "latest", name: "openssl" }
   - { state: "latest", name: "python3-gitlab" }
-  - { state: "present", name: "gitlab-ee-{{ gitlab_version}}*" }
+  - { state: "present", name: "gitlab-ee-{{ gitlab_version }}*" }

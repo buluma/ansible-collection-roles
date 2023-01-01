@@ -1,15 +1,13 @@
 ---
-dependencies: []
-
 galaxy_info:
   role_name: mas
   author: buluma
   description: Mac App Store CLI installation for macOS
-  company: "Midwestern Mac, LLC"
-  license: "license (BSD, MIT)"
-  min_ansible_version: 2.4
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.4"
   platforms:
-    - name: GenericUNIX
+    - name: macOS
       versions:
         - all
         - any
@@ -22,3 +20,4 @@ galaxy_info:
     - app
     - store
     - macos
+dependencies: []

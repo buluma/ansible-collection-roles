@@ -27,7 +27,6 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
             privilege: "WRITE"
   roles:
     - role: buluma.influxdb
-    - role: buluma.influxdb
 ```
 
 The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
@@ -38,7 +37,44 @@ The machine needs to be prepared. In CI this is done using `molecule/default/pre
   gather_facts: true
   roles:
     - role: buluma.bootstrap
-    - role: buluma.python_pip
+    - role: buluma.epel
+    # - role: buluma.buildtools
+    # - role: buluma.ca_certificates
+
+  tasks:
+    - name: install python-pip on RHEL7
+      yum:
+        name: python-pip
+        state: present
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+    - name: install python3-pip on RHEL8
+      yum:
+        name: python3
+        state: present
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+    - name: apt install pip on Ubuntu
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+        state: present
+      loop:
+        - python3-pip
+        - python3-setuptools
+        - gnupg
+      when: ( ansible_os_family == "Debian" and ansible_distribution == "Ubuntu" )
+
+    - name: install pip on Debian
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop:
+        - gnupg
+        - python-setuptools
+        - python-pip
+      when: ( ansible_os_family == "Debian" and ( ansible_distribution_major_version == "10" or ansible_distribution_major_version == "9" ))
 ```
 
 
@@ -91,7 +127,9 @@ The following roles are used to prepare a system. You can prepare your system in
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
 |[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.python_pip](https://galaxy.ansible.com/buluma/python_pip)|[![Build Status GitHub](https://github.com/buluma/ansible-role-python_pip/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-python_pip/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-python_pip/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-python_pip)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.buildtools](https://galaxy.ansible.com/buluma/buildtools)|[![Build Status GitHub](https://github.com/buluma/ansible-role-buildtools/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-buildtools/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-buildtools/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-buildtools)|
+|[buluma.ca_certificates](https://galaxy.ansible.com/buluma/ca_certificates)|[![Build Status GitHub](https://github.com/buluma/ansible-role-ca_certificates/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca_certificates/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-ca_certificates/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-ca_certificates)|
 
 ## [Context](#context)
 

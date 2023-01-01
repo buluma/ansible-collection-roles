@@ -1,7 +1,6 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: docker
   description: Install and configure Docker (non-CE) on your system.
   license: Apache-2.0
@@ -17,8 +16,8 @@ galaxy_info:
         - all
     - name: Fedora
       versions:
-        - 34
-        - 35
+        - "34"
+        - "35"
     - name: Ubuntu
       versions:
         - all

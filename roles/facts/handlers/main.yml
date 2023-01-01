@@ -1,5 +1,0 @@
----
-# handlers file for facts
-
-- name: setup
-  ansible.builtin.setup:

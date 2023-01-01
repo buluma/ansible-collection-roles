@@ -1,3 +1,5 @@
 ---
-- name: restart kibana
-  service: name=kibana state=restarted
+- name: Restart kibana
+  ansible.builtin.service:
+    name: kibana
+    state: restarted

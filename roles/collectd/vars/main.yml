@@ -25,19 +25,36 @@ collectd_conf_plugin_path: "{{ _collectd_plugin_path[ansible_os_family] | defaul
 # packages. Expand this list for new/extra plugins.
 # The lookup/expansion is done in `tasks/plugins.yml`
 _collectd_plugin_dependencies:
+  df:
+    default: []
+  disk:
+    default: collectd-disk
+    Debian: []
+    Suse: []
+  interface:
+    default: []
   postgresql:
     default:
       - collectd-postgresql
     Debian: []
     Suse:
       - collectd-plugin-postgresql
+  python:
+    default:
+      - collectd-python
+    Debian: []
+    Suse:
+      - collectd-plugin-python3
+  swap:
+    default: []
+  write_graphite:
+    default: []
   write_http:
     default: []
     Alpine:
       - collectd-write_http
     Amazon: []
-    RedHat: &redhat_plugin_dependencies
+    RedHat:
       - collectd-write_http
-    Rocky: *redhat_plugin_dependencies
 
 collectd_service: collectd

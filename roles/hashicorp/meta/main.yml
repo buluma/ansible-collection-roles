@@ -1,7 +1,7 @@
 ---
+dependencies: []
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: hashicorp
   description: Install HashiCorp products using packages.
   license: Apache-2.0
@@ -14,14 +14,14 @@ galaxy_info:
         - Candidate
     - name: EL
       versions:
-        - 8
+        - "8"
     - name: Debian
       versions:
         - bullseye
     - name: Fedora
       versions:
-        - 34
-        - 35
+        - "34"
+        - "35"
     - name: Ubuntu
       versions:
         - all
@@ -33,5 +33,3 @@ galaxy_info:
     - terraform
     - vagrant
     - vault
-
-dependencies: []

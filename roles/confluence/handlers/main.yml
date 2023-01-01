@@ -1,12 +1,12 @@
 ---
 
-- name: confluence | systemctl daemon-reload
+- name: Confluence | systemctl daemon-reload
   ansible.builtin.systemd:
     daemon_reload: true
   changed_when: false
   failed_when: false
 
-- name: confluence | systemctl restart confluence.service
+- name: Confluence | systemctl restart confluence.service
   ansible.builtin.service:
     name: "confluence.service"
     state: "restarted"

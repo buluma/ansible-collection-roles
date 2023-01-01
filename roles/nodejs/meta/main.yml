@@ -1,13 +1,11 @@
 ---
-dependencies: []
-
 galaxy_info:
   role_name: nodejs
   author: buluma
   description: Node.js installation for Linux
   company: "ShadowNet"
-  license: "license (Apache-2.0)"
-  min_ansible_version: 2.4
+  license: Apache-2.0
+  min_ansible_version: "2.4"
   platforms:
     - name: EL
       versions:
@@ -26,3 +24,4 @@ galaxy_info:
     - node
     - npm
     - nodejs
+dependencies: []

@@ -1,6 +1,6 @@
 ---
 
-- name: test if logrotate_frequency is set correctly
+- name: Test if logrotate_frequency is set correctly
   ansible.builtin.assert:
     that:
       - logrotate_frequency is defined
@@ -8,7 +8,7 @@
       - logrotate_frequency in [ "daily", "weekly", "monthly" ]
     quiet: yes
 
-- name: test if logrotate_keep is set correctly
+- name: Test if logrotate_keep is set correctly
   ansible.builtin.assert:
     that:
       - logrotate_keep is defined
@@ -16,28 +16,28 @@
       - logrotate_keep >= 0
     quiet: yes
 
-- name: test if logrotate_compress is set correctly
+- name: Test if logrotate_compress is set correctly
   ansible.builtin.assert:
     that:
       - logrotate_compress is defined
       - logrotate_compress is boolean
     quiet: yes
 
-- name: test if logrotate_user is set correctly
+- name: Test if logrotate_user is set correctly
   ansible.builtin.assert:
     that:
       - logrotate_user is defined
       - logrotate_user is string
     quiet: yes
 
-- name: test if logrotate_group is set correctly
+- name: Test if logrotate_group is set correctly
   ansible.builtin.assert:
     that:
       - logrotate_group is defined
       - logrotate_group is string
     quiet: yes
 
-- name: test if logrotate_entries is set correctly
+- name: Test if logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - logrotate_entries is iterable
@@ -45,7 +45,7 @@
   when:
     - logrotate_entries is defined
 
-- name: test if mandatory items in logrotate_entries are set correctly
+- name: Test if mandatory items in logrotate_entries are set correctly
   ansible.builtin.assert:
     that:
       - item.name is defined
@@ -59,7 +59,7 @@
   when:
     - logrotate_entries is defined
 
-- name: test if frequency in logrotate_entries is set correctly
+- name: Test if frequency in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.frequency is string
@@ -71,7 +71,7 @@
   when:
     - item.frequency is defined
 
-- name: test if keep in logrotate_entries is set correctly
+- name: Test if keep in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.keep is integer
@@ -83,7 +83,7 @@
   when:
     - item.keep is defined
 
-- name: test if compress in logrotate_entries is set correctly
+- name: Test if compress in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.compress is boolean
@@ -94,7 +94,7 @@
   when:
     - item.compress is defined
 
-- name: test if postrotate in logrotate_entries is set correctly
+- name: Test if postrotate in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.postrotate is string
@@ -105,7 +105,7 @@
   when:
     - item.postrotate is defined
 
-- name: test if missingok in logrotate_entries is set correctly
+- name: Test if missingok in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.missingok is boolean
@@ -116,7 +116,7 @@
   when:
     - item.missingok is defined
 
-- name: test if create_* in logrotate_entries is set correctly
+- name: Test if create_* in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.create_mode is defined
@@ -134,7 +134,7 @@
       item.create_user is defined or
       item.create_group is defined
 
-- name: test if minsize in logrotate_entries is set correctly
+- name: Test if minsize in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.minsize is string
@@ -145,7 +145,7 @@
   when:
     - item.minsize is defined
 
-- name: test if notifempty in logrotate_entries is set correctly
+- name: Test if notifempty in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.notifempty is boolean
@@ -156,7 +156,7 @@
   when:
     - item.notifempty is defined
 
-- name: test if sharedscripts in logrotate_entries is set correctly
+- name: Test if sharedscripts in logrotate_entries is set correctly
   ansible.builtin.assert:
     that:
       - item.sharedscripts is boolean

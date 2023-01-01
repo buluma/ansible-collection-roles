@@ -1,5 +1,5 @@
 ---
-- name: gitlab_ee | gitlab-ctl reconfigure
+- name: Gitlab_ee | gitlab-ctl reconfigure
   ansible.builtin.shell: |
     set -euxo pipefail
     GITLAB_OMNIBUS_CONFIG= /opt/gitlab/embedded/bin/runsvdir-start &
@@ -12,7 +12,7 @@
   changed_when: false
   failed_when: false
 
-- name: gitlab_ee | systemctl restart gitlab-runsvdir.service
+- name: Gitlab_ee | systemctl restart gitlab-runsvdir.service
   ansible.builtin.service:
     name: "gitlab-runsvdir.service"
     state: "restarted"

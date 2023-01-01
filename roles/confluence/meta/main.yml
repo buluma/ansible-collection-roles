@@ -1,8 +1,7 @@
 ---
 galaxy_info:
-  namespace: buluma
+  author: buluma
   role_name: confluence
-  author: Michael Buluma
   description: Ansible Role for Atlassian Confluence Installation
   company: ShadowNet
   license: Apache-2.0
@@ -13,8 +12,10 @@ galaxy_info:
         - all
     - name: EL
       versions:
+        - "7"
+    - name: opensuse
+      versions:
         - all
-    # TODO: build opensuse in generator
     - name: Debian
       versions:
         - all

@@ -1,6 +1,6 @@
 ---
 # tasks file for desktop
-- name: install software
+- name: Install software
   ansible.builtin.package:
     name: "{{ item.name }}"
     state: present
@@ -14,7 +14,7 @@
     - item.module is not defined or
       item.module != "command"
 
-- name: install software manually using dnf
+- name: Install software manually using dnf
   ansible.builtin.command: "dnf groupinstall --allowerasing --assumeyes '{{ item.name }}'"
   args:
     warn: no

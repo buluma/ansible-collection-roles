@@ -21,20 +21,20 @@
     gpgcheck: "{{ telegraf_yum_gpgcheck | default('true') }}"
     gpgkey: "{{ telegraf_yum_gpgkey }}"
   become: yes
-  when:
-    - telegraf_agent_package_method == "repo"
+  # when:
+  #   - telegraf_agent_package_method == "repo"
 
-- name: "RedHat | Download Telegraf package (online)"
-  ansible.builtin.get_url:
-    url: https://dl.influxdata.com/telegraf/releases/{{ telegraf_agent_package_file_rpm }}
-    dest: "{{ telegraf_agent_package }}"
-    use_proxy: "{{ true if http_proxy is defined and http_proxy else false }}"
-    mode: 0644
-  environment:
-    http_proxy: "{{ http_proxy | default(None) | default(omit) }}"
-    https_proxy: "{{ https_proxy | default(None) | default(omit) }}"
-  when:
-    - telegraf_agent_package_method == "online"
+# - name: "RedHat | Download Telegraf package (online)"
+#   ansible.builtin.get_url:
+#     url: https://dl.influxdata.com/telegraf/releases/{{ telegraf_agent_package_file_rpm }}
+#     dest: "{{ telegraf_agent_package }}"
+#     use_proxy: "{{ true if http_proxy is defined and http_proxy else false }}"
+#     mode: 0644
+#   environment:
+#     http_proxy: "{{ http_proxy | default(None) | default(omit) }}"
+#     https_proxy: "{{ https_proxy | default(None) | default(omit) }}"
+#   when:
+#     - telegraf_agent_package_method == "online"
 
 - name: "RedHat | Install Telegraf package"
   ansible.builtin.package:

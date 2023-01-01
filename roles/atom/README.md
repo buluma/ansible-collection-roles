@@ -4,7 +4,7 @@ Install atom on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-atom/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-atom/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-atom/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-atom)|[![quality](https://img.shields.io/ansible/quality/57873)](https://galaxy.ansible.com/buluma/atom)|[![downloads](https://img.shields.io/ansible/role/d/57873)](https://galaxy.ansible.com/buluma/atom)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-atom/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-atom/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-atom/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-atom)|[![quality](https://img.shields.io/ansible/quality/57873)](https://galaxy.ansible.com/buluma/atom)|[![downloads](https://img.shields.io/ansible/role/d/57873)](https://galaxy.ansible.com/buluma/atom)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-atom.svg)](https://github.com/buluma/ansible-role-atom/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -40,6 +40,12 @@ The default values for the variables are set in `defaults/main.yml`:
 ---
 # defaults file for atom
 
+# Atom release.
+atom_release: "1.60.0"
+
+# GitLab version.
+atom_version: "{{ _atom_version[atom_release] }}"
+
 # What apm packages (https://atom.io/packages) to install.
 atom_apm_packages:
   - linter
@@ -57,7 +63,7 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
 
 ## [Context](#context)
 
@@ -107,4 +113,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

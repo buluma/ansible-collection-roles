@@ -1,6 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-collections:
-  - name: community.mysql
-  - name: community.general

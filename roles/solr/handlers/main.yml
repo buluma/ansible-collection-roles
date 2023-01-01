@@ -1,5 +1,5 @@
 ---
-- name: restart solr
+- name: Restart solr
   service:
     name: "{{ solr_service_name }}"
     state: restarted

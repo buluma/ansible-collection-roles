@@ -20,6 +20,8 @@ collectd_conf_include_dir: /etc/collectd.d
 collectd_conf_fnmatch_filters:
   - "*.conf"
 
+collectd_conf_extra: ~
+
 #### Logging Configuration
 
 collectd_plugin_logging: syslog

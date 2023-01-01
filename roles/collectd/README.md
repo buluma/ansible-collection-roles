@@ -4,7 +4,7 @@ Install and configure collectd on your system.
 
 |GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
 |------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-collectd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-collectd/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-collectd/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-collectd)|[![quality](https://img.shields.io/ansible/quality/58008)](https://galaxy.ansible.com/buluma/collectd)|[![downloads](https://img.shields.io/ansible/role/d/58008)](https://galaxy.ansible.com/buluma/collectd)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-collectd.svg)](https://github.com/buluma/ansible-role-collectd/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-collectd.svg)](https://github.com/buluma/ansible-role-collectd/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-collectd.svg)](https://github.com/buluma/ansible-role-collectd/pulls/)|
+|[![github](https://github.com/buluma/ansible-role-collectd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-collectd/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-collectd/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-collectd)|[![quality](https://img.shields.io/ansible/quality/58008)](https://galaxy.ansible.com/buluma/collectd)|[![downloads](https://img.shields.io/ansible/role/d/58008)](https://galaxy.ansible.com/buluma/collectd)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-collectd.svg)](https://github.com/buluma/ansible-role-collectd/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-collectd.svg)](https://github.com/buluma/ansible-role-collectd/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-collectd.svg)](https://github.com/buluma/ansible-role-collectd/pulls/)|
 
 ## [Example Playbook](#example-playbook)
 
@@ -334,8 +334,8 @@ The following roles are used to prepare a system. You can prepare your system in
 
 | Requirement | GitHub | GitLab |
 |-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/main/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+|[buluma.epel](https://galaxy.ansible.com/buluma/epel)|[![Build Status GitHub](https://github.com/buluma/ansible-role-epel/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-epel/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-epel/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-epel)|
 
 ## [Context](#context)
 
@@ -352,12 +352,11 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |container|tags|
 |---------|----|
 |alpine|all|
-|amazon|Candidate|
 |el|8|
 |debian|bullseye|
 |fedora|all|
 |opensuse|all|
-|ubuntu|all|
+|ubuntu|focal, bionic|
 
 The minimum version of Ansible required is 2.10, tests have been done to:
 
@@ -372,13 +371,14 @@ Some roles can't run on a specific distribution or version. Here are some except
 | variation                 | reason                 |
 |---------------------------|------------------------|
 | centos:7 | Plugin dependency collectd-write_http is missing. |
+| Amazonlinux:latest | No package matching 'collectd-disk' found available. |
 
 
 If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-collectd/issues)
 
 ## [Changelog](#changelog)
 
-[Role History](https://github.com/buluma/ansible-role-collectd/blob/main/CHANGELOG.md)
+[Role History](https://github.com/buluma/ansible-role-collectd/blob/master/CHANGELOG.md)
 
 ## [License](#license)
 
@@ -386,4 +386,4 @@ Apache-2.0
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

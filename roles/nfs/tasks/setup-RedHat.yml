@@ -1,6 +1,6 @@
 ---
 - name: Ensure NFS utilities are installed.
-  package: name=nfs-utils state=present
+  ansible.builtin.package: name=nfs-utils state=present
 
 - name: Ensure rpcbind is running as configured.
   ansible.builtin.service:

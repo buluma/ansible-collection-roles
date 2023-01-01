@@ -1,19 +1,19 @@
 ---
-- name: ensure dependencies are present.
-  ansible.builtin.apt:
+- name: Ensure dependencies are present.
+  apt:
     name:
       - apt-transport-https
       - gnupg2
     state: present
 
-- name: add Nodesource apt key.
-  ansible.builtin.apt_key:
+- name: Add Nodesource apt key.
+  apt_key:
     url: https://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0x1655A0AB68576280
     id: "68576280"
     state: present
 
-- name: add NodeSource repositories for Node.js.
-  ansible.builtin.apt_repository:
+- name: Add NodeSource repositories for Node.js.
+  apt_repository:
     repo: "{{ item }}"
     state: present
   with_items:
@@ -21,12 +21,12 @@
     - "deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main"
   register: node_repo
 
-- name: update apt cache if repo was added.
+- name: Update apt cache if repo was added.
   apt: update_cache=yes
-  when: node_repo.changed
+  when: node_repo is changed
   tags: ['skip_ansible_lint']
 
-- name: ensure Node.js and npm are installed.
-  ansible.builtin.apt:
-    name: "nodejs={{ nodejs_version|regex_replace('x', '') }}*"
+- name: Ensure Node.js and npm are installed.
+  apt:
+    name: "nodejs={{ nodejs_version | regex_replace('x', '') }}*"
     state: present

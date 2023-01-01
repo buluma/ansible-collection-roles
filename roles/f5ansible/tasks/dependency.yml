@@ -1,5 +1,0 @@
----
-
-- name: Install module debugging dependencies
-  ansible.builtin.pip:
-    name: q

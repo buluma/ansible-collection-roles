@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Systemd, a system and service manager for Linux operating systems
+    description: >
+      Systemd, a system and service manager for Linux operating systems
+    author: Michael Buluma

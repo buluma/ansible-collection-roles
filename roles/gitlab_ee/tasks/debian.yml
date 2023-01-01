@@ -8,7 +8,7 @@
       - setuptools
       - dataclasses
 
-- name: apt-key add
+- name: Apt-key add
   ansible.builtin.apt_key:
     keyring: "{{ item.keyring }}"
     url: "{{ item.url }}"
@@ -18,7 +18,7 @@
   register: result
   until: result is succeeded
 
-- name: apt-add-repository
+- name: Apt-add-repository
   ansible.builtin.apt_repository:
     filename: "{{ item.filename }}"
     repo: "{{ item.repo }}"
@@ -28,7 +28,7 @@
   register: result
   until: result is succeeded
 
-- name: apt-mark unhold
+- name: Apt-mark unhold
   ansible.builtin.dpkg_selections:
     name: "{{ item.name | regex_replace('^(.*)=[0-9]*:*[0-9]+\\..*$', '\\1') }}"
     selection: "install"
@@ -37,7 +37,7 @@
   changed_when: false
   failed_when: false
 
-- name: apt-get install
+- name: Apt-get install
   ansible.builtin.apt:
     name: "{{ item.name }}"
     state: "{{ item.state }}"
@@ -45,10 +45,10 @@
   register: result
   until: result is succeeded
   notify:
-    - gitlab_ee | gitlab-ctl reconfigure
-    - gitlab_ee | systemctl restart gitlab-runsvdir.service
+    - Gitlab_ee | gitlab-ctl reconfigure
+    - Gitlab_ee | systemctl restart gitlab-runsvdir.service
 
-- name: apt-mark hold
+- name: Apt-mark hold
   ansible.builtin.dpkg_selections:
     name: "{{ item.name | regex_replace('^(.*)=[0-9]*:*[0-9]+\\..*$', '\\1') }}"
     selection: "hold"

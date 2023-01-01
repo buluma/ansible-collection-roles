@@ -1,8 +1,7 @@
 ---
 galaxy_info:
-  author: Michael Buluma
+  author: buluma
   role_name: snmpd
-  namespace: buluma
   description: Install and configure snmpd on your system.
   license: Apache-2.0
   company: none
@@ -14,17 +13,17 @@ galaxy_info:
         - all
     - name: Amazon
       versions:
+        - Candidate
+    - name: EL
+      versions:
         - all
     - name: Debian
       versions:
         - all
-    - name: EL
-      versions:
-        - 8
     - name: Fedora
       versions:
         - all
-    - name: OpenSUSE
+    - name: opensuse
       versions:
         - all
     - name: Ubuntu

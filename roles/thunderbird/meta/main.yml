@@ -1,5 +1,4 @@
 ---
-
 galaxy_info:
   namespace: buluma
   role_name: thunderbird
@@ -15,7 +14,7 @@ galaxy_info:
     - name: EL
       versions:
         - all
-    - name: OpenSUSE
+    - name: opensuse
       versions:
         - all
     - name: Debian

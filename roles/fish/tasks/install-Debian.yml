@@ -1,5 +1,5 @@
 ---
-- name: debian | require fish >= 3 on Debian >= 10
+- name: Debian | require fish >= 3 on Debian >= 10
   ansible.builtin.fail:
     msg: Only fish >= 3 is supported on Debian >= 10
   when:
@@ -9,14 +9,14 @@
   tags:
     - fish
 
-- name: debian | ensure dependencies are present.
+- name: Debian | ensure dependencies are present.
   ansible.builtin.apt:
     name:
       - apt-transport-https
       - gnupg2
     state: present
 
-- name: debian | add fish repository key
+- name: Debian | add fish repository key
   ansible.builtin.apt_key:
     keyserver: "{{ _fish_apt_keyserver | default(omit) }}"
     url: "{{ _fish_apt_key_url | default(omit) }}"
@@ -25,14 +25,14 @@
   tags:
     - fish
 
-- name: debian | add fish repository
+- name: Debian | add fish repository
   ansible.builtin.apt_repository:
     filename: shells_fish_release_{{ fish_release_version }}
     repo: "{{ _fish_apt_repo_url }}"
   tags:
     - fish
 
-- name: debian | install fish
+- name: Debian | install fish
   ansible.builtin.apt:
     name: fish
     allow_unauthenticated: yes

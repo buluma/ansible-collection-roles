@@ -1,68 +1,102 @@
-# Ansible Role: Mac App Store CLI (mas)
+# [mas](#mas)
 
-**MOVED**: This role has been moved into the `buluma.mac` collection. Please see [this issue](https://github.com/buluma/ansible-role-mas/issues/31) for a migration guide and more information.
+Mac App Store CLI installation for macOS
 
-[![CI][badge-gh-actions]][link-gh-actions] [![Release](https://github.com/buluma/ansible-role-mas/actions/workflows/release.yml/badge.svg)](https://github.com/buluma/ansible-role-mas/actions/workflows/release.yml)
+|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
+|------|------|-------|---------|-------|------|-------------|
+|[![github](https://github.com/buluma/ansible-role-mas/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-mas/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-mas/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-mas)|[![quality](https://img.shields.io/ansible/quality/55171)](https://galaxy.ansible.com/buluma/mas)|[![downloads](https://img.shields.io/ansible/role/d/55171)](https://galaxy.ansible.com/buluma/mas)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-mas.svg)](https://github.com/buluma/ansible-role-mas/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-mas.svg)](https://github.com/buluma/ansible-role-mas/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-mas.svg)](https://github.com/buluma/ansible-role-mas/pulls/)|
 
-Installs [mas](https://github.com/mas-cli/mas) on macOS, and installs macOS apps from the Mac App Store.
+## [Example Playbook](#example-playbook)
 
-## Requirements
+This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: yes
+  gather_facts: yes
 
-  - **Homebrew**: Requires `homebrew` already installed (you can use `buluma.homebrew` to install it on your Mac).
-  - **Mac App Store account**: You can either sign into the Mac App Store via the GUI before running this role, or you can set the `mas_email` and `mas_password` prior to running the role. For security reasons, if you're going to use this role to sign in, you should use `vars_prompt` for at least the password; don't store unencrypted passwords with your playbooks!
+  roles:
+    - role: buluma.mas
+```
 
-## Role Variables
+The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+```yaml
+---
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  become: yes
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
+  roles:
+    - role: buluma.bootstrap
+```
 
-    mas_email: ""
-    mas_password: ""
 
-The credentials for your Mac App Store account. The Apps you install should already be purchased by/registered to this account.
+## [Role Variables](#role-variables)
 
-If setting these variables statically (e.g. in an included vars file), you should encrypt the inventory using [Ansible Vault](http://docs.ansible.com/ansible/playbooks_vault.html). Otherwise you can use [`vars_prompt`](http://docs.ansible.com/ansible/playbooks_prompts.html) to prompt for the password at playbook runtime.
+The default values for the variables are set in `defaults/main.yml`:
+```yaml
+---
+mas_email: ""
+mas_password: ""
+mas_installed_app_ids: []  # Deprecated
+mas_installed_apps:
+  - {id: 425264550, name: "Blackmagic Disk Speed Test (3.0)"}
+  - {id: 411643860, name: "DaisyDisk (4.3.2)"}
+  - {id: 498486288, name: "Quick Resizer (1.9)"}
+  - {id: 497799835, name: "Xcode (8.1)"}
 
-If you leave both blank, and don't prompt for them, the role assumes you've already signed in via other means (e.g. via GUI or `mas signin [email]`), and will not attempt to sign in again.
+mas_upgrade_all_apps: false
+mas_signin_dialog: false
+```
 
-    mas_signin_dialog: false
+## [Requirements](#requirements)
 
-Fallback to the built-in Mac App Store dialog to complete sign in. If set to yes, you must specify the aforementioned `mas_email` variable which will be autofilled in the dialog and prompt you to enter your password, followed by the 2FA authorization code if enabled on the account.
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-mas/blob/main/requirements.txt).
 
-    mas_installed_apps:
-      - { id: 425264550, name: "Blackmagic Disk Speed Test (3.0)" }
-      - { id: 411643860, name: "DaisyDisk (4.3.2)" }
-      - { id: 498486288, name: "Quick Resizer (1.9)" }
-      - { id: 497799835, name: "Xcode (8.1)" }
+## [Status of used roles](#status-of-requirements)
 
-A list of apps to ensure are installed on the computer. You can get IDs for all your existing installed apps with `mas list`, and you can search for IDs with `mas search [App Name]`. The `name` attribute is not authoritative and only used to provide better information in the playbook output.
+The following roles are used to prepare a system. You can prepare your system in another way.
 
-    mas_upgrade_all_apps: false
+| Requirement | GitHub | GitLab |
+|-------------|--------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
 
-Whether to run `mas upgrade`, which will upgrade all installed Mac App Store apps.
+## [Context](#context)
 
-## Dependencies
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
-  - (Soft dependency) `buluma.homebrew`
+Here is an overview of related roles:
 
-## Example Playbook
+![dependencies](https://raw.githubusercontent.com/buluma/ansible-role-mas/png/requirements.png "Dependencies")
 
-    - hosts: localhost
-      vars:
-        mas_installed_apps:
-          - { id: 497799835, name: "Xcode (8.1)" }
-      roles:
-        - buluma.homebrew
-        - buluma.mas
+## [Compatibility](#compatibility)
 
-See the [Mac Development Ansible Playbook](https://github.com/buluma/mac-dev-playbook) for an example of this role's usage.
+This role has been tested on these [container images](https://hub.docker.com/u/buluma):
 
-## License
+|container|tags|
+|---------|----|
+|macos|all, any|
 
-MIT / BSD
+The minimum version of Ansible required is 2.4, tests have been done to:
 
-## Author Information
+- The previous version.
+- The current version.
+- The development version.
 
-This role was created in 2021 by [Michael Buluma](https://www.github.com/buluma).
 
-[badge-gh-actions]: https://github.com/buluma/ansible-role-mas/workflows/CI/badge.svg?event=push
-[link-gh-actions]: https://github.com/buluma/ansible-role-mas/actions?query=workflow%3ACI
+
+If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-mas/issues)
+
+## [Changelog](#changelog)
+
+[Role History](https://github.com/buluma/ansible-role-mas/blob/master/CHANGELOG.md)
+
+## [License](#license)
+
+Apache-2.0
+
+## [Author Information](#author-information)
+
+[buluma](https://buluma.github.io/)

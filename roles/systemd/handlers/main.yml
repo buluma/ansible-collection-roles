@@ -1,5 +1,5 @@
 ---
-- name: reload systemd units
+- name: Reload systemd units
   become: true
   ansible.builtin.systemd:
     name: "{{ restart_item.dest | basename }}"
@@ -16,7 +16,7 @@
   listen: "Reload systemd units"
   ignore_errors: true
 
-- name: reload systemd daemon
+- name: Reload systemd daemon
   become: true
   ansible.builtin.systemd:
     daemon_reload: true
@@ -28,7 +28,7 @@
   listen: "Reload systemd daemon"
   ignore_errors: true
 
-- name: uninstall systemd units
+- name: Uninstall systemd units
   become: true
   ansible.builtin.systemd:
     name: "{{ unit_item.name }}.{{ unit_item.type | default(_default_unit_type) }}"
@@ -41,7 +41,7 @@
   listen: Uninstall units
   ignore_errors: true
 
-- name: remove managed systemd unit files
+- name: Remove managed systemd unit files
   become: true
   ansible.builtin.file:
     path: "{{ unit_item.path | default(_default_unit_path) }}/{{ unit_item.name }}.{{ unit_item.type | default(_default_unit_type) }}"

@@ -1,5 +1,5 @@
 ---
-- name: create unit configuration path
+- name: Create unit configuration path
   become: true
   when: unit_item.path is defined
   ansible.builtin.file:
@@ -13,7 +13,7 @@
   tags:
     - config
 
-- name: render unit configuration
+- name: Render unit configuration
   become: true
   when: unit_config is defined and unit_config | length > 0 and
     unit_item.type|default(_default_unit_type) != "conf"
@@ -31,11 +31,11 @@
   loop_control:
     loop_var: unit_item
     label: "{{ unit_item.name }}.{{ unit_item.type | default(_default_unit_type) }}"
-  notify: reload systemd units
+  notify: Reload systemd units
   tags:
     - config
 
-- name: render override unit configuration
+- name: Render override unit configuration
   become: true
   when: unit_config is defined and unit_config | length > 0 and
     unit_item.type|default(_default_unit_type) == "conf"
@@ -53,6 +53,6 @@
   loop_control:
     loop_var: unit_item
     label: "{{ unit_item.name }}.{{ unit_item.type|default(_default_unit_type) }}"
-  notify: reload systemd daemon
+  notify: Reload systemd daemon
   tags:
     - config

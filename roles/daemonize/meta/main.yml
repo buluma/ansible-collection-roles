@@ -1,17 +1,17 @@
 ---
 galaxy_info:
-  author: Michael Buluma
-  namespace: buluma
+  author: buluma
   role_name: daemonize
   description: Install and configure daemonize on your systems.
   company: ShadowNet
-  license: license (Apache-2.0)
+  license: Apache-2.0
 
-  min_ansible_version: 2.10
+  min_ansible_version: "2.10"
   platforms:
     - name: Fedora
       versions:
-        - all
+        - "34"
+        - "35"
     - name: Ubuntu
       versions:
         - all

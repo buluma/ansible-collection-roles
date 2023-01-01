@@ -14,11 +14,11 @@ galaxy_info:
         - all
     - name: EL
       versions:
-        - 8
+        - "8"
     - name: Fedora
       versions:
-        - 34
-        - 35
+        - "34"
+        - "35"
     - name: Ubuntu
       versions:
         - all

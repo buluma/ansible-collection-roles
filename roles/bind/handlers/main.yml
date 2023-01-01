@@ -1,7 +1,7 @@
 ---
 # handlers file for bind
 
-- name: reload bind
+- name: Reload bind
   ansible.builtin.service:
     name: "{{ bind_service }}"
     state: reloaded
