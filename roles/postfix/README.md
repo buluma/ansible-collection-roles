@@ -116,7 +116,7 @@ postfix_smtp_tls_security_level: none
 # You can configure aliases here. Typically redirecting `root` is a good plan.
 # postfix_aliases:
 #   - name: root
-#     destination: robert@meinit.nl
+#     destination: me@buluma.me.ke
 
 # You can configure sender access controls here.
 # postfix_sender_access:
