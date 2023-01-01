@@ -1,0 +1,22 @@
+---
+# Whether to bind to all network interfaces.
+girder_bind_public: false
+
+# Whether to install the systemd service.
+girder_daemonize: true
+
+# The Connection String URI for MongoDB.
+girder_database_uri: "mongodb://localhost:27017/girder"
+
+# Whether to enable Girder's development mode and disable HTTP reverse proxy
+# configuration.
+girder_development_mode: false
+
+# The version of Girder to install, as either latest, release, or a PyPI version.
+girder_version: "latest"
+
+# Path to a Python virtual environment to install Girder in.
+girder_virtualenv: "{{ ansible_facts['user_dir'] }}/.virtualenvs/girder"
+
+# Whether to build the Girder web client.
+girder_web: true

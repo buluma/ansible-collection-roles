@@ -1,0 +1,32 @@
+---
+- name: install extra packages
+  become: yes
+  community.general.zypper:
+    name: "{{ item }}"
+    state: present
+    update_cache: no
+  with_items: "{{ extra_package_names }}"
+  tags:
+    - packages
+
+- name: copy SuSEfirewall2 netiq-idm service
+  become: yes
+  ansible.builtin.template:
+    src: SuSEfirewall2.netiq-idm.j2
+    dest: /etc/sysconfig/SuSEfirewall2.d/services/netiq-idm
+    owner: root
+    mode: 0644
+  tags:
+    - firewall
+
+- name: enable SuSEfirewall2 netiq-idm service
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/SuSEfirewall2
+    # negative look ahead
+    regexp: '^(FW_CONFIGURATIONS_EXT="(?!.*netiq-idm).*)"$'
+    line: '\1 netiq-idm"'
+    backrefs: yes
+  tags:
+    - firewall
+    # notify:

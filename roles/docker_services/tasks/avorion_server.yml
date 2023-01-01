@@ -1,0 +1,43 @@
+---
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'avorion_server_data'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy Avorion Server'
+  community.docker.docker_swarm_service:
+    name: 'avorion_server'
+    image: "{{ avorion_server_image }}:{{ avorion_server_release }}"
+    env:
+      - "GALAXYNAME={{ avorion_galaxy_name }}"
+      - "ADMIN={{ avorion_admin }}"
+      - "SERVERNAME={{ avorion_server_name }}"
+    mounts:
+      - source: '{{ docker_data_dir }}/avorion_server_data'
+        target: '/app/data/galaxies'
+        type: 'bind'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    publish:
+      - published_port: 27000
+        target_port: 27000
+      - published_port: 27000
+        target_port: 27000
+        protocol: 'udp'
+      - published_port: 27003
+        target_port: 27003
+        protocol: 'udp'
+      - published_port: 27020
+        target_port: 27020
+        protocol: 'udp'
+      - published_port: 27021
+        target_port: 27021
+        protocol: 'udp'
+    user: null

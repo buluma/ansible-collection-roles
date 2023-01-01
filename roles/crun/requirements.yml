@@ -1,0 +1,8 @@
+---
+roles:
+  - name: buluma.bootstrap
+collections:
+  - name: ansible.posix
+  - name: community.docker
+  - name: containers.podman
+  - name: community.general

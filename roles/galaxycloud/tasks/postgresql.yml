@@ -1,0 +1,120 @@
+---
+# PostgreSQL installation and configration recipe
+
+# PostgreSQL configuration details
+# The default values of pgdata directory are driven from the -D command-line option or PGDATA environment variable.
+# See detailed description in postgresql_redhat and postgresql_ubuntu recipes
+
+#______________________________________
+# CentOS 7
+
+- include: postgresql_redhat.yml
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "RedHat"
+
+#______________________________________
+# Ubuntu
+
+- include: postgresql_ubuntu.yml
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+#______________________________________
+# Galaxy pip install
+
+- name: Install Galaxy psycopg2 conditional dependency
+  pip:
+    name: psycopg2
+    extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --log {{galaxy_log_path}}/pip_psycopg2.log"
+    virtualenv: "{{galaxy_venv_path}}"
+  environment:
+    PYTHONPATH: "{{galaxy_install_path}}/lib"
+    VIRTUAL_ENV: "{{galaxy_venv_path}}"
+
+#______________________________________
+# Galaxy database configuration
+
+- name: Create galaxy db random passwd
+  command: "{{ galaxy_custom_script_path }}/pwd-generator -l 20"
+  register: random_pwd
+  when: set_pgsql_random_password|bool
+
+- name: Set random password as galaxy db password
+  set_fact:
+    galaxy_db_passwd: '{{ random_pwd.stdout }}'
+  when: set_pgsql_random_password|bool
+
+- name: Create galaxy_database_connection vars, needed in task/galaxy-custom.yml for create_galaxy_user.py
+  set_fact:
+    galaxy_database_connection: 'postgresql://{{ galaxy_user }}:{{ galaxy_db_passwd }}@localhost:{{ galaxy_db_port }}/{{ galaxy_user }}'
+  when: set_pgsql_random_password|bool
+
+- name: Create galaxy_install_database_connection vars.
+  set_fact:
+    galaxy_install_database_connection: 'postgresql://{{ galaxy_user }}:{{ galaxy_db_passwd }}@localhost:{{ galaxy_db_port }}/galaxy_tools'
+  when: set_pgsql_random_password|bool
+
+- name: Create galaxy db user
+  postgresql_user:
+    name: '{{ galaxy_user }}'
+    password: '{{ galaxy_db_passwd }}'
+  become_user: postgres
+  become_method: sudo
+
+- name: Create postgresql galaxy db
+  postgresql_db:
+    name: '{{ galaxy_user }}'
+    owner: '{{ galaxy_user }}'
+  become_user: postgres
+  become_method: sudo
+
+- name: Create postgresql galaxy_tools db
+  postgresql_db:
+    name: 'galaxy_tools'
+    owner: '{{ galaxy_user }}'
+  become_user: postgres
+  become_method: sudo
+
+- name: '[release_17.**] Set DB galaxy.ini values'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'database_connection', value: "{{ galaxy_database_connection }}" }
+    - { section: 'app:main', option: 'database_engine_option_server_side_cursors', value: "True" }
+    - { section: 'app:main', option: 'install_database_connection', value: "{{ galaxy_install_database_connection }}" }
+    - { section: 'app:main', option: 'install_database_engine_option_server_side_cursors', value: "True" }
+  when: (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+
+- name: '[release_18.**] Set DB galaxy.yml values'
+  command: '{{ galaxy_venv_path }}/bin/python
+            {{ galaxy_custom_script_path }}/parse_galaxy_yaml.py
+            -c "{{ galaxy_config_file }}"
+            -s "{{ item.section }}"
+            -o "{{ item.option }}"
+            -v "{{ item.value }}"'
+  with_items:
+    - { section: 'galaxy', option: 'database_connection', value: "{{ galaxy_database_connection }}" }
+    - { section: 'galaxy', option: 'database_engine_option_server_side_cursors', value: "true" }
+    - { section: 'galaxy', option: 'install_database_connection', value: "{{ galaxy_install_database_connection }}" }
+    - { section: 'galaxy', option: 'install_database_engine_option_server_side_cursors', value: "true" }
+  when: (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+
+- name: Create Galaxy DB
+  command: "{{ galaxy_venv_path }}/bin/python {{ galaxy_install_path }}/scripts/create_db.py -c {{ galaxy_config_file }}"
+  args:
+    chdir: '{{ galaxy_install_path }}/'
+
+- name: Create Galaxy install DB
+  command: "{{ galaxy_venv_path }}/bin/python {{ galaxy_install_path }}/scripts/create_db.py -c {{ galaxy_config_file }} install"
+  args:
+    chdir: '{{ galaxy_install_path }}/'
+
+- name: Update Galaxy DB
+  command: "{{ galaxy_venv_path }}/bin/python {{ galaxy_install_path }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade install"
+  args:
+    chdir: '{{ galaxy_install_path}}/'

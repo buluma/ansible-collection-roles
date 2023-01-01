@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Basic CentOS Configuration
+    description: >
+      Basic CentOS Configuration
+    author: Michael Buluma

@@ -1,0 +1,23 @@
+---
+# vars file for ansible-role-sonar-scanner
+_sonar_scanner_packages:
+  default:
+    - unzip
+  Alpine:
+    - unzip
+  RedHat:
+    - unzip
+  Suse:
+    - unzip
+
+sonar_scanner_packages: "{{ _sonar_scanner_packages[ansible_os_family] | default(_sonar_scanner_packages['default'] ) }}"
+
+# Define where to install sonar-scanner
+sonar_scanner_default_directory: /opt
+
+# Define where sonar-scanner will be linked
+sonar_scanner_default_path: /usr/local/bin
+
+
+# src: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{{ sonar_scanner_version_to_install }}-Darwin.zip"
+# src: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{{ sonar_scanner_version_to_install }}-linux.zip"

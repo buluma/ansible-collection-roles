@@ -1,0 +1,22 @@
+FROM {{ source_image }}
+LABEL modified_append_tag={{ modified_append_tag }}
+
+WORKDIR /
+USER root
+
+COPY yum_update.sh /tmp/
+
+{% if yum_repos_dir_path is defined %}
+RUN rm -rf /etc/yum.repos.d/
+COPY yum.repos.d /etc/yum.repos.d
+COPY repos /
+{% endif %}
+{% if rpms_path is defined %}
+{% for rpm in rpms_list %}
+COPY {{ rpm | basename }} /tmp/
+{% endfor %}
+{% endif %}
+
+RUN /tmp/yum_update.sh "{{ update_repo }}"
+
+USER "{{ original_user }}"

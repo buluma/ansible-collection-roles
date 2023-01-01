@@ -1,0 +1,151 @@
+---
+- name: Look for nagios binary
+  stat:
+    path: "{{ nagios_bin_path }}"
+  register: __nagios_bin
+
+- name: Get nagios version # noqa 305
+  shell: >-
+    {{ nagios_bin_path }} --version
+  register: __nagios_version
+  changed_when: false
+  when:
+    - "__nagios_bin.stat.exists"
+
+- block:
+    - name: Create tmpdir for install
+      tempfile:
+        path: "{{ nagios_source_tempfile_path }}"
+        state: directory
+      register: tmpdir
+
+    - name: Create path for extraction
+      file:
+        path: "{{ tmpdir.path }}/nagios"
+        state: directory
+        mode: "0700"
+
+    - name: Download nagios release
+      get_url:
+        url: "{{ nagios_source_tarball }}"
+        dest: "{{ tmpdir.path }}/{{ nagios_source_tarball | basename }}"
+
+    # Uses --strip-components to make it easier to grab the destination
+    # path. This is tar-specific, but so is the `nagios_source_tarball`
+    # variable name, so I don't feel too bad about it.
+    - name: Extract tarball
+      unarchive:
+        src: "{{ tmpdir.path }}/{{ nagios_source_tarball | basename }}"
+        dest: "{{ tmpdir.path }}/nagios"
+        mode: "0700"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+
+    - name: Fix the configure script permissions
+      file:
+        path: "{{ tmpdir.path }}/nagios/configure"
+        mode: "u+x"
+
+    - name: Configure distribution
+      command: "./configure {{ nagios_source_configure_args | join(' ') }}"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios"
+
+    - name: Make all
+      command: "make all"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios"
+
+    # Nagios provides a 'make install-groups-users' target which installs groups
+    # and users for nagios, but since we provide a user and groups option in this
+    # playbook, we'll manually add those users (if needed)
+
+    - name: Make install
+      command: "make install"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios"
+
+    - name: Make install-daemoninit
+      command: "make install-daemoninit"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios"
+      notify: systemctl daemon-reload
+      when:
+        - "nagios_source_install_service"
+
+    - name: Create the systemd service file
+      template:
+        src: etc/systemd/system/nagios.service.j2
+        dest: /etc/systemd/system/nagios.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: systemctl daemon-reload
+      when:
+        - "not nagios_source_install_service"
+        - "ansible_service_mgr == 'systemd'"
+
+    - name: Create the init.d file
+      template:
+        src: etc/init.d/nagios.j2
+        dest: /etc/init.d/nagios
+        owner: root
+        group: root
+        mode: "0755"
+      when:
+        - "not nagios_source_install_service"
+        - "ansible_service_mgr != 'systemd'"
+
+    - name: Install commandmode
+      command: "make install-commandmode"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios"
+
+    - name: Install config
+      command: "make install-config"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios"
+
+  always:
+    - name: Cleanup install files
+      file:
+        path: "{{ tmpdir.path }}"
+        state: absent
+  when:
+    - "nagios_source_tarball is not none"
+    - >-
+      (not __nagios_bin.stat.exists) or
+      ((__nagios_version.stdout | regex_search('Nagios\s+Core\s+' + nagios_source_version) | length) == 0)
+
+# After the installation, update the service files and daemon-reload
+# if needed
+- block:
+    - name: Create the systemd service file
+      template:
+        src: etc/systemd/system/nagios.service.j2
+        dest: /etc/systemd/system/nagios.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: systemctl daemon-reload
+      when:
+        - "not nagios_source_install_service"
+        - "ansible_service_mgr == 'systemd'"
+
+    - name: Create the init.d file
+      template:
+        src: etc/init.d/nagios.j2
+        dest: /etc/init.d/nagios
+        owner: root
+        group: root
+        mode: "0755"
+      when:
+        - "not nagios_source_install_service"
+        - "ansible_service_mgr != 'systemd'"
+
+    - name: >-
+        Flush handlers early so that we can control the service state later on
+      meta: flush_handlers
+  when:
+    - "nagios_source_tarball is not none"

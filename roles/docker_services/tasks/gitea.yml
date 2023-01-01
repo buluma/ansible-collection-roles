@@ -1,0 +1,72 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'gitea_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'gitea_data'
+    - 'gitea_db'
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy MariaDB for Gitea'
+  community.docker.docker_swarm_service:
+    name: 'gitea_mariadb'
+    image: 'mariadb'
+    env:
+      - "MYSQL_ROOT_PASSWORD={{ db_root_password }}"
+      - 'MYSQL_DATABASE=gitea'
+      - 'MYSQL_USER=gitea'
+      - "MYSQL_PASSWORD={{ gitea_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/gitea_db"
+        target: '/var/lib/mysql'
+        type: 'bind'
+    networks:
+      - 'gitea_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Gitea'
+  community.docker.docker_swarm_service:
+    name: 'gitea'
+    image: "gitea/gitea:{{ gitea_release }}"
+    env:
+      - 'DB_TYPE=mysql'
+      - 'DB_HOST=tasks.gitea_mariadb'
+      - 'DB_NAME=gitea'
+      - 'DB_USER=gitea'
+      - "DB_PASSWD={{ gitea_db_password }}"
+      - 'RUN_MODE=prod'
+      - "ROOT_URL=https://{{ gitea_app_name }}.{{ traefik_domain }}"
+      - 'SSH_PORT=2222'
+      - 'INSTALL_LOCK=true'
+    mounts:
+      - source: "{{ docker_data_dir }}/gitea_data"
+        target: '/data'
+        type: 'bind'
+    networks:
+      - 'gitea_backend'
+      - 'traefik_backend'
+    publish:
+      - published_port: 2222
+        target_port: 2222
+    labels:
+      traefik.http.routers.gitea.rule: "HostHeader(`{{ gitea_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.gitea.tls: "true"
+      traefik.http.services.gitea.loadbalancer.server.port: '3000'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

@@ -1,0 +1,35 @@
+---
+- name: 'Initialize Docker Swarm'
+  community.docker.docker_swarm:
+    state: 'present'
+    advertise_addr: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+- name: 'Inspect swarm'
+  community.docker.docker_swarm_info:
+  register: 'swarm_info'
+
+- name: 'Set Swarm master IP fact'
+  set_fact:
+    swarm_master_addr: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+- name: 'Get worker IP'
+  setup:
+    gather_subset: 'network'
+  delegate_to: "{{ worker }}"
+  delegate_facts: true
+  loop: "{{ query('inventory_hostnames', docker_worker_group) }}"
+  loop_control:
+    loop_var: 'worker'
+
+- name: 'Join workers to Swarm'
+  community.docker.docker_swarm:
+    state: 'join'
+    remote_addrs:
+      - "{{ swarm_master_addr }}"
+    join_token: "{{ swarm_info['swarm_facts']['JoinTokens']['Worker'] }}"
+    advertise_addr: "{{ hostvars[worker]['ansible_default_ipv4']['address'] }}"
+    labels: "{{ hostvars[worker]['docker_swarm_labels'] | default(omit) }}"
+  delegate_to: "{{ worker }}"
+  loop: "{{ query('inventory_hostnames', docker_worker_group) }}"
+  loop_control:
+    loop_var: 'worker'

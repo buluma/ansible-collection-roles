@@ -1,0 +1,64 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'rocketchat_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'rocketchat_db/db', owner: '999'}
+    - {name: 'rocketchat_db/dump', owner: '999'}
+    - {name: 'rocketchat_data', owner: '999'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy Mongo for Rocket.Chat'
+  community.docker.docker_swarm_service:
+    name: 'rocketchat_mongo'
+    image: 'mongo:4'
+    command: 'mongod --oplogSize 128 --replSet rs0 --bind_ip_all'
+    mounts:
+      - source: "{{ docker_data_dir }}/rocketchat_db/db"
+        target: '/data/db'
+        type: 'bind'
+      - source: "{{ docker_data_dir }}/rocketchat_db/dump"
+        target: '/dump'
+        type: 'bind'
+    networks:
+      - 'rocketchat_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+
+- name: 'Deploy Rocket.Chat'
+  community.docker.docker_swarm_service:
+    name: 'rocketchat'
+    image: 'rocket.chat'
+    env:
+      - 'PORT=3000'
+      - "ROOT_URL=https://{{ rocketchat_app_name }}.{{ traefik_domain }}"
+      - 'MONGO_URL=mongodb://tasks.rocketchat_mongo:27017/rocketchat'
+      - 'MONGO_OPLOG_URL=mongodb://tasks.rocketchat_mongo:27017/local'
+      - 'Accounts_UseDNSDomainCheck=True'
+    networks:
+      - 'rocketchat_backend'
+      - 'traefik_backend'
+    labels:
+      traefik.http.routers.rocketchat.rule: "HostHeader(`{{ rocketchat_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.rocketchat.tls: "true"
+      traefik.http.services.rocketchat.loadbalancer.server.port: '3000'
+    mounts:
+      - source: "{{ docker_data_dir }}/rocketchat_data"
+        target: '/app/uploads'
+        type: 'bind'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null

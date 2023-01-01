@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Process NFS-Ganesha configuration
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/ganesha/nfs-ganesha-config.sh

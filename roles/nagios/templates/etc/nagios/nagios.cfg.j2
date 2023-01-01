@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+
+{% for key, val in __nagios_config.items() %}
+# K: '{{ key }}'
+
+{% if (val is iterable) and
+      (val is not string) and
+      (val is mapping) %}
+define {{ key }} {
+{% for mapping_key, mapping_val in val.items() %}
+    {{ mapping_key }}     {{ mapping_val }}
+{% endfor %}
+}
+{% elif (val is iterable) and
+        (val is not string) and
+        ((val | length) > 0) and
+        (val[0] is mapping) %}
+{% for mapping_entry in val %}
+define {{ key }} {
+{% for mapping_key, mapping_val in mapping_entry.items() %}
+    {{ mapping_key }}     {{ mapping_val }}
+{% endfor %}
+}
+{% endfor %}
+{% elif (val is iterable) and
+        (val is not string) and
+        ((val | length) > 0) -%}
+{% for val_item in val %}
+{{ key }}={{ val_item }}
+{% endfor %}
+{% else -%}
+{{ key }}={{ val }}
+{% endif %}
+{% endfor %}

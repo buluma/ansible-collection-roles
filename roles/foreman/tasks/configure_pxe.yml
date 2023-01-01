@@ -1,0 +1,89 @@
+---
+- name: 'Ensure Provisioning Snippets'
+  theforeman.foreman.provisioning_template:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ snippet }}"
+    kind: 'snippet'
+    locations: "{{ foreman_locations }}"
+    organizations:
+      - '{{ foreman_organization }}'
+    state: 'present'
+    template: "{{ lookup('file', snippet + '.snippet') }}"
+  loop:
+    - 'pxelinux_discovery_custom'
+    - 'pxegrub2_discovery_custom'
+  loop_control:
+    loop_var: 'snippet'
+
+- name: 'Ensure Global Default PXE Provisioning Templates'
+  theforeman.foreman.provisioning_template:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ template.name }}"
+    kind: "{{ template.kind }}"
+    locations: "{{ foreman_locations }}"
+    organizations:
+      - '{{ foreman_organization }}'
+    state: 'present'
+    template: "{{ lookup('file', template.file) }}"
+  loop:
+    - name: 'PXELinux global default custom'
+      kind: 'PXELinux'
+      file: 'pxelinux_global_default.template'
+    - name: 'PXEGrub2 global default custom'
+      kind: 'PXEGrub2'
+      file: 'pxegrub2_global_default.template'
+    - name: 'iPXE global default custom'
+      kind: 'iPXE'
+      file: 'ipxe_global_default_custom.template'
+  loop_control:
+    loop_var: 'template'
+
+- name: 'Ensure Global Default PXE Template Settings'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ setting.name }}"
+    value: "{{ setting.value }}"
+  loop:
+    - name: 'global_PXELinux'
+      value: 'PXELinux global default custom'
+    - name: 'global_PXEGrub2'
+      value: 'PXEGrub2 global default custom'
+    - name: 'global_iPXE'
+      value: 'iPXE global default custom'
+  loop_control:
+    loop_var: 'setting'
+
+- name: 'Ensure Setting for booting unknown hosts'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'default_pxe_item_global'
+    value: 'discovery'
+
+- name: 'Ensure Setting for automatically provisioning discovered hosts'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'discovery_auto'
+    value: "{{ foreman_autoinstall_discovered_hosts }}"
+
+- name: 'Build PXE Default'
+  ansible.builtin.command: hammer template build-pxe-default
+  changed_when: true
+
+- name: 'Configure iPXE'
+  ansible.builtin.include_tasks: 'configure_ipxe.yml'
+  when: foreman_deploy_ipxe

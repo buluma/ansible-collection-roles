@@ -1,0 +1,42 @@
+---
+- name: 'Ensure HTTP Proxy'
+  theforeman.foreman.http_proxy:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'Foreman Default Proxy (Managed by Ansible)'
+    url: "{{ foreman_http_proxy_url }}"
+    proxy_username: "{{ foreman_http_proxy_user | default(omit) }}"
+    proxy_password: "{{ foreman_http_proxy_password | default(omit) }}"
+    locations: "{{ foreman_locations }}"
+    organizations:
+      - "{{ foreman_organization }}"
+    state: 'present'
+
+- name: 'Configure Foreman Setting content_default_http_proxy'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'content_default_http_proxy'
+    value: 'Foreman Default Proxy (Managed by Ansible)'
+
+- name: 'Configure Foreman Setting http_proxy'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'http_proxy'
+    value: "{{ foreman_http_proxy_url }}"
+
+- name: 'Configure Foreman Setting http_proxy_except_list'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'http_proxy_except_list'
+    value: "{{ foreman_http_proxy_exceptions }}"

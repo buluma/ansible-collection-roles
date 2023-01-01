@@ -1,0 +1,110 @@
+---
+- name: 'Copy manifest to server'
+  ansible.builtin.copy:
+    src: "{{ foreman_rh_subscription_manifest }}"
+    dest: '/root/{{ foreman_organization }}-manifest.zip'
+    mode: 0600
+
+- name: 'Upload or refresh manifest to Satellite'
+  when: foreman_rh_subscription_manifest_refresh
+  block:
+    - name: 'Refresh manifest'
+      theforeman.foreman.subscription_manifest:
+        username: "{{ foreman_admin_user }}"
+        password: "{{ foreman_admin_password }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: "{{ foreman_validate_certs }}"
+        organization: "{{ foreman_organization }}"
+        state: 'refreshed'
+  rescue:
+    - name: 'Upload manifest'
+      theforeman.foreman.subscription_manifest:
+        username: "{{ foreman_admin_user }}"
+        password: "{{ foreman_admin_password }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: "{{ foreman_validate_certs }}"
+        organization: "{{ foreman_organization }}"
+        state: 'present'
+        manifest_path: '/root/{{ foreman_organization }}-manifest.zip'
+        repository_url: "{{ foreman_redhat_cdn_url }}"
+
+- name: 'Ensure Default Red Hat Download Policy'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'default_redhat_download_policy'
+    value: "{{ foreman_download_policy }}"
+
+- name: 'Ensure Red Hat repositories'
+  theforeman.foreman.repository_set:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    label: "{{ redhat_repo['label'] }}"
+    repositories: "{{ redhat_repo['repositories'] | default(omit) }}"
+    all_repositories: "{{ (redhat_repo['repositories'] is defined ) | ternary(false, true) }}"
+  loop: "{{ foreman_redhat_repositories }}"
+  loop_control:
+    loop_var: 'redhat_repo'
+  register: 'repo_enabled'
+
+- name: 'Get Red Hat Product names'
+  theforeman.foreman.resource_info:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    resource: 'repository_sets'
+    search: "label={{ product['label'] }}"
+  loop: "{{ foreman_redhat_repositories }}"
+  loop_control:
+    loop_var: 'product'
+  register: 'redhat_products'
+
+- name: 'Set Red Hat Product list'
+  ansible.builtin.set_fact:
+    redhat_product_list: "{{ redhat_product_list | default([]) + [ product_info['resources'][0]['product']['name'] ] }}"
+  loop: "{{ redhat_products['results'] }}"
+  loop_control:
+    loop_var: 'product_info'
+
+- name: 'Ensure Sync plan for Red Hat Products'
+  theforeman.foreman.product:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ product }}"
+    sync_plan: 'Daily repo sync'
+    state: 'present'
+  loop: "{{ redhat_product_list | unique }}"
+  loop_control:
+    loop_var: 'product'
+
+- name: 'Sync Red Hat Repositories, this may take long...'  # noqa no-handler ignore-errors
+  # Yes, we sync all Red Hat Products when a change has been made to one of them
+  # This is because the repository_set module does not return the Product name.
+  theforeman.foreman.repository_sync:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    product: "{{ product }}"
+  when:
+    - repo_enabled['changed']
+    - foreman_run_content_sync|bool
+  loop: "{{ redhat_product_list | unique }}"
+  loop_control:
+    loop_var: 'product'
+  async: 10800
+  poll: 60
+  retries: 5
+  delay: 5
+  ignore_errors: true  # ignore errors, as a failed sync is not the end of the world

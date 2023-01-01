@@ -1,0 +1,22 @@
+---
+# vars file for joomla
+
+default_packages:
+  - php
+  - php-common
+  - libapache2-mod-php
+  - php-cli
+  - php-fpm
+  - php-mysql
+  - php-json
+  - php-dev
+  - php-opcache
+  - php-gmp
+  - php-curl
+  - php-intl
+  - php-mbstring
+  - php-xmlrpc
+  - php-gd
+  - php-xml
+  - php-zip
+  - libffi-dev

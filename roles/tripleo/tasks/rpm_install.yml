@@ -1,0 +1,36 @@
+---
+- import_tasks: precheck.yml
+  tags:
+    - always
+
+- import_tasks: get_original_user.yml
+
+- name: Create image build context directory
+  tempfile:
+    state: directory
+    prefix: tripleo-modify-image
+  register: context_dir
+
+- name: Set modify_dir_path
+  set_fact:
+    modify_dir_path: "{{ context_dir.path }}"
+
+- import_tasks: copy_rpms.yml
+
+- name: Write Dockerfile to {{ modify_dir_path }}
+  template:
+    src: Dockerfile-rpm.j2
+    dest: "{{ modify_dir_path }}/Dockerfile"
+
+- name: Write rpm_install.sh
+  copy:
+    src: rpm_install.sh
+    dest: "{{ modify_dir_path }}/rpm_install.sh"
+    mode: '0555'
+
+- include_tasks: modify_image.yml
+
+- name: Clean modify directory
+  file:
+    state: absent
+    path: "{{ modify_dir_path }}"

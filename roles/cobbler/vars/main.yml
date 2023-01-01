@@ -1,0 +1,14 @@
+---
+# vars file for cobbler
+cobbler_packages:
+  - apache2
+  - cobbler
+  - cobbler-web
+  - libsemanage-python
+  - pykickstart
+  - libselinux-python
+
+cobbler_services:
+  - httpd
+  - cobblerd
+  - rsyncd

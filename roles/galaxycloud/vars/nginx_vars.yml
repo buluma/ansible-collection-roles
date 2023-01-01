@@ -1,0 +1,31 @@
+---
+# Nginx config vars
+nginx_user: '{{ galaxy_user }}'
+
+nginx_worker_processes: "1"
+nginx_worker_connections: "1024"
+nginx_multi_accept: "off"
+
+nginx_error_log: "/var/log/nginx/error.log warn"
+nginx_pidfile: "/var/run/nginx.pid"
+nginx_access_log: "/var/log/nginx/access.log main buffer=16k"
+
+nginx_sendfile: "on"
+nginx_tcp_nopush: "on"
+nginx_tcp_nodelay: "on"
+
+nginx_keepalive_timeout: "80"
+nginx_keepalive_requests: "100"
+
+nginx_client_max_body_size: "10G"
+nginx_listen_port: "80"
+nginx_server_name: "localhost"
+
+nginx_conf_path: /etc/nginx/conf.d
+nginx_conf_file_path: /etc/nginx/nginx.conf
+nginx_mime_file_path: /etc/nginx/mime.types
+nginx_vhost_path: /etc/nginx/conf.d
+nginx_default_vhost_path: /etc/nginx/conf.d/default.conf
+
+nginx_proxy_read_timeout: '600'
+nginx_uwsgi_read_timeout: '300'

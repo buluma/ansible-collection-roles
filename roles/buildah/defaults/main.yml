@@ -1,0 +1,4 @@
+---
+# defaults file for buildah
+
+buildah_conf_hostname: "{{ ansible_hostname }}"

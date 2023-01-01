@@ -1,0 +1,33 @@
+---
+# vars file for docker_env
+
+docker_requirements:
+  - docker
+
+ubuntu_images:
+  - name: ubuntu-22.04
+    image: buluma/ubuntu:22.04
+  - name: ubuntu-21.04
+    image: buluma/ubuntu:21.04
+  - name: ubuntu-20.04
+    image: buluma/ubuntu:20.04
+
+centos_images:
+  - name: enterpriselinux-7
+    image: buluma/enterpriselinux:7
+  - name: enterpriselinux-8
+    image: buluma/enterpriselinux:8
+  - name: enterpriselinux-9
+    image: buluma/enterpriselinux:latest
+
+rockylinux_images:
+  - name: oraclelinux-7
+    image: buluma/oraclelinux:7
+  - name: oraclelinux-8
+    image: buluma/oraclelinux:8
+  - name: oraclelinux-9
+    image: buluma/oraclelinux:9
+
+fedora_images:
+  - name: fedora-latest
+    image: buluma/fedora:latest

@@ -1,0 +1,15 @@
+---
+
+_apt_key:
+  - keyring: "/etc/apt/trusted.gpg.d/home_buluma.gpg"
+    url: "http://downloadcontent.opensuse.org/repositories/home:/buluma/Debian_10/Release.key"
+    id: "73fa4cd708ec6538ce87b9db8a0cf4d70dee6ef3"
+    state: "present"
+
+_apt_repository:
+  - filename: "home:buluma"
+    repo: "deb http://downloadcontent.opensuse.org/repositories/home:/buluma/Debian_10/ /"
+    state: "present"
+
+_apt:
+  - { state: "latest", name: "crun" }

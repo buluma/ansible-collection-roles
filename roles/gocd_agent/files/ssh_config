@@ -1,0 +1,6 @@
+Host github.com
+  StrictHostKeyChecking no
+
+Host *
+  ForwardAgent yes
+  StrictHostKeyChecking no

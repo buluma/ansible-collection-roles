@@ -1,0 +1,108 @@
+---
+- import_tasks: precheck.yml
+  tags:
+    - always
+
+- name: From image {{ source_image }}
+  command: buildah from {{ source_image }}
+  register: from_image_cmd
+
+- name: Set from_image
+  set_fact:
+    from_image: "{{ from_image_cmd.stdout }}"
+
+- name: Run buildah config
+  command: >
+    buildah config
+      --label modified_append_tag={{ modified_append_tag }}
+      --workingdir / {{ from_image }}
+
+- name: Create tempfile name for yum_install.sh
+  tempfile:
+    state: file
+  register: yum_install
+
+- import_tasks: yum_common.yml
+  tags:
+    - always
+
+- name: Prepare yum_install.sh script
+  copy:
+    src: files/yum_install.sh
+    dest: "{{ yum_install.path }}"
+    mode: 0755
+
+- name: List file repos
+  shell: sed -n 's|baseurl=file://||p' *.repo
+  args:
+    chdir: "{{ yum_repos_dir_path }}"
+  register: file_repos
+
+- name: Find if /etc/{{ pkg_mgr_suffix }}/vars exists
+  stat:
+    path: /etc/{{ pkg_mgr_suffix }}/vars
+  register: pkg_mgr_vars_stat
+
+- block:
+    - name: Run yum_install.sh
+      command: >
+        buildah run
+          --volume {{ yum_install.path }}:/tmp/yum_install.sh
+          --volume {{ yum_repos_dir_path }}:/etc/yum.repos.d
+          {% if pkg_mgr_vars_stat.stat.exists %}
+          --volume /etc/{{ pkg_mgr_suffix }}/vars:/etc/{{ pkg_mgr_suffix }}/vars
+          {% endif %}
+          {% for repo in file_repos.stdout_lines %}
+            {% if repo is exists %}
+              --volume {{ repo }}:{{ repo }}
+            {% endif %}
+          {% endfor %}
+          --user root
+          --net host
+          {{ from_image }}
+          /tmp/yum_install.sh "{{ yum_packages | join(' ') }}"
+      register: result
+
+  rescue:
+    - name: Run yum_install.sh (retry)
+      command: >
+        buildah --debug run
+          --volume {{ yum_install.path }}:/tmp/yum_install.sh
+          --volume {{ yum_repos_dir_path }}:/etc/yum.repos.d
+          {% if pkg_mgr_vars_stat.stat.exists %}
+          --volume /etc/{{ pkg_mgr_suffix }}/vars:/etc/{{ pkg_mgr_suffix }}/vars
+          {% endif %}
+          {% for repo in file_repos.stdout_lines %}
+            {% if repo is exists %}
+              --volume {{ repo }}:{{ repo }}
+            {% endif %}
+          {% endfor %}
+          --user root
+          --net host
+          {{ from_image }}
+          bash -x /tmp/yum_install.sh "{{ yum_packages | join(' ') }}"
+      retries: 2
+      delay: 3
+      register: result
+      until: result.rc == 0
+
+- name: Remove temporary yum_install.sh script
+  file:
+    path: "{{ yum_install.path }}"
+    state: absent
+
+# NOTE(aschultz): remove --format docker when oci images are properly supported
+- name: Commit changes to image
+        ({{ target_image | default(source_image) }}{{ modified_append_tag }})
+  command: >
+    buildah commit
+      --format docker
+      {{ from_image }}
+      {{ target_image | default(source_image) }}{{ modified_append_tag }}
+
+- name: Cleanup working container
+  command: >
+    buildah rm {{ from_image }}
+  retries: 5
+  delay: 5
+  ignore_errors: true

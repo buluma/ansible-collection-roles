@@ -1,0 +1,51 @@
+---
+- name: Ensure Hostname is Resolvable
+  become: yes
+  ansible.builtin.lineinfile:
+    dest: /etc/hosts
+    line: "127.0.0.1 {{ ansible_hostname }} {{ inventory_hostname }} localhost"
+    regexp: ^127\.0\.0\.1
+  when: ansible_virtualization_type != 'docker'
+
+- name: Install SSMTP
+  become: yes
+  ansible.builtin.apt:
+    name: ssmtp
+
+- name: "Ensure group {{ sansible_ssmtp_group }} exists"
+  ansible.builtin.group:
+    name: "{{ sansible_ssmtp_group }}"
+    state: present
+    gid: 1040
+
+- name: "Add the user {{ sansible_ssmtp_user }}' with a specific uid and a primary group of 'admin'"
+  ansible.builtin.user:
+    name: "{{ sansible_ssmtp_user }}"
+    comment: SMTP User
+    uid: 1040
+    group: "{{ sansible_ssmtp_group }}"
+
+- name: "Restrict SSMTP Usage to User {{ sansible_ssmtp_user }} and Group {{ sansible_ssmtp_group }}"
+  become: yes
+  ansible.builtin.file:
+    dest: /usr/sbin/ssmtp
+    owner: "{{ sansible_ssmtp_user }}"
+    group: "{{ sansible_ssmtp_group }}"
+    mode: 0770
+  when:
+    - sansible_ssmtp_group is not none
+    - sansible_ssmtp_user is not none
+    - sansible_ssmtp_restrict
+
+- name: "Allow access to SSMTP Configuration dir to User {{ sansible_ssmtp_user }} and Group {{ sansible_ssmtp_group }}"
+  become: yes
+  ansible.builtin.file:
+    dest: /etc/ssmtp
+    group: "{{ sansible_ssmtp_group }}"
+    mode: 0700
+    owner: "{{ sansible_ssmtp_user }}"
+    state: directory
+  when:
+    - sansible_ssmtp_group is not none
+    - sansible_ssmtp_user is not none
+    - sansible_ssmtp_restrict

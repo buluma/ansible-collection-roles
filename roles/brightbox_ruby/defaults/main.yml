@@ -1,0 +1,11 @@
+---
+# defaults file for brightbox_ruby
+brightbox_ruby_psp_pkg_version:
+brightbox_ruby_psp_pkg_state: installed
+brightbox_ruby_packages:
+  - ruby2.4
+  - ruby2.4-dev
+brightbox_ruby_gem_user_install: no
+brightbox_ruby_gems:
+  - rake
+  - bundler

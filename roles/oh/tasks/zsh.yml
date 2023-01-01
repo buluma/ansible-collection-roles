@@ -1,0 +1,32 @@
+---
+- name: Establish home directory.
+  ansible.builtin.set_fact:
+    omz_user_home_dir: "{{ (ansible_system == 'Darwin') | ternary('Users', 'home') }}"
+
+- name: Ensure zsh is installed.
+  block:
+    - name: Install zsh for Linux.
+      ansible.builtin.package:
+        name: "zsh"
+        state: present
+      when:
+        - "ansible_system == 'Linux'"
+        - "omz_install_zsh"
+
+    - name: Install zsh for macOS.
+      community.general.homebrew:
+        name: "zsh"
+        state: present
+      when:
+        - "ansible_system == 'Darwin'"
+        - "omz_install_zsh"
+
+- name: Get zsh installed path.
+  shell: "command -v zsh"
+  register: omz_zsh_installed_path
+  changed_when: false
+
+- name: Set user shell to zsh.
+  ansible.builtin.user:
+    name: "{{ omz_user.name }}"
+    shell: "{{ omz_zsh_installed_path.stdout }}"

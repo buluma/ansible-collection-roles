@@ -1,0 +1,5 @@
+---
+# vars file for cloud_init
+
+cloud_init_packages:
+  - cloud-init

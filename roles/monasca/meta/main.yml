@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: monasca_agent
+  author: Tim Kuhlman
+  namespace: buluma
+  description: Installs the monasca-agent part of the Monasca project.
+  company: HP
+  license: Apache
+  min_ansible_version: 1.2
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: EL
+      versions:
+        - 7
+        - 8
+  galaxy_tags:
+    - monitoring
+    - openstack
+dependencies: []

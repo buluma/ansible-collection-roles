@@ -1,0 +1,8 @@
+---
+production:
+  adapter: {{ redmine_sql_driver }}
+  database: {{ redmine_sql_database_name }}
+  host: {{ redmine_sql_database_host }}
+  username: {{ redmine_sql_username }}
+  password: {{ redmine_sql_password }}
+  encoding: utf8

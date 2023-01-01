@@ -1,0 +1,65 @@
+---
+# Foreman/Katello versions are linked, check Katello docs for more information
+- name: 'Set default input'
+  ansible.builtin.set_fact:
+    foreman_upgrade: false
+  when: foreman_upgrade is not defined
+
+- name: 'Set versions'
+  ansible.builtin.set_fact:
+    foreman_repositories_version: "{{ foreman_foreman_version }}"
+    foreman_repositories_katello_version: "{{ foreman_katello_version }}"
+    foreman_installer_package: 'foreman-installer-katello'
+    foreman_installer_scenario: 'katello'
+
+- name: 'Set installer options'
+  ansible.builtin.set_fact:
+    foreman_installer_options:
+      - "--foreman-initial-admin-password {{ foreman_admin_password | quote }}"
+      - "--foreman-initial-organization {{ foreman_organization }}"
+      - "--foreman-initial-location {{ foreman_locations[0] }}"
+      - "{{ foreman_puppet_enabled | ternary(None, '--no-enable-puppet --foreman-proxy-puppet false --foreman-proxy-puppetca false --foreman-proxy-content-puppet false') }}"  # noqa yaml
+      - "{{ foreman_katello_agent_enabled | ternary('--foreman-proxy-content-enable-katello-agent=true', '--foreman-proxy-content-enable-katello-agent=false') }}"  # noqa yaml
+      - '--no-lock-package-versions'
+  when: not foreman_upgrade
+
+- name: 'Run Katello upgrade check'
+  ansible.builtin.command: foreman-rake katello:upgrade_check
+  when: foreman_upgrade
+
+- name: 'Install EPEL on EL7'
+  ansible.builtin.yum:
+    name: 'epel-release'
+    state: 'present'
+  when: ansible_facts['distribution_major_version'] == '7'
+
+- name: 'Run common tasks'
+  ansible.builtin.include_tasks: 'install_foreman_common.yml'
+
+- name: 'Setup Foreman & Katello repositories'
+  ansible.builtin.include_role:
+    name: 'theforeman.operations.foreman_repositories'
+
+- name: 'Setup Ansible repositories'
+  ansible.builtin.include_role:
+    name: 'theforeman.operations.ansible_repositories'
+
+- name: 'Setup Puppet repositories'
+  ansible.builtin.include_role:
+    name: 'theforeman.operations.puppet_repositories'
+
+- name: 'Clear yum cache'
+  ansible.builtin.file:
+    path: '/var/cache/yum'
+    state: 'absent'
+
+- name: 'Upgrade all installed packages'  # noqa package-latest
+  ansible.builtin.yum:
+    name: '*'
+    state: 'latest'
+    update_cache: true
+  when: foreman_upgrade
+
+- name: 'Run Foreman/Katello installer'
+  ansible.builtin.include_role:
+    name: 'theforeman.operations.installer'

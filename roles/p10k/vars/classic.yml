@@ -1,0 +1,30 @@
+---
+separator_config:
+  angled:
+    segment:
+      left: '\uE0B0'
+      right: '\uE0B2'
+    subsegment:
+      left: '%244F\uE0B1'
+      right: '%244F\uE0B3'
+  vertical:
+    segment:
+      left: ''
+      right: ''
+    subsegment:
+      left: '%250F\u2502'
+      right: '%250F\u2502'
+  slanted:
+    segment:
+      left: '\uE0BC'
+      right: '\uE0BA'
+    subsegment:
+      left: '%250F\u2571'
+      right: '%250F\u2571'
+  round:
+    segment:
+      left: '\uE0B4'
+      right: '\uE0B6'
+    subsegment:
+      left: '%250F\uE0B5'
+      right: '%250F\uE0B7'

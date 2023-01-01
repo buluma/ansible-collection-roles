@@ -1,0 +1,319 @@
+---
+# Admin credentials
+foreman_admin_user: 'admin'
+foreman_admin_password: 'secret'
+
+## Only when using FreeIPA (and the system is already a member of the IPA domain)
+foreman_configure_ipa: false                       # configure IPA authentication
+foreman_ipa_admin_group: 'foreman_admins'          # name of the group in the IPA domain
+foreman_foreman_admin_group: 'ipa_foreman_admins'  # name of the group in the Foreman Server
+foreman_ipa_server: 'ipa.example.com'              # hostname of the IPA server to which the Foreman server is joined
+                                                   # Ansible needs to have access to this server
+
+# Server information
+foreman_url: 'https://foreman.example.com'
+foreman_server_type: 'foreman'  # or satellite
+foreman_validate_certs: false
+
+# Foreman/Katello version
+# NOTE: Check the documentation on which Katello version requires which Foreman version and vice versa!!!
+foreman_foreman_version: 3.1
+foreman_katello_version: 4.3
+
+# Yum configuration
+foreman_disable_foreman_protector_plugin: true     # Some versions of Foreman by default disable installing
+                                                   # packages outside of the foreman-installer. This can
+                                                   # hinder executing playbooks and is by default disabled
+
+# Server features
+foreman_puppet_enabled: false
+foreman_katello_agent_enabled: false
+
+# Satellite installation information
+foreman_redhat_register_satellite: false  # Set to true to use credentials below to auto-register Satllite
+                                          # during installation.
+foreman_redhat_support_user: 'user@example.com'
+foreman_redhat_support_password: 'mysecretpassword'
+foreman_satellite_offline_install: false  # When true, make sure to set the ISO location below
+foreman_satellite_dvd_drive: '/dev/sr0'   # this role assumes you mount the ISO to a VM as a drive
+
+# Satellite-specific features
+foreman_simple_content_mode: false  # Set to true for Simple Content Mode, which eases subscription management
+                                    # See https://access.redhat.com/articles/simple-content-access
+
+# Organization, Locations and Lifecycle path
+foreman_organization: 'Example-Org'
+foreman_download_policy: 'immediate'
+foreman_smartproxy_download_policy: 'on_demand'
+foreman_locations:
+  - 'Example Location'
+  - 'Cloud/Other Location'  # Nested example
+
+foreman_sync_timeout: 300         # Total timeout in seconds for connections when syncing
+foreman_run_content_sync: true    # Disable to skip content sync task during the 'normal' run
+                                  # This is mainly meant for config runs after the initial sync, as the repository
+                                  # attribute 'download_concurrency' breaks idempotency
+                                  # https://github.com/theforeman/foreman-ansible-modules/pull/1303
+
+# HTTP proxy information
+foreman_http_proxy_policy: 'none'  # or global_default_http_proxy
+foreman_http_proxy_url: ''         # e.g. 'http://proxy.example.com:3128'
+# foreman_http_proxy_username: ''
+# foreman_http_proxy_password: ''
+foreman_http_proxy_exceptions:
+  - '*.example.com'
+
+# Red Hat subscription information
+foreman_configure_redhat_repos: false                           # Configure Red Hat subscriptions and repos
+foreman_rh_subscription_manifest: 'files/path/to/manifest.zip'  # Path of the manifest ZIP archive.
+foreman_rh_subscription_manifest_refresh: false                 # Automatically upload or refresh manifest,
+                                                                # sometimes this fails and it is only required
+                                                                # when there have been changes in the manifest
+                                                                # that need to be imported
+foreman_redhat_cdn_url: 'https://cdn.redhat.com'
+foreman_redhat_repositories:
+  - label: 'rhel-7-server-rpms'
+    repositories:
+      - releasever: "7Server"
+        basearch: "x86_64"
+
+# Set the environments in the order you wish to have them
+foreman_lifecycle:
+  - 'Library'  # Library entry is mandatory and _must_ be first!
+  - 'Development'
+  - 'QA'
+  - 'Production'
+
+# Set the environments for the Infrastructure environment
+foreman_infrastructure_lifecycle:
+  - 'Library'  # Library entry is mandatory and _must_ be first!
+  - 'Infra'
+
+# Create a host collection for all lifecycle environments
+# The example below will result in the following collections
+# if used with the default lifecycle path:
+#
+# - centos7-development
+# - centos7-qa
+# - centos7-production
+foreman_host_collections_lifecycle:
+  - 'centos7'
+
+foreman_products: []
+# Below is an example of an Product and it's Repositories
+#  - name: 'CentOS7' # This name will be used for products as well as CVs (content views)
+#    type: 'yum'
+#    proxy: 'Special Proxy for Repo' # if not defined, will use setting in content_default_http_proxy
+#    repositories: # Also supports ssl_ca_cert, ssl_client_cert, ssl_client_key, upstream_password, upstream_username
+#                  # For details https://theforeman.github.io/foreman-ansible-modules/v1.0.1/modules/repository_module.html#repository-module
+#      - name: 'Base'
+#        url: 'http://mirror.centos.org/centos/7/os/x86_64'
+#    gpg_key: 'RPM-GPG-KEY-CentOS7'
+#    gpg_key_url: 'https://www.centos.org/keys/RPM-GPG-KEY-CentOS-7'
+#    # Other fields, more info, check theforeman.foreman.foreman_repositories:
+#    #ignored_content: 'srpms'
+#    #ssl_ca_cert: ''               # Repository SSL CA certificate
+#    #ssl_client_cert: ''           # Repository SSL client certificate
+#    #ssl_client_key: ''            # Repository SSL client certificate key
+#    #upstream_username: ''         # Username to access upstream repository
+#    #upstream_password: ''         # Password to access upstream repository
+#    #docker_upstream_name: ''      # Name of the upstream docker repo, only for docker type repos
+#    #docker_tags_whitelist: ''     # List of tags to sync for Container Image repository, only for docker type repos
+#
+# Disable upstream sync for all repos in this product:
+#
+#  - name: 'Local'
+#    type: 'yum'
+#    no_sync: true
+#    repositories:
+#      - name: 'Thing'
+#        no_gpg_key: true
+#
+# Override the default download policy for all repos in this product:
+#
+#  - name: 'DownloadPolicy'
+#    type: 'yum'
+#    download_policy: 'on_demand'
+#    repositories:
+#      - name: 'Thing'
+#        no_gpg_key: true
+
+foreman_composite_content_views: []
+# Below is an example of an Composite Content View
+#
+# The name of the COV must contain the OS name as reported by facter and the major version
+# if you wish to also configure them for deployment (eg. CentOS8, RedHat7)
+
+#  - name: 'COV Example'
+#    components:
+#      - content_view: 'CV Example'
+#        latest: true
+
+# Activation keys to create, for each Lifecycle (except Library)
+# The key will always be associated with the Host Collection for it's Lifecycle
+#
+# The name of the key must contain the OS name as reported by facter and the major version
+# if you wish to also configure them for deployment (eg. CentOS8-Base, RedHat8-Base)
+#
+# The example key below will be added to the following host collections:
+#
+# - centos7             # all machines with this version of the OS
+# - centos7-base        # all Lifecycle versions of this key
+# - centos7-production  # CentOS7-Base-Production
+# - centos7-qa          # CentOS7-Base-QA
+# - centos7-development # CentOS7-Base-Development
+foreman_activation_keys: []
+# For more details, check https://theforeman.github.io/foreman-ansible-modules/v1.0.1/modules/activation_key_module.html#activation-key-module
+# - key: 'CentOS7-Base'
+#   content_view: 'COV Example'
+#   subscriptions:
+#     - name: 'CentOS 7'
+#   release_version: '7Server'
+#   content_overrides:
+#     - label: 'epel-test'
+#       override: 'enabled'
+#   auto_attach: true
+#   host_collections:
+#     - 'centos7-servers'
+
+###
+# Deployment settings
+###
+# Configure the required components etc. for Host Discovery and Deployment
+foreman_configure_deployment: true
+
+# Configure iPXE for deployment (will override other PXE methods)
+foreman_deploy_ipxe: false
+
+# Automatically install discovered hosts according to defined Discovery Rules
+foreman_autoinstall_discovered_hosts: false
+
+## Global network settings
+# These networks are made available in the Foreman infrastructure
+# The names of the networks must be following the lifecycle path (unless lifecycle is set)
+foreman_deploy_networks:
+  - name: 'Development-ExtraNet'
+    lifecycle: 'Development'  # if not defined, will default to the network name. Use only when foreman_activation_keys_per_network is true
+    address: '192.168.1.0/24'
+    range_start: '192.168.1.150'
+    range_end: '192.168.1.200'
+    network_gateway: '192.168.1.1'
+    auth_nameserver: '192.168.1.1'
+    dns_primary: '192.168.1.1'    # if not defined, will use the IP of the foreman server
+    dns_secondary: '192.168.1.1'  # optional
+    dns_zone: 'dev.example.com'
+    locations:  # If not defined, uses foreman_locations
+      - 'DC1'
+    smart_proxy: 'foreman.infra.example.com'  # If not defined, will use the global foreman server
+  - name: 'QA'
+    address: '192.168.2.0/24'
+    range_start: '192.168.2.150'
+    range_end: '192.168.2.200'
+    network_gateway: '192.168.2.1'
+    auth_nameserver: '192.168.2.1'
+    dns_primary: '192.168.2.1'    # if not defined, will use the IP of the foreman server
+    dns_secondary: '192.168.2.1'  # optional
+    dns_zone: 'qa.example.com'
+    locations:
+      - 'DC1'
+      - 'DC2'
+    smart_proxy: 'foreman-proxy.qa.example.com'
+  - name: 'Production'
+    address: '192.168.3.0/24'
+    range_start: '192.168.3.150'
+    range_end: '192.168.3.200'
+    network_gateway: '192.168.3.1'
+    auth_nameserver: '192.168.3.1' # If not defined, will use the addresses set in the DNS/DHCP scenarios
+    dns_primary: '192.168.3.1'     # if not defined, will use the IP of the foreman server
+    dns_secondary: '192.168.3.1'   # optional
+    dns_zone: 'prod.example.com'
+    locations:
+      - 'DC1'
+      - 'DC2'
+    smart_proxy: 'foreman-proxy.prod.example.com'
+##
+
+# Run Foreman Installer to configure deployment components
+# NOTE: This role currently assumes a 'default' scenario where Foreman manages DHCP, DNS and TFTP.
+# For DNS, different scenario's are avaiable, see below
+# If you require a different setup, disable this and prepare the node manually.
+foreman_deploy_run_installer: true
+
+# Select a DNS and DHCP deployment scenario
+# NOTE: Infoblox is only tested for both DNS and DHCP together
+foreman_deploy_dns_scenario: 'internal'  # internal, infoblox or nsupdate
+foreman_deploy_dhcp_scenario: 'internal'  # internal or infoblox
+
+### DNS scenario: nsupdate
+# Upstream server
+foreman_deploy_dns_server: '192.168.1.1'  # If auth_nameserver is not specified on the deploy_networks below
+# RNDC credentials, make sure this file exists before running this role!
+foreman_deploy_dns_rndc_key: '/etc/rndc.key'
+# Default TTL for created records
+foreman_deploy_dns_ttl: 600
+###
+
+### DNS Scenario: internal
+# Which upstream DNS server Foreman should use
+foreman_dns_forwarders: '9.9.9.9'
+###
+
+### DNS / DHCP Scenario: infoblox
+foreman_infoblox_host: '192.168.1.1'  # If auth_nameserver is not specified on the deploy_networks below
+foreman_infoblox_user: 'admin'
+foreman_infoblox_password: 'infoblox'
+foreman_infoblox_network_view: 'default'
+foreman_infoblox_dns_view: 'default'
+
+# The root password set on all machines deployed by Foreman
+# If not set, will default to 'changemeNOW!'
+foreman_deploy_root_pass: 'SuperSecretPassword'
+
+# Custom Partition Tables that can be assigned to an OS
+# Note that all host groups descending from the OS will use
+# the same Partition Table!
+foreman_partition_tables: []
+
+# Operating systems to configure for deployment
+foreman_operating_systems:
+  - name: 'CentOS'   # Name as supplied by Facter, this will be combined with the Major version to a friendly name
+    major_version: 7
+    arch:
+      - 'x86_64'
+    os_family: 'Redhat'
+    partitions:
+      - 'Kickstart default'
+    root_pass: 'SuperSecretPassword'
+    parameters:
+      - name: 'remote_execution_create_user'
+        value: 'true'
+        parameter_type: 'boolean'
+      - name: 'remote_execution_ssh_user'
+        value: 'ansible'
+      - name: 'remote_execution_effective_user_method'
+        value: 'sudo'
+      - name: 'remote_execution_ssh_keys'
+        value: "{{ lookup('file', 'ssh_keys/ansible.pub') }}"
+    # Source to use for the OS installer
+    kickstart_repo: 'CentOS7-Base'  # Name of a repository which contains a kickstart tree, ususally this is the Base
+    kickstart: true  # Enable this to disable creating Installation media (which are not required if using kickstart)
+    # Alternatively when no Kickstart repo is available
+    # The URL below is the location of the CV 'CentOS7-Base' for the 'Example-Org' organization
+    # path: 'http://foreman.example.com/pulp/repos/Example-Org/Library/custom/CentOS7/CentOS7-Base/'
+
+# Which version of the Foreman Discorvery Image to use
+foreman_discovery_image_release: 'latest'
+## end of global settings
+
+## Foreman instance settings
+# Smart Proxy Settings (Smart Proxies only)
+foreman_smart_proxy_location: 'Example Location'
+foreman_smart_proxy_lifecycles: "{{ foreman_lifecycle + foreman_infrastructure_lifecycle | unique }}"
+
+# Deployment settings (Smart Proxies and Foreman 'Master' server)
+# Which network interface to configure DHCP/DNS for the current instance, only for DHCP scenario 'internal'
+foreman_instance_deploy_interface: 'eth0'
+## end of instance settings
+
+# Enable to allow logging for tasks that can contain sensitive information
+foreman_debug: false

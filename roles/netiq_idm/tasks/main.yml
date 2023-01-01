@@ -1,0 +1,108 @@
+---
+# tasks file for netiq-idm
+
+# - name: include distribution specific variables
+#   tags:
+#     - prereq
+#   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+#   vars:
+#     params:
+#       files:
+#         - "{{ ansible_distribution }}_{{ ansible_distribution_major_version }}_{{ ansible_distribution_release }}.yml"
+#         - "{{ ansible_distribution }}_{{ ansible_distribution_major_version }}.yml"
+#         - "{{ ansible_distribution }}.yml"
+#         - "{{ ansible_os_family }}_{{ ansible_distribution_major_version }}.yml"
+#         - "{{ ansible_os_family }}.yml"
+#         - default.yml
+#       paths:
+#         - vars
+
+- name: Load a variable file based on the OS type, or a default if not found. Using free-form to specify the file.
+  ansible.builtin.include_vars: "{{ lookup('ansible.builtin.first_found', params) }}"
+  vars:
+    params:
+      files:
+        - '{{ ansible_distribution }}.yml'
+        - '{{ ansible_os_family }}.yml'
+        - main.yml
+      paths:
+        - 'vars'
+
+# - name: run OS dependant tasks
+#   tags:
+#     - prereq
+#   include: "{{ os }}"
+#   with_first_found:
+#     - "{{ ansible_distribution }}_{{ ansible_distribution_major_version }}.yml"
+#     - "{{ ansible_distribution }}.yml"
+#     - "{{ ansible_os_family }}_{{ ansible_distribution_major_version }}.yml"
+#     - "{{ ansible_os_family }}.yml"
+#     - main.yml
+#   loop_control:
+#     loop_var: os
+
+- name: run OS dependant tasks
+  include: "{{ ansible_os_family }}.yml"
+  tags:
+    - prereq
+
+- name: add idvadmin group
+  tags: prereq
+  ansible.builtin.group:
+    name: idvadmin
+
+- name: add novlwww group
+  tags: prereq
+  ansible.builtin.group:
+    name: novlwww
+
+- name: add idvadmin user
+  tags:
+    - prereq
+  ansible.builtin.user:
+    name: idvadmin
+    comment: Novell IDM System User
+    group: novlwww
+    append: yes
+    system: yes
+
+- name: add novlwww user
+  tags:
+    - prereq
+  ansible.builtin.user:
+    name: novlwww
+    comment: Novell iManager System User
+    group: novlwww
+    groups: idvadmin
+    append: yes
+    system: yes
+
+- name: add novlua user
+  tags:
+    - prereq
+  ansible.builtin.user:
+    name: novlua
+    comment: Novell UserApp System User
+    groups: idvadmin
+    append: yes
+    system: yes
+
+- name: set directory for server keypair and certificate
+  tags:
+    - tls
+  ansible.builtin.file:
+    path: /etc/ssl/servercerts
+    state: directory
+    mode: 0770
+    owner: root
+    group: idvadmin
+
+- name: copy server keypair and certificate
+  tags:
+    - tls
+  ansible.builtin.copy:
+    src: wildcard.demo.live.p12
+    dest: /etc/ssl/servercerts/server.p12
+    mode: 0770
+    owner: root
+    group: idvadmin

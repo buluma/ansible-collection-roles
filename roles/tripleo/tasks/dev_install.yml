@@ -1,0 +1,47 @@
+---
+- import_tasks: precheck.yml
+  tags:
+    - always
+
+- import_tasks: get_original_user.yml
+
+- name: Create image build context directory
+  tempfile:
+    state: directory
+    prefix: tripleo-modify-image
+  register: context_dir
+
+- name: Set modify_dir_path
+  set_fact:
+    modify_dir_path: "{{ context_dir.path }}"
+
+- name: Write Dockerfile to {{ modify_dir_path }}
+  template:
+    src: Dockerfile-dev.j2
+    dest: "{{ modify_dir_path }}/Dockerfile"
+
+- name: Write dev_install.sh
+  copy:
+    src: dev_install.sh
+    dest: "{{ modify_dir_path }}/dev_install.sh"
+    mode: '0555'
+
+- name: Git checkout the refspecs into local temp dir
+  command: "/bin/bash dev_install.sh {{ item.project }} {{ item.refspec }}"
+  environment:
+    GERRIT_MODE: 1
+  args:
+    chdir: "{{ modify_dir_path }}"
+  loop: "{{ refspecs }}"
+  when: item | length > 0
+
+- name: Copy the Python directories into local temp dir
+  command: "/bin/bash dev_install.sh {{ item }}"
+  environment:
+    GERRIT_MODE: 0
+  args:
+    chdir: "{{ modify_dir_path }}"
+  loop: "{{ python_dir }}"
+  when: item | length > 0
+
+- include_tasks: modify_image.yml

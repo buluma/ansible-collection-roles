@@ -1,0 +1,33 @@
+# Redirection of port 80 to port 443
+<virtualhost {{joomla_domain}}:80>
+  ServerName {{joomla_domain}}
+
+  RewriteEngine On
+  RewriteRule ^/(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+
+</virtualhost>
+
+<VirtualHost {{joomla_domain}}:443>
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl/{{joomla_site_name}}.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/{{joomla_site_name}}.key
+    ErrorLog ${APACHE_LOG_DIR}/{{joomla_site_name}}_error.log
+    CustomLog ${APACHE_LOG_DIR}/{{joomla_site_name}}_access.log combined
+    ServerAdmin  {{joomla_admin_mail}}
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Port "443"
+    ServerName {{joomla_domain}}:443
+
+
+    DocumentRoot {{joomla_install_dir}}
+
+    SuexecUserGroup {{joomla_site_owner}} {{joomla_site_group}}
+
+    <Directory {{joomla_install_dir}} >
+        Options FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+</VirtualHost>

@@ -1,0 +1,37 @@
+---
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'db_backup_data'
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Place files for DB Backup'
+  template:
+    src: 'db_backup.sh.j2'
+    dest: "{{ docker_data_dir }}/db_backup_data/db_backup.sh"
+    mode: 0750
+    owner: 'root'
+    group: 'root'
+
+- name: 'Deploy Docker DB Backupper'
+  community.docker.docker_swarm_service:
+    name: 'db_backup'
+    command: '/db_backup.sh'
+    image: 'docker'
+    mounts:
+      - source: '/var/run/docker.sock'
+        target: '/var/run/docker.sock'
+        type: 'bind'
+      - source: "{{ docker_data_dir }}/db_backup_data/db_backup.sh"
+        target: '/db_backup.sh'
+        type: 'bind'
+    mode: 'global'
+    restart_config:
+      condition: "{{ restart_condition }}"
+    placement:
+      constraints:
+        - 'node.platform.os == linux'
+    user: null

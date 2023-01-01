@@ -1,0 +1,109 @@
+---
+- name: Look for an existing cached version file
+  stat:
+    path: "{{ nagios_prefix_dir }}/libexec/.nagios_plugins_version_cache"
+  register: _version_cache_st
+
+- name: Slurp version
+  slurp:
+    path: "{{ nagios_prefix_dir }}/libexec/.nagios_plugins_version_cache"
+  register: _nagios_plugin_version_slurp
+  when:
+    - "_version_cache_st.stat.exists"
+
+- name: Install epel
+  package:
+    name: epel-release
+    state: present
+  when:
+    - "ansible_distribution == 'CentOS'"
+    - "nagios_centos_install_epel"
+
+- name: Install plugin dependencies
+  package:
+    name: "{{ __nagios_plugin_packages }}"
+    state: present
+  when:
+    - >-
+      ((not ansible_distribution == 'CentOS') and
+       (ansible_distribution_major_version|int == 8))
+
+- name: Install plugin dependencies (special case for CentOS 8)
+  dnf:
+    name: "{{ __nagios_plugin_packages }}"
+    state: present
+    enablerepo: "PowerTools,epel"
+  when:
+    - "ansible_distribution == 'CentOS'"
+    - "ansible_distribution_major_version|int == 8"
+
+- block:
+    - name: Create tmpdir
+      tempfile:
+        path: "{{ nagios_source_tempfile_path }}"
+        state: directory
+      register: tmpdir
+
+    - name: Create path for extraction
+      file:
+        path: "{{ tmpdir.path }}/nagios_plugins"
+        state: directory
+        owner: "{{ nagios_user }}"
+        group: "{{ nagios_group }}"
+        mode: "0700"
+
+    - name: Retrieve the plugin source tarball
+      get_url:
+        url: "{{ nagios_plugin_source_tarball }}"
+        dest: "{{ tmpdir.path }}/{{ nagios_plugin_source_tarball | basename }}"
+
+    - name: Extract tarball
+      unarchive:
+        src: "{{ tmpdir.path }}/{{ nagios_plugin_source_tarball | basename }}"
+        dest: "{{ tmpdir.path }}/nagios_plugins"
+        mode: "0700"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+
+    - name: Fix the script permissions
+      file:
+        path: "{{ script }}"
+        mode: "u+x"
+      loop:
+        - "{{ tmpdir.path }}/nagios_plugins/configure"
+      loop_control:
+        loop_var: script
+
+    - name: Configure distribution
+      command: "./configure --prefix {{ nagios_prefix_dir }}"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios_plugins"
+
+    - name: Make
+      command: "make"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios_plugins"
+
+    - name: Make install
+      command: "make install"
+      args:
+        chdir: "{{ tmpdir.path }}/nagios_plugins"
+
+    - name: Write the current version to the libexec dir
+      copy:
+        content: "{{ nagios_plugin_source_version }}"
+        dest: "{{ nagios_prefix_dir }}/libexec/.nagios_plugins_version_cache"
+        owner: "{{ nagios_user }}"
+        group: "{{ nagios_group }}"
+        mode: "0644"
+  always:
+    - name: Remove tmpdir
+      file:
+        path: "{{ tmpdir.path }}"
+        state: absent
+  when:
+    - "nagios_plugin_source_tarball is not none"
+    - >-
+      (not _version_cache_st.stat.exists) or
+      ((_nagios_plugin_version_slurp.content | b64decode) != nagios_plugin_source_version)

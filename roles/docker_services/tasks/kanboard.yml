@@ -1,0 +1,66 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'kanboard_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'kanboard_data/plugins'
+    - 'kanboard_data/data'
+    - 'kanboard_db'
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy MariaDB for Kanboard'
+  community.docker.docker_swarm_service:
+    name: 'kanboard_mariadb'
+    image: 'mariadb'
+    env:
+      - "MYSQL_ROOT_PASSWORD={{ db_root_password }}"
+      - 'MYSQL_DATABASE=kanboard'
+      - 'MYSQL_USER=kanboard'
+      - "MYSQL_PASSWORD={{ kanboard_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/kanboard_db"
+        target: '/var/lib/mysql'
+        type: 'bind'
+    networks:
+      - 'kanboard_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Kanboard'
+  community.docker.docker_swarm_service:
+    name: 'kanboard'
+    image: 'kanboard/kanboard'
+    env:
+      - "DATABASE_URL=mysql://kanboard:{{ kanboard_db_password }}@tasks.kanboard_mariadb:3306/kanboard"
+      - 'DEBUG=false'
+    mounts:
+      - source: "{{ docker_data_dir }}/kanboard_data/data"
+        target: '/var/www/app/data'
+        type: 'bind'
+      - source: "{{ docker_data_dir }}/kanboard_data/plugins"
+        target: '/var/www/app/plugins'
+        type: 'bind'
+    networks:
+      - 'kanboard_backend'
+      - 'traefik_backend'
+    labels:
+      traefik.http.routers.kanboard.rule: "HostHeader(`{{ kanboard_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.kanboard.tls: "true"
+      traefik.http.services.kanboard.loadbalancer.server.port: '80'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

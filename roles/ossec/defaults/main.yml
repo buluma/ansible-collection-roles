@@ -1,0 +1,24 @@
+---
+# Default variables for this role
+
+# OSSEC installation questions (with email notifications)
+ossec_dir: /var/ossec
+ossec_install_type: local
+ossec_email: y
+ossec_email_address: myemail@email.com
+ossec_detected_smtp_use: n
+ossec_smtp_server: localhost
+ossec_integritycheck_daemon: y
+ossec_rootkit_engine: y
+ossec_active_response: y
+ossec_firewalldrop_response: y
+ansible_controller_ip: 192.168.1.1
+
+# OSSEC installation questions (without email notification)
+#ossec_dir: /var/ossec
+#ossec_install_type: local
+#ossec_email: n
+#ossec_integritycheck_daemon: y
+#ossec_rootkit_engine: y
+#ossec_active_response: y
+#ossec_firewalldrop_response: y

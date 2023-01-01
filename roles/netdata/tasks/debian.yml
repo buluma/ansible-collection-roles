@@ -1,0 +1,17 @@
+---
+- name: Debian | Installing git
+  ansible.builtin.apt:
+    name: git
+    state: present
+  become: true
+
+- name: Debian | Installing iproute Package
+  ansible.builtin.apt:
+    name: iproute
+    state: present
+  become: true
+  when: >
+    (ansible_distribution == "Debian" and
+    ansible_distribution_version|int < 10) or
+    (ansible_distribution == "Ubuntu" and
+    ansible_distribution_version < "18.04")

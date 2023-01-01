@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: payload_cms
+  description: Install and Configure Payload CMS.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+
+  galaxy_tags:
+    - server
+    - payloadcms
+    - nginx
+
+dependencies: []

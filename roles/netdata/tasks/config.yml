@@ -1,0 +1,75 @@
+---
+- name: Config | Configuring Netdata
+  ansible.builtin.template:
+    src: netdata.conf.j2
+    dest: "{{ netdata_config_file }}"
+    owner: "{{ netdata_user_info['user'] }}"
+    group: root
+    mode: u=rx,g=rx,o=r
+  notify: Restart netdata
+  become: true
+
+- name: Config | Configuring Netdata Alarm Notifications
+  ansible.builtin.template:
+    dest: "{{ netdata_alarm_config_file }}"
+    owner: "{{ netdata_user_info['user'] }}"
+    group: root
+    src: "health_alarm_notify.conf.j2"
+    mode: u=rw,g=rw,o=r
+  notify: Restart netdata
+  become: true
+  when: netdata_alarm_configure
+
+- name: Config | Configuring Netdata streaming
+  ansible.builtin.template:
+    src: stream.conf.j2
+    dest: "{{ netdata_stream_config_file }}"
+    owner: "{{ netdata_user_info['user'] }}"
+    group: root
+    mode: u=rx,g=rx,o=r
+  notify: Restart netdata
+  become: true
+  when: netdata_stream_enabled
+
+- name: Config | Configuring Netdata Service (systemd)
+  ansible.builtin.template:
+    src: etc/systemd/system/netdata.service.j2
+    dest: /etc/systemd/system/netdata.service
+    owner: root
+    group: root
+    mode: u=rw,g=rw,o=r
+  notify:
+    - Reload systemd netdata
+    - Restart netdata
+  become: true
+  when: ansible_service_mgr == "systemd"
+
+- name: Config | Configuring Netdata Service (upstart|sysvinit) - Debian
+  ansible.builtin.template:
+    src: etc/init.d/netdata.debian.j2
+    dest: /etc/init.d/netdata
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  notify:
+    - Restart netdata
+  become: true
+  when: >
+    (ansible_service_mgr == "upstart"
+    or ansible_service_mgr == "sysvinit") and
+    ansible_os_family == "Debian"
+
+- name: Config | Configuring Netdata Service (upstart|sysvinit) - RedHat
+  ansible.builtin.template:
+    src: etc/init.d/netdata.redhat.j2
+    dest: /etc/init.d/netdata
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  notify:
+    - Restart netdata
+  become: true
+  when: >
+    (ansible_service_mgr == "upstart"
+    or ansible_service_mgr == "sysvinit") and
+    ansible_os_family == "RedHat"

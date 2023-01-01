@@ -1,0 +1,48 @@
+---
+galaxy_info:
+  author: buluma
+  description: Ansible role to install Apache Cassandra.
+  company: ShadowNet
+  role_name: cassandra
+  license: Apache-2.0
+  min_ansible_version: "2.10"
+  galaxy_tags:
+    - apache
+    - cassandra
+    - centos
+    - debian
+    - fedora
+    - nosql
+    - redhat
+    - ubuntu
+
+  platforms:
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+        - xenial
+        - jammy  # https://github.com/ansible/galaxy/issues/2918
+    - name: Debian
+      versions:
+        - buster
+        - bullseye
+        - stretch
+    - name: Fedora
+      versions:
+        - 27
+        - 28
+        - 29
+        - 30  # https://github.com/ansible/galaxy/issues/1926
+        - 31  # https://github.com/ansible/galaxy/issues/2105
+        - 32  # https://github.com/ansible/galaxy/issues/2356
+        - 33  # https://github.com/ansible/galaxy/issues/2533
+        - 34
+        - 35
+        - 36
+
+  dependencies: []

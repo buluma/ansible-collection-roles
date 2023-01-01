@@ -1,0 +1,102 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'drone_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'drone_data'
+    - 'drone_db'
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy MariaDB for Drone'
+  community.docker.docker_swarm_service:
+    name: 'drone_mariadb'
+    image: 'mariadb'
+    env:
+      - "MYSQL_ROOT_PASSWORD={{ db_root_password }}"
+      - 'MYSQL_DATABASE=drone'
+      - 'MYSQL_USER=drone'
+      - "MYSQL_PASSWORD={{ drone_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/drone_db"
+        target: '/var/lib/mysql'
+        type: 'bind'
+    networks:
+      - 'drone_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Drone'
+  community.docker.docker_swarm_service:
+    name: 'drone'
+    image: "drone/drone:{{ drone_server_release }}"
+    env:
+      - 'DRONE_USER_CREATE=username:root,admin:true'
+      - 'DRONE_DATABASE_DRIVER=mysql'
+      - "DRONE_DATABASE_DATASOURCE=drone:{{ drone_db_password }}@tcp(tasks.drone_mariadb:3306)/drone?parseTime=true"
+      - "DRONE_GITEA_SERVER={{ drone_gitea_server }}"
+      - "DRONE_GITEA_CLIENT_ID={{ drone_gitea_client_id }}"
+      - "DRONE_GITEA_CLIENT_SECRET={{ drone_gitea_client_secret }}"
+      - 'DRONE_GIT_ALWAYS_AUTH=true'
+      - 'DRONE_RUNNER_CAPACITY=0'
+      - 'DRONE_SERVER_PROTO=https'
+      - "DRONE_SERVER_HOST={{ drone_server_name }}"
+      - "DRONE_RPC_SECRET={{ drone_agent_rpc_secret }}"
+      - 'DRONE_AGENTS_ENABLED=true'
+      - 'DRONE_JSONNET_ENABLED=true'
+    labels:
+      traefik.http.routers.drone.rule: "HostHeader(`{{ drone_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.drone.tls: "true"
+      traefik.http.services.drone.loadbalancer.server.port: '80'
+    mounts:
+      - source: '/var/run/docker.sock'
+        target: '/var/run/docker.sock'
+        type: 'bind'
+      - source: "{{ docker_data_dir }}/drone_data"
+        target: '/data'
+        type: 'bind'
+    networks:
+      - 'drone_backend'
+      - 'traefik_backend'
+      - 'gitea_backend'
+    mode: 'replicated'
+    restart_config:
+      condition: '{{ restart_condition }}'
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Drone agents'
+  community.docker.docker_swarm_service:
+    name: 'drone_agent'
+    image: "drone/agent:{{ drone_agent_release }}"
+    env:
+      - "DRONE_RUNNER_CAPACITY={{ drone_runner_cap }}"
+      - 'DRONE_RPC_HOST=tasks.drone'
+      - "DRONE_RPC_SECRET={{ drone_agent_rpc_secret }}"
+      - 'DRONE_DOCKER_CONFIG=/root/.docker/config.json'
+    networks:
+      - 'drone_backend'
+    mode: 'global'
+    mounts:
+      - source: '/root/.docker/config.json'
+        target: '/root/.docker/config.json'
+        type: 'bind'
+      - source: '/var/run/docker.sock'
+        target: '/var/run/docker.sock'
+        type: 'bind'
+    restart_config:
+      condition: '{{ restart_condition }}'
+    placement:
+      constraints: "{{ drone_agent_constraints | default(omit) }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

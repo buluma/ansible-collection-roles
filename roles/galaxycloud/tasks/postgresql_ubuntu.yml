@@ -1,0 +1,45 @@
+---
+# Ubuntu
+#
+# https://wiki.postgresql.org/wiki/Apt
+#
+# On Ubuntu the default pgdata directory is /var/lib/postgresql/{{ postgresql_version }}/main, while the config files are in /etc/postgresql/{{ postgresql_version }}/main.
+#
+# Ubuntu 14.04:  uses Upstart as init system, it works both on Docker and VMs. 
+# The service is started by default on VMs and we keep it running. We start the service on docker containers. It is stopped in the galaxy-startup recipe.
+#
+# Ubuntu 16.04 uses Systemd as init system.
+
+- name: '[Ubuntu] Include vars'
+  include_vars: postgresql_ubuntu.yml
+
+- name: '[Ubuntu] Install pgdg package signing key'
+  apt_key:
+    url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
+    id: ACCC4CF8
+    state: present
+
+- name: '[Ubuntu] Install repository'
+  apt_repository:
+    repo: 'deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main'
+    update_cache: yes
+
+- name: '[Ubuntu] Install postgresql {{ postgresql_version }}'
+  apt:
+    name: '{{ packages }}'
+    state: present
+  vars:
+    packages:
+    - "postgresql{{ '-' ~ postgresql_version if postgresql_version is defined else '' }}"
+    - python-psycopg2
+
+- name: '[VM] Ensure PostgreSQL is running'
+  service:
+    name: '{{ postgresql_service_name }}'
+    enabled: yes
+    state: started
+  when: ansible_virtualization_type != "docker"
+
+- name: '[Ubuntu] [Docker] Start PostgreSQL server'
+  shell: '/etc/init.d/postgresql start'
+  when: ansible_virtualization_type == "docker"

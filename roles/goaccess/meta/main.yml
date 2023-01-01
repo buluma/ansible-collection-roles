@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  role_name: "goaccess"
+  description: "An ansible role for installing GoAccess, a real-time web log analyzer that runs in a terminal or the browser."
+
+  author: "jonaspammer"
+  license: MIT
+
+  min_ansible_version: "2.11"
+  platforms:
+    - name: EL # (Enterprise Linux)
+      versions:
+        - "8" # actively tested: rockylinux8, centos8
+    - name: Fedora
+      versions:
+        - "35"
+    - name: Debian
+      versions:
+        - buster # debian10 (actively tested)
+        - bullseye # debian11 (actively tested)
+    - name: Ubuntu
+      versions:
+        - xenial # ubuntu1604 (actively tested)
+        - bionic # ubuntu1804 (actively tested)
+        - focal # ubuntu2004 (actively tested)
+
+  galaxy_tags: []
+
+dependencies: []
+
+allow_duplicates: true

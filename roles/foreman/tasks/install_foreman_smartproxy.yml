@@ -1,0 +1,98 @@
+---
+- name: 'Enable Ruby 2.7 module on EL8'
+  ansible.builtin.dnf:
+    name: '@ruby:2.7'
+    state: 'present'
+  when:
+    - ansible_facts['distribution_major_version']|int >= 8
+
+- name: 'Ensure sudo privileges'
+  ansible.builtin.copy:
+    content: |
+      # This file is managed by Ansible, YOUR CHANGES WILL BE LOST!
+      {{ ansible_user }} ALL = (ALL) NOPASSWD : ALL
+      Defaults:{{ ansible_user }} !requiretty
+    dest: '/etc/sudoers.d/foreman_sudo'
+    mode: 0640
+
+- name: 'Get Pulp repo'
+  theforeman.foreman.resource_info:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    resource: 'repositories'
+    search: 'name ~ "Pulp"'
+  register: 'foreman_pulp_repo'
+
+- name: 'Add module_hotfix property to Pulp repo'
+  ansible.builtin.command: >-
+    subscription-manager repo-override --repo \
+    "{{ foreman_organization }}_{{ foreman_pulp_repo['resources'][0]['product']['name'] }}_{{ foreman_pulp_repo['resources'][0]['name'] }}" \
+    --add module_hotfixes:1
+  changed_when: true
+
+- name: 'Install dependencies'
+  ansible.builtin.yum:
+    name:
+      - 'foreman-proxy-content'
+      - 'puppet-agent-oauth'
+    state: 'present'
+
+- name: 'Run common tasks'
+  ansible.builtin.include_tasks: 'install_foreman_common.yml'
+
+- name: 'Generate certificates on Foreman Server'
+  ansible.builtin.shell: |
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    /usr/sbin/foreman-proxy-certs-generate \
+      --no-colors \
+      --foreman-proxy-fqdn "{{ ansible_facts['fqdn'] }}" \
+      --certs-tar /root/{{ ansible_facts['fqdn'] }}.tar
+  delegate_to: "{{ groups['foreman'][0] }}"
+  register: 'foreman_certs_gen'
+  changed_when: true
+
+- name: 'Copy certificate tar to Ansible Controller'
+  ansible.builtin.fetch:
+    src: "/root/{{ ansible_facts['fqdn'] }}.tar"
+    dest: '/tmp/'
+    flat: true
+  delegate_to: "{{ groups['foreman'][0] }}"
+
+- name: 'Copy certificate tar to Foreman Proxy'
+  ansible.builtin.copy:
+    src: "/tmp/{{ ansible_facts['fqdn'] }}.tar"
+    dest: '/root'
+    mode: 0600
+
+- name: 'Remove certificate tar from Ansible Controller'
+  ansible.builtin.file:
+    path: "/tmp/{{ ansible_facts['fqdn'] }}.tar"
+    state: 'absent'
+  delegate_to: 'localhost'
+
+- name: 'Compose foreman-installer command'
+  ansible.builtin.set_fact:
+    foreman_installer_cmd: "{{ foreman_certs_gen['stdout_lines'][-11:] + ['--detailed-exitcodes'] }}"
+  when: foreman_puppet_enabled
+
+- name: 'Compose foreman-installer command'
+  ansible.builtin.set_fact:
+    foreman_installer_cmd: "{{ foreman_certs_gen['stdout_lines'][-11:] + ['--no-enable-puppet --foreman-proxy-puppet false --foreman-proxy-puppetca false --foreman-proxy-content-puppet false --detailed-exitcodes --no-lock-package-versions'] }}"  # noqa yaml
+  when: not foreman_puppet_enabled
+
+- name: 'Run foreman-installer on Proxy'
+  ansible.builtin.shell: |
+    set -o pipefail
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    echo {{ foreman_installer_cmd | join(' ') }} | sed 's/\\//' | bash
+  register: 'smart_proxy_install'
+  changed_when: smart_proxy_install['rc'] == 0 or smart_proxy_install['rc'] == 2
+  failed_when: smart_proxy_install['rc'] >= 3
+
+- name: 'Configure Proxy'
+  ansible.builtin.import_tasks: 'configure_foreman_smartproxy.yml'

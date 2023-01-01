@@ -1,0 +1,3 @@
+---
+_crun_package:
+  - { state: "latest", name: "crun" }

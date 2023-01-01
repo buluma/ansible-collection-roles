@@ -1,0 +1,10 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.ca
+  - name: buluma.ca_certificates
+collections:
+  - name: ansible.posix
+  - name: community.general
+  - name: community.docker

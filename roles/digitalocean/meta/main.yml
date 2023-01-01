@@ -1,0 +1,32 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: digitalocean_agent
+  description: Install digitalocean agent on your system.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Amazon
+      versions:
+        - Candidate
+    - name: EL
+      versions:
+        - "8"
+    - name: Debian
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - digitalocean
+    - digitaloceanagent
+    - doagent
+
+dependencies: []

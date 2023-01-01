@@ -1,0 +1,38 @@
+{{ ansible_managed | comment }}
+
+{% for instance in keepalived_vrrp_instances %}
+{% if instance.check_status_command is defined %}
+
+vrrp_script chk_command_{{ instance.virtual_router_id }} {
+   script "{{ instance.check_status_command }} "   # command that verify status 
+   interval 2                    # check every 2 seconds
+   weight 3                      # add 3 points of prio if OK
+}
+
+{% endif %}
+vrrp_instance {{ instance.name }} {
+  state {{ instance.state }}
+  interface {{ instance.interface }}
+{% if instance.unicast_src_ip is defined %}  unicast_src_ip {{ instance.unicast_src_ip }}
+  unicast_peer {
+    {{ instance.secondary_private_ip }}
+  }
+{% endif %}
+  virtual_router_id {{ instance.virtual_router_id }}
+  priority {{ instance.priority }}
+  authentication {
+    auth_type {{ instance.authentication.auth_type }}
+    auth_pass {{ instance.authentication.auth_pass }}
+  }
+  virtual_ipaddress {
+  {% for ip in instance.virtual_ipaddresses %}
+  {{ ip.name }}/{{ ip.cidr }}
+{% endfor %}
+  }
+{% if instance.check_status_command is defined %}
+  track_script {
+    chk_command_{{ instance.virtual_router_id }}
+}
+{% endif %}
+{% endfor %}
+}

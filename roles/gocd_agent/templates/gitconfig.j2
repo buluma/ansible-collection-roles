@@ -1,0 +1,5 @@
+[user]
+	name = {{ sansible_gocd_agent_git_user | default(sansible_gocd_agent_user) }}
+	email = {{ sansible_gocd_agent_git_email }}
+[url "git@github.com:"]
+	insteadOf = https://github.com/

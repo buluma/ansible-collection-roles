@@ -1,0 +1,82 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'traefik_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'traefik_data'
+  loop_control:
+    loop_var: 'dir'
+
+- block:
+    - name: 'Generate SSL key'
+      openssl_privatekey:
+        path: "{{ docker_data_dir }}/traefik_data/traefik.key"
+
+    - name: 'Generate SSL certificate request'
+      openssl_csr:
+        path: "{{ docker_data_dir }}/traefik_data/traefik.csr"
+        privatekey_path: "{{ docker_data_dir }}/traefik_data/traefik.key"
+        common_name: "*.{{ traefik_domain }}"
+
+    - name: 'Self-sign SSL certificate'
+      openssl_certificate:
+        path: "{{ docker_data_dir }}/traefik_data/traefik.crt"
+        privatekey_path: "{{ docker_data_dir }}/traefik_data/traefik.key"
+        csr_path: "{{ docker_data_dir }}/traefik_data/traefik.csr"
+        provider: selfsigned
+  when: traefik_selfsign
+
+- name: 'Deploy Traefik TOML config'
+  copy:
+    src: 'traefik.toml'
+    dest: "{{ docker_data_dir }}/traefik_data/traefik.toml"
+
+- name: 'Deploy Traefik'
+  community.docker.docker_swarm_service:
+    name: 'traefik'
+    image: 'traefik'
+    command:
+      - '/usr/local/bin/traefik'
+      - '--providers.docker'
+      - '--providers.docker.swarmMode'
+      - '--providers.docker.watch'
+      - '--providers.docker.network=traefik_backend'
+      - '--providers.file.filename=/certs/traefik.toml'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - "--entryPoints.web.forwardedHeaders.trustedIPs={{ traefik_upstream_proxy }}"
+      - "--entryPoints.websecure.forwardedHeaders.trustedIPs={{ traefik_upstream_proxy }}"
+      - '--api.insecure'
+      - '--accesslog=true'
+    mounts:
+      - source: '/var/run/docker.sock'
+        target: '/var/run/docker.sock'
+        type: 'bind'
+      - source: '{{ docker_data_dir }}/traefik_data'
+        target: '/certs'
+        type: 'bind'
+    networks:
+      - 'traefik_backend'
+    mode: 'global'
+    restart_config:
+      condition: "{{ restart_condition }}"
+    publish:
+      - published_port: 80
+        target_port: 80
+        mode: 'host'
+      - published_port: 443
+        target_port: 443
+        mode: 'host'
+      - published_port: 8080
+        target_port: 8080
+        mode: 'host'
+    placement:
+      constraints:
+        - 'node.role == manager'
+    user: null

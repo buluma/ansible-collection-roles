@@ -1,0 +1,86 @@
+---
+# vars file for centos_base
+
+# centos_requirements:
+#   - git
+#   - gcc
+#   - kernel-devel
+#   - kernel-headers
+#   - sqlite-devel
+#   - sqlite
+#   - bzip2-devel
+#   - readline-devel
+#   - tcl-devel
+#   - libcurl
+#   - openssl-devel
+#   - which
+#   - bzip2
+#   - gzip
+#   - vim-enhanced
+
+_centos_requirements:
+  default:
+    - git
+    - gcc
+    - kernel-devel
+    - kernel-headers
+    - sqlite-devel
+    - sqlite
+    - bzip2-devel
+    - readline-devel
+    - tcl-devel
+    - libcurl
+    - openssl-devel
+    - which
+    - bzip2
+    - gzip
+    - vim-enhanced
+  RedHat-8:
+    - git
+    - gcc
+    - kernel-devel
+    - kernel-headers
+    - sqlite-devel
+    - sqlite
+    - bzip2-devel
+    - readline-devel
+    - tcl-devel
+    - openssl-devel
+    - which
+    - bzip2
+    - gzip
+    - vim-enhanced
+
+centos_requirements: "{{ _centos_requirements[ansible_os_family] | default(_centos_requirements['default'] ) }}"
+
+
+selinux_packages:
+  - policycoreutils
+  - policycoreutils-python
+  - selinux-policy
+  - selinux-policy-targeted
+  - libselinux-utils
+  - setroubleshoot-server
+  - setools
+  - setools-console
+  - mcstrans
+  - policycoreutils-devel
+  - setroubleshoot
+
+utility_packages:
+  - vim-enhanced
+  - cifs-utils
+  - screen
+  - htop
+  - tree
+  - wget
+
+debugging_packages:
+  - strace
+  - mtr
+  - traceroute
+  - nmap
+  - iotop
+  - vnstat
+  - sysstat
+  - net-tools

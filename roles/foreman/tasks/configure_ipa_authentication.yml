@@ -1,0 +1,43 @@
+---
+# These tasks also require the freeipa.ansible_freeipa collection to be available
+- name: 'Ensure Kerberos Principal'
+  freeipa.ansible_freeipa.ipaservice:
+    name: "HTTP/{{ ansible_facts['fqdn'] }}@{{ ipaclient_domain | upper }}"
+    state: 'present'
+    ipaadmin_principal: "{{ ipaadmin_principal }}"
+    ipaadmin_password: "{{ ipaadmin_password }}"
+  delegate_to: "{{ foreman_ipa_server }}"
+
+- name: 'Configure Foreman for EXTERNAL authentication'
+  ansible.builtin.shell: |
+    export LANG="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+    foreman-installer --foreman-ipa-authentication=true --detailed-exitcodes
+  register: 'installer_output'
+  changed_when: installer_output['rc'] == 2
+  failed_when: installer_output['rc'] == 1 or installer_output['rc'] >= 4
+  notify: 'restart foreman'
+
+- name: 'Restart services'
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: 'Ensure Foreman Admin Group'
+  theforeman.foreman.usergroup:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ foreman_foreman_admin_group }}"
+    roles:
+      - 'System admin'
+    admin: true
+
+- name: 'Configure Foreman IPA admin group'
+  theforeman.foreman.external_usergroup:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ foreman_ipa_admin_group }}"
+    usergroup: "{{ foreman_foreman_admin_group }}"
+    auth_source: 'External'

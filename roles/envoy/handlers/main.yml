@@ -1,0 +1,12 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reexec: true
+
+- name: Restart envoy
+  ansible.builtin.service:
+    name: "envoy"
+    state: "restarted"
+    enabled: true
+  when:
+    - envoy_systemd

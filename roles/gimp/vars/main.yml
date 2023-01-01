@@ -1,0 +1,18 @@
+---
+# vars file for gimp
+_gimp_packages:
+  default: []
+  Alpine:
+    - gimp
+  Debian:
+    - gimp
+    - gimp-gmic
+    - libbabl-0.1-0
+  Fedora:
+    - gimp
+  openSUSE Leap:
+    - gimp
+  RedHat:
+    - gimp
+
+gimp_packages: "{{ _gimp_packages[ansible_distribution] | default(_gimp_packages[ansible_os_family] | default(_gimp_packages['default'] )) }}"

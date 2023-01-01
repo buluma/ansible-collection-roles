@@ -1,0 +1,72 @@
+---
+# vars file for buildah
+
+_buildah_package_dependencies:
+  default:
+    - make
+    - golang
+    - bats
+    - btrfs-progs-devel
+    - bzip2
+    - device-mapper-devel
+    - git
+    - go-md2man
+    - gpgme-devel
+    - glib2-devel
+    - libassuan-devel
+    - libseccomp-devel
+    - runc
+    - containers-common
+  Debian:
+    - make
+    - golang
+    - bats
+    - btrfs-progs-devel
+    - bzip2
+    - device-mapper-devel
+    - git
+    - go-md2man
+    - gpgme-devel
+    - glib2-devel
+    - libassuan-devel
+    - libseccomp-devel
+    - runc
+    - containers-common
+  Fedora:
+    - make
+    - golang
+    - bats
+    - btrfs-progs-devel
+    - bzip2
+    - device-mapper-devel
+    - git
+    - go-md2man
+    - gpgme-devel
+    - glib2-devel
+    - libassuan-devel
+    - libseccomp-devel
+    - runc
+    - containers-common
+  CentOS:
+    - make
+    - golang-1.13
+    - bats
+    - btrfs-progs-devel
+    - device-mapper-devel
+    - glib2-devel
+    - gpgme-devel
+    - libassuan-devel
+    - libseccomp-devel
+    - git
+    - bzip2
+    - go-md2man
+    - runc
+    - skopeo-containers
+
+buildah_package_dependencies: "{{ _buildah_package_dependencies[ansible_os_family] | default(_buildah_package_dependencies['default'] ) }}"
+
+_buildah_packages:
+  default:
+    - buildah
+
+buildah_packages: "{{ _buildah_packages[ansible_os_family] | default(_buildah_packages['default'] ) }}"

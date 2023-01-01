@@ -1,0 +1,58 @@
+---
+# Step 4. Install MariaDB database server
+# - name: install mysql dependencies
+#   package: "{{ mysql_packages }}"
+- name: Installing mysql-server
+  ansible.builtin.apt:
+    pkg: mysql-server
+    update_cache: yes
+    cache_valid_time: 86400
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Installing mariadb-server
+  ansible.builtin.apt:
+    pkg: mariadb-server
+    update_cache: yes
+    cache_valid_time: 86400
+    state: present
+  when: ansible_distribution == 'Debian'
+
+- name: Start MariaDB
+  ansible.builtin.service:
+    name: mysql
+    state: started
+
+- name: Installing dependencies
+  ansible.builtin.apt:
+    pkg: [ 'php-mysql', 'python3-pymysql' ]
+    update_cache: yes
+    cache_valid_time: 86400
+    state: present
+  notify:
+    - restart apache
+
+- name: Install pymysql
+  apt:
+    pkg: "{{ pymysql_pkg }}"
+    state: present
+    update_cache: yes
+
+- name: Ensure mysql is running and starts on boot
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Create mysql database
+  community.mysql.mysql_db:
+    name: "{{ bz_mysql_db }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create mysql user
+  community.mysql.mysql_user:
+    name: "{{ bz_mysql_user }}"
+    password: "{{ bz_mysql_password }}"
+    priv: '*.*:ALL'
+    login_unix_socket: /var/run/mysqld/mysqld.sock

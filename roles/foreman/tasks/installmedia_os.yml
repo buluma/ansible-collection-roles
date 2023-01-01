@@ -1,0 +1,81 @@
+---
+- name: 'Ensure Installation Media'
+  theforeman.foreman.installation_medium:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ medium['name'] }} {{ medium['major_version'] }}"
+    locations: "{{ foreman_locations }}"
+    organizations:
+      - "{{ foreman_organization }}"
+    path: "{{ medium['path'] }}"
+    os_family: "{{ medium['os_family'] }}"
+    state: 'present'
+  when: not medium['kickstart']
+  no_log: "{{ not foreman_debug }}"
+  loop: "{{ foreman_operating_systems }}"
+  loop_control:
+    loop_var: 'medium'
+    label: "{{ medium['name'] }} {{ medium['major_version'] }}"
+
+- name: 'Ensure Partition Tables'
+  theforeman.foreman.partition_table:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ ptable['name'] }}"
+    layout: "{{ ptable['layout'] }}"
+    os_family: "{{ ptable['os_family'] | default(omit) }}"
+    locations: "{{ foreman_locations }}"
+    organizations:
+      - "{{ foreman_organization }}"
+    state: 'present'
+  when: foreman_partition_tables | length > 0
+  loop: "{{ foreman_partition_tables }}"
+  loop_control:
+    loop_var: 'ptable'
+    label: "{{ ptable['name'] }}"
+
+- name: 'Ensure Operating Systems'
+  theforeman.foreman.operatingsystem:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    description: "{{ os['name'] }} {{ os['major_version'] }}"
+    major: "{{ os['major_version'] }}"
+    minor: "{{ os['minor_version'] | default('') }}"
+    release: "{{ os['release'] | default(omit) }}"
+    name: "{{ os['name'] }}"
+    family: "{{ os['os_family'] }}"
+    password_hash: "{{ os['password_hash'] | default('SHA512') }}"
+    parameters: "{{ os['parameters'] | default(omit) }}"
+    provisioning_templates: "{{ os['provisioning_templates'] | default(omit) }}"
+    architectures: "{{ os['arch'] }}"
+    media: "{{ (os['kickstart']) | ternary(omit, os['name'] + ' ' + os['major_version'] | string) }}"
+    ptables: "{{ os['partitions'] | default(omit) }}"
+  no_log: "{{ not foreman_debug }}"
+  loop: "{{ foreman_operating_systems }}"
+  loop_control:
+    loop_var: 'os'
+    label: "{{ os['name'] }}"
+
+- name: 'Ensure "Kickstart default custom packages" snippet'
+  theforeman.foreman.provisioning_template:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'Kickstart default custom packages'
+    kind: 'snippet'
+    locations: "{{ foreman_locations }}"
+    organizations:
+      - '{{ foreman_organization }}'
+    state: 'present'
+    template: |
+      <%#
+        description: Managed by Ansible, your changes will be lost!
+      %>
+      subscription-manager

@@ -1,0 +1,63 @@
+---
+
+- name: Ensure hostname is resolvable
+  become: yes
+  lineinfile:
+    dest: /etc/hosts
+    line: "127.0.0.1 localhost {{ ansible_hostname }}"
+    regexp: ^127\.0\.0\.1
+  when:
+    - sansible_gocd_agent_fix_hostname | bool
+    - ansible_virtualization_type != "docker"
+
+- name: Install essential packages
+  become: yes
+  apt:
+    name: "{{ sansible_gocd_agent_packages }}"
+
+- name: Install AWS CLI, boto
+  become: yes
+  pip:
+    name:
+      - awscli
+      - boto
+  when: sansible_gocd_agent_aws_install_cli
+
+- name: Download GoCD PGP key (works with Bionic behind a proxy)
+  become: yes
+  get_url:
+    dest: /usr/local/src/gocd.asc
+    mode: 0644
+    url: "{{ sansible_gocd_agent_repo_keyserver }}/pks/lookup?op=get&search=0x{{ sansible_gocd_agent_repo_key_id }}"
+  retries: 2
+  delay: 10
+  register: sansible_gocd_agent_pgp_result
+  until: sansible_gocd_agent_pgp_result is succeeded
+
+- name: Ensures GoCD PGP key is known
+  become: yes
+  apt_key:
+    file: /usr/local/src/gocd.asc
+    id: "{{ sansible_gocd_agent_repo_key_id }}"
+    state: present
+
+- name: Add GoCD APT repository
+  become: yes
+  apt_repository:
+    repo: "{{ sansible_gocd_agent_repo_source }}"
+    update_cache: yes
+
+- name: Install go-agent
+  become: yes
+  apt:
+    name: "go-agent={{ sansible_gocd_agent_version | regex_replace('^(.*?)\\*?$', '\\1*') }}"
+    state: present
+    force: yes
+
+- name: Ensure that the default agent is stopped and disabled for SystemD
+  become: yes
+  systemd:
+    daemon_reload: yes
+    enabled: no
+    name: go-agent
+    state: stopped

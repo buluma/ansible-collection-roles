@@ -1,0 +1,104 @@
+---
+# tasks file of ansible-role jonaspammer.goaccess
+
+- name: check if all variables have been set correctly
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install GoAccess dependencies (including optional ones)
+  ansible.builtin.package:
+    name: "{{ goaccess_dependency_packages }}"
+    state: present
+
+- name: get current goaccess version # noqa risky-shell-pipe
+  ansible.builtin.shell: >
+    goaccess --version |
+      head -n1 |
+      grep --only "[0-9][.(0-9)]*" |
+      head --bytes -2
+  changed_when: false
+  failed_when: false
+  register: goaccess__register_command_goaccess_version_before
+
+- name: Include Tasks for installing GoAccess by using the system package manager (when configured).
+  ansible.builtin.include_tasks: "install-from_system.yml"
+  when: goaccess_install_method in ["system"]
+
+- name: Include Tasks for installing GoAccess from source (when configured).
+  ansible.builtin.include_tasks: install-from_source.yml
+  when: >
+    goaccess_install_method in ["source"] and
+    (
+    goaccess__register_command_goaccess_version_before.rc != 0 or
+    goaccess__register_command_goaccess_version_before.stdout != goaccess_version
+    )
+
+- name: Generate goaccess configuration file under configured path.
+  ansible.builtin.template:
+    src: goaccess.conf.jinja2
+    dest: "{{ goaccess_conf_file }}"
+    owner: "{{ goaccess_conf_file_owner }}"
+    group: "{{ goaccess_conf_file_group }}"
+    mode: "{{ goaccess_conf_file_mode }}"
+
+- name: Ensure configured goaccess default log file has the defined properties and/or permissions.
+  ansible.builtin.file:
+    path: "{{ goaccess_conf_log_file }}"
+    state: "{{ goaccess_conf_log_file_state | default(omit) }}"
+    owner: "{{ goaccess_conf_log_file_owner | default(omit, true) }}"
+    group: "{{ goaccess_conf_log_file_group | default(omit, true) }}"
+    mode: "{{ goaccess_conf_log_file_mode | default(omit, true) }}"
+  when: goaccess_conf_log_file is not none
+
+- name: Ensure the directory of the configured goaccess default log file has the defined properties and/or permissions.
+  ansible.builtin.file:
+    path: "{{ goaccess_conf_log_file | dirname }}"
+    state: directory
+    owner: "{{ goaccess_conf_log_dir_owner | default(omit, true) }}"
+    group: "{{ goaccess_conf_log_dir_group | default(omit, true) }}"
+    mode: "{{ goaccess_conf_log_dir_mode | default(omit, true) }}"
+  when: goaccess_conf_log_file is not none and goaccess_conf_log_dir_alter is sameas true
+
+## Systemd ##
+- block:
+    - name: Ensure configured goaccess Systemd HTML output file has the defined properties and/or permissions.
+      ansible.builtin.file:
+        path: "{{ goaccess_systemd_html_output_file }}"
+        state: touch
+        modification_time: preserve
+        access_time: preserve
+        owner: "{{ goaccess_systemd_html_output_file_owner | default(omit, true) }}"
+        group: "{{ goaccess_systemd_html_output_file_group | default(omit, true) }}"
+        mode: "{{ goaccess_systemd_html_output_file_mode | default(omit, true) }}"
+
+    - name: Generate GoAccess Systemd Unit File (when enabled).
+      ansible.builtin.template:
+        src: goaccess.service.jinja2
+        dest: "/etc/systemd/system/{{ goaccess_systemd_name }}.service"
+        owner: "{{ goaccess_conf_file_owner }}"
+        group: "{{ goaccess_conf_file_group }}"
+        mode: "{{ goaccess_conf_file_mode }}"
+
+    - name: Ensure GoAccess Systemd Unit is started and enabled on boot (when enabled).
+      ansible.builtin.service:
+        name: "{{ goaccess_systemd_name }}"
+        state: started
+        enabled: true
+      register: goaccess__register_service_start
+
+    - name: >
+        wait for 2 seconds if systemd start task changed to ensure
+        service_facts gets proper result if doomed to fail
+      ansible.builtin.wait_for:
+        timeout: 2
+      when: goaccess__register_service_start.changed
+
+    - name: populate new service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert that GoAccess Systemd Unit is running (not failed / stopped / unknown).
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[goaccess_systemd_name + ".service"].state == "running"
+  when: goaccess_systemd

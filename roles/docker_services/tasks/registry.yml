@@ -1,0 +1,73 @@
+---
+- name: 'Install additional python packages'
+  package:
+    name:
+      - 'python3-bcrypt'
+      - 'python3-passlib'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'registry_data/data'
+    - 'registry_data/ssl'
+  loop_control:
+    loop_var: 'dir'
+
+- block:
+    - name: 'Generate SSL key'
+      openssl_privatekey:
+        path: "{{ docker_data_dir }}/registry_data/ssl/registry.key"
+
+    - name: 'Generate SSL certificate request'
+      openssl_csr:
+        path: "{{ docker_data_dir }}/registry_data/ssl/registry.csr"
+        privatekey_path: "{{ docker_data_dir }}/registry_data/ssl/registry.key"
+        common_name: "{{ registry_app_name }}"
+
+    - name: 'Self-sign SSL certificate'
+      openssl_certificate:
+        path: "{{ docker_data_dir }}/registry_data/ssl/registry.crt"
+        privatekey_path: "{{ docker_data_dir }}/registry_data/ssl/registry.key"
+        csr_path: "{{ docker_data_dir }}/registry_data/ssl/registry.csr"
+        provider: selfsigned
+  when: registry_selfsign
+
+- name: 'Create HTTP Basic auth file'
+  htpasswd:
+    path: "{{ docker_data_dir }}/registry_data/ssl/htpasswd"
+    name: "{{ registry_username }}"
+    password: "{{ registry_password }}"
+    crypt_scheme: 'bcrypt'
+    owner: 'root'
+    group: 'root'
+    mode: 0640
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Docker Registry'
+  community.docker.docker_swarm_service:
+    name: 'registry'
+    image: 'registry'
+    env:
+      - "REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.crt"
+      - "REGISTRY_HTTP_TLS_KEY=/certs/registry.key"
+      - "REGISTRY_HTTP_HOST=https://{{ registry_app_name }}"
+      - "REGISTRY_AUTH_HTPASSWD_PATH=/certs/htpasswd"
+      - "REGISTRY_AUTH_HTPASSWD_REALM=Docker registry"
+      - "REGISTRY_AUTH=htpasswd"
+    mounts:
+      - source: '{{ docker_data_dir }}/registry_data/data'
+        target: '/var/lib/registry'
+        type: 'bind'
+      - source: '{{ docker_data_dir }}/registry_data/ssl'
+        target: '/certs'
+        type: 'bind'
+    publish:
+      - published_port: 5000
+        target_port: 5000
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null

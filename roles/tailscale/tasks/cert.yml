@@ -1,0 +1,49 @@
+---
+# TODO: move to assert
+- name: Assert that tailscale_cert_domain is not empty.
+  assert:
+    that:
+      - tailscale_cert_domain | length > 0
+    quiet: true
+
+# TODO: move to assert
+- name: Assert that tailscale_cert_dir is not empty.
+  assert:
+    that:
+      - tailscale_cert_dir | length > 0
+    quiet: true
+
+# TODO: move to assert
+- name: Assert that tailscale_cert_filename is not empty.
+  assert:
+    that:
+      - tailscale_cert_filename | length > 0
+    quiet: true
+
+# TODO: move to assert
+- name: Assert that tailscale_cert_private_key_dir is not empty.
+  assert:
+    that:
+      - tailscale_cert_private_key_dir | length > 0
+    quiet: true
+
+# TODO: move to assert
+- name: Assert that tailscale_cert_private_key_filename is not empty.
+  assert:
+    that:
+      - tailscale_cert_private_key_filename | length > 0
+    quiet: true
+
+- name: Ensure {{ tailscale_cert_dir }} exists.
+  file:
+    path: "{{ tailscale_cert_dir }}"
+    state: directory
+
+- name: Ensure {{ tailscale_cert_private_key_dir }} exists.
+  file:
+    path: "{{ tailscale_cert_private_key_dir }}"
+    state: directory
+
+- name: Generate the TLS cert.
+  command: |
+    tailscale cert --cert-file="{{ tailscale_cert_dir }}/{{ tailscale_cert_filename }}" --key-file="{{ tailscale_cert_private_key_dir }}/{{ tailscale_cert_private_key_filename }}" "{{ tailscale_cert_domain }}"

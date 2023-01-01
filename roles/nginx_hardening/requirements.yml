@@ -1,0 +1,6 @@
+---
+roles:
+  - name: nginxinc.nginx
+  - name: geerlingguy.nginx
+collections:
+  - name: community.general

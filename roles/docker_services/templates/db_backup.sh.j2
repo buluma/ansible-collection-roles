@@ -1,0 +1,18 @@
+#!/bin/sh
+# Create backups of databases inside database containers
+while true
+do
+  for container in $(docker ps -qf name=mariadb)
+  do
+    echo "starting backup $container"
+    docker exec -i $container /bin/sh -c "/usr/bin/mysqldump -A -uroot -p{{ db_root_password }} | gzip > /var/lib/mysql/backup.sql.gz"
+  done;
+
+  for container in $(docker ps -qf name=postgres)
+  do
+    echo "starting backup $container"
+    docker exec $container /bin/sh -c "/usr/bin/pg_dumpall -U $POSTGRES_USER | gzip > /var/lib/postgresql/data/backup.sql.gz"
+  done
+
+  sleep {{ db_backup_interval }}
+done

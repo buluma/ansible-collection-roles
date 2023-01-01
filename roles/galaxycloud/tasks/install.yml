@@ -1,0 +1,55 @@
+---
+# Main tasks file for indigo-dc.galaxycloud
+# Deploy a Galaxy server
+
+# Users rules
+- include: user.yml
+
+# Install Galaxy dependencies
+- include: prerequisites.yml
+
+# Download and install Galaxy
+- include: galaxy-install.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+
+# Configure SLURM LRMS
+- include: slurm.yml
+  when: galaxy_lrms == "slurm"
+  become: true
+
+# Configure Postgresql
+- include: postgresql.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+
+# Configure NGINX
+- include: nginx.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+
+# Configure uWSGI and job_conf
+- include: uwsgi.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+
+# Configure Proftpd
+- include: proftpd.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+
+# Configure supervisor
+- include: supervisor.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+  when: ansible_virtualization_role == "docker" or (ansible_virtualization_role != "docker" and init_type == "supervisord")
+
+# Galaxy customization
+- include: galaxy-custom.yml
+  become_user: '{{ galaxy_user }}'
+  become: true
+
+# Galaxy startup
+- include: galaxy-startup.yml
+  become_user: '{{ galaxy_user }}'
+  become: true

@@ -1,0 +1,50 @@
+---
+- name: Set installable packages list
+  set_fact:
+    __nagios_packages: >-
+      {%- if nagios_packages is not none -%}
+        {{ nagios_packages }}
+      {%- elif (
+           (ansible_distribution|lower in _nagios_packages) and
+           (ansible_distribution_major_version|string in _nagios_packages[ansible_distribution|lower])
+         ) -%}
+         {{ _nagios_packages[ansible_distribution|lower][ansible_distribution_major_version|string] }}
+      {%- elif (
+           (ansible_distribution|lower in _nagios_packages) and
+           (ansible_distribution_major_version|int in _nagios_packages[ansible_distribution|lower])
+         ) -%}
+         {{ _nagios_packages[ansible_distribution|lower][ansible_distribution_major_version|int] }}
+      {%- elif (ansible_distribution|lower in _nagios_packages) -%}
+         {{ _nagios_packages[ansible_distribution|lower] }}
+      {%- else %}
+        {{ none }}
+      {%- endif -%}
+
+    __nagios_plugin_packages: >-
+      {%- if nagios_plugin_packages is not none -%}
+        {{ nagios_plugin_packages }}
+      {%- elif (
+           (ansible_distribution|lower in _nagios_plugin_packages) and
+           (ansible_distribution_major_version|string in _nagios_plugin_packages[ansible_distribution|lower])
+         ) -%}
+         {{ _nagios_plugin_packages[ansible_distribution|lower][ansible_distribution_major_version|string] }}
+      {%- elif (
+           (ansible_distribution|lower in _nagios_plugin_packages) and
+           (ansible_distribution_major_version|int in _nagios_plugin_packages[ansible_distribution|lower])
+         ) -%}
+         {{ _nagios_plugin_packages[ansible_distribution|lower][ansible_distribution_major_version|int] }}
+      {%- elif (ansible_distribution|lower in _nagios_plugin_packages) -%}
+         {{ _nagios_plugin_packages[ansible_distribution|lower] }}
+      {%- else %}
+        {{ none }}
+      {%- endif -%}
+
+
+- name: Set the primary config file value in a convenient way
+  set_fact:
+    __nagios_primary_config_file: >-
+      {%- if nagios_primary_config_file is not none -%}
+        {{ nagios_primary_config_file }}
+      {%- else -%}
+         {{ nagios_config_dir + '/nagios.cfg' }}
+      {%- endif -%}

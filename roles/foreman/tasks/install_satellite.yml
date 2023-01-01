@@ -1,0 +1,111 @@
+---
+- name: 'Prepare system for Red Hat Satellite installtion'
+  when: not foreman_satellite_offline_install
+  block:
+    - name: 'Ensure Red Hat Subscriptions'
+      community.general.redhat_subscription:
+        username: "{{ foreman_redhat_support_user }}"
+        password: "{{ foreman_redhat_support_password }}"
+        auto_attach: true
+        pool: 'Red Hat Satellite'
+        state: 'present'
+      when: foreman_redhat_register_satellite
+
+    - name: 'Update packages'  # noqa package-latest
+      ansible.builtin.package:
+        name: '*'
+        state: 'latest'
+
+    - name: 'Ensure Red Hat Satellite Repositories'
+      community.general.rhsm_repository:
+        name:
+          - 'rhel-7-server-rpms'
+          - 'rhel-7-server-satellite-6.10-rpms'
+          - 'rhel-7-server-satellite-maintenance-6-rpms'
+          - 'rhel-server-rhscl-7-rpms'
+          - 'rhel-7-server-ansible-2.9-rpms'
+        purge: true
+        state: 'present'
+      when: ansible_facts['distribution_major_version'] == '7'
+
+    - name: 'Ensure repositories and modules for EL8'
+      when: ansible_facts['distribution_major_version'] == '8'
+      block:
+        - name: 'Ensure Red Hat Satellite Repositories'
+          community.general.rhsm_repository:
+            name:
+              - 'rhel-8-for-x86_64-baseos-rpms'
+              - 'rhel-8-for-x86_64-appstream-rpms'
+              - 'satellite-6.11-for-rhel-8-x86_64-rpms'
+              - 'satellite-maintenance-6.11-for-rhel-8-x86_64-rpms'
+            purge: true
+            state: 'present'
+
+          # The dnf ansible module cannot handle dnf modules without a default profile
+          # such as satellite
+        - name: 'Ensure Satellite module'
+          ansible.builtin.command: dnf module enable -y satellite:el8
+          register: module_enable
+          changed_when: "'Nothing to do' not in module_enable['stdout']"
+
+    - name: 'Install Satellite packages'
+      ansible.builtin.package:
+        name:
+          - 'satellite'
+        state: 'present'
+
+    - name: 'Collect package versions'
+      ansible.builtin.package_facts:
+
+- name: 'Install Red Hat Satellite from ISO'
+  when: foreman_satellite_offline_install
+  block:
+    - name: 'Mount Red Hat Satellite ISO'
+      ansible.posix.mount:
+        src: "{{ foreman_satellite_dvd_drive }}"
+        path: '/mnt/sat_iso'
+        fstype: 'iso9660'
+        state: 'mounted'
+
+    - name: 'Run installer script'
+      ansible.builtin.shell: |
+        cd /mnt/sat_iso
+        ./install_packages
+
+- name: 'Enable Satellite firewalld service'
+  ansible.posix.firewalld:
+    service: 'RH-Satellite-6'
+    state: 'enabled'
+    permanent: true
+    immediate: true
+
+- name: 'Set installer options'
+  ansible.builtin.set_fact:
+    foreman_installer_options:
+      - '--scenario satellite'
+      - "--foreman-initial-admin-username {{ foreman_admin_user }}"
+      - "--foreman-initial-admin-password {{ foreman_admin_password | quote }}"
+      - "--foreman-initial-organization {{ foreman_organization }}"
+      - "--foreman-initial-location {{ foreman_locations[0] }}"
+      - "{{ (ansible_facts['packages']['foreman'][0]['version'] is version('3.0', 'le')) | ternary('--foreman-proxy-puppetca true', '') }}"
+      - '--foreman-proxy-tftp true'
+      - '--enable-foreman-plugin-discovery'
+      - '--no-lock-package-versions'
+      - '--detailed-exitcodes'
+
+- name: 'Run Satellite installer default scenario (see /var/log/foreman-installer/satellite.log for details)'
+  ansible.builtin.shell: |
+    export LANG="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+    /usr/sbin/satellite-installer {{ foreman_installer_options | join(' ') }}
+  register: 'installer_output'
+  changed_when: installer_output['rc'] == 2
+  failed_when: installer_output['rc'] == 1 or installer_output['rc'] >= 4
+
+- name: 'End of installation notice'
+  ansible.builtin.debug:
+    msg: |
+      NOTICE: You have installed Satellite in Offline mode, please note the following points:
+        1. This system CAN NOT be registered to the Satellite Server it hosts!
+        2. This system might still be unlicensed, please check https://access.redhat.com/solutions/3121571
+  when: foreman_satellite_offline_install

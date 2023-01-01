@@ -1,0 +1,50 @@
+---
+- name: 'Ensure Foreman Domains'
+  theforeman.foreman.domain:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ zone['dns_zone'] }}"
+    description: "{{ zone['dns_zone'] }} - Managed by Ansible"
+    organizations:
+      - "{{ foreman_organization }}"
+    locations: "{{ zone['locations'] | default(foreman_locations) }}"
+    dns_proxy: "{{ zone['smart_proxy'] }}"
+    state: 'present'
+  loop: "{{ foreman_deploy_networks }}"
+  loop_control:
+    loop_var: 'zone'
+    label: "{{ zone['dns_zone'] }}"
+
+- name: 'Ensure Foreman Subnets'
+  theforeman.foreman.subnet:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ network['name'] }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    organizations:
+      - "{{ foreman_organization }}"
+    locations: "{{ network['locations'] | default(foreman_locations) }}"
+    domains:
+      - "{{ network['dns_zone'] }}"
+    network: "{{ network['address'] | ansible.utils.ipaddr('network') }}"
+    dns_primary: "{{ network['dns_primary'] | default(ansible_facts[foreman_instance_deploy_interface]['ipv4']['address']) }}"
+    dns_secondary: "{{ network['dns_secondary'] | default(omit) }}"
+    cidr: "{{ network['address'] | ansible.utils.ipaddr('prefix') }}"
+    from_ip: "{{ network['range_start'] }}"
+    to_ip: "{{ network['range_end'] }}"
+    boot_mode: 'DHCP'
+    dns_proxy: "{{ network['smart_proxy'] }}"
+    dhcp_proxy: "{{ network['smart_proxy'] }}"
+    tftp_proxy: "{{ network['smart_proxy'] }}"
+    httpboot_proxy: "{{ network['smart_proxy'] }}"
+    template_proxy: "{{ network['smart_proxy'] }}"
+    discovery_proxy: "{{ (network['smart_proxy'] == ansible_facts['fqdn']) | ternary(omit, network['smart_proxy']) }}"
+    state: 'present'
+  loop: "{{ foreman_deploy_networks }}"
+  loop_control:
+    loop_var: 'network'
+    label: "{{ network['name'] }}"

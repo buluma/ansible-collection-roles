@@ -1,0 +1,72 @@
+---
+foreman_supported_server_types:
+  - 'foreman'
+  - 'satellite'
+
+foreman_supported_download_policies:
+  - 'immediate'
+  - 'on_demand'
+  - 'background'
+
+foreman_supported_smartproxy_download_policies:
+  - 'immediate'
+  - 'on_demand'
+  - 'background'
+
+foreman_supported_http_proxy_policies:
+  - 'none'
+  - 'global_default_http_proxy'
+
+foreman_deploy_dns_scenarios:
+  - 'internal'
+  - 'infoblox'
+  - 'nsupdate'
+
+foreman_deploy_dhcp_scenarios:
+  - 'internal'
+  - 'infoblox'
+
+foreman_dns_scenario_internal: |-
+  --foreman-proxy-dns true \
+  --foreman-proxy-dns-interface {{ foreman_deploy_interface }} \
+  --foreman-proxy-dns-zone {{ foreman_instance_network_settings[0]['dns_zone'] }} \
+  --foreman-proxy-dns-forwarders {{ foreman_instance_network_settings[0]['dns_primary'] }} \
+  --foreman-proxy-dns-reverse {{ foreman_instance_network_settings[0]['address'].split('.')[0:3] | reverse | join('.') }}.in-addr.arpa \
+
+foreman_dns_scenario_nsupdate: |-
+  --foreman-proxy-dns true \
+  --foreman-proxy-dns-managed false \
+  --foreman-proxy-dns-provider nsupdate \
+  --foreman-proxy-dns-server {{ foreman_instance_network_settings[0]['auth_nameserver'] | default(foreman_deploy_dns_server) }} \
+  --foreman-proxy-keyfile {{ foreman_deploy_dns_rndc_key }} \
+  --foreman-proxy-dns-ttl {{ foreman_deploy_dns_ttl }} \
+
+foreman_dhcp_scenario_internal: |-
+  --foreman-proxy-dhcp true \
+  --foreman-proxy-dhcp-interface {{ foreman_instance_deploy_interface }} \
+  --foreman-proxy-dhcp-range "{{ foreman_instance_network_settings[0]['range_start'] }} {{ foreman_instance_networ  k_settings[0]['range_end'] }}" \
+  --foreman-proxy-dhcp-gateway {{ foreman_instance_network_settings[0]['network_gateway'] }} \
+  --foreman-proxy-dhcp-nameservers {{ foreman_instance_network_settings[0]['dns_primary'] | default(ansible_facts[  foreman_instance_deploy_interface]['ipv4']['address']) }} \
+  --foreman-proxy-dhcp-pxeserver {{ ansible_facts[foreman_instance_deploy_interface]['ipv4']['address'] }} \
+
+foreman_dns_scenario_infoblox: |-
+  --enable-foreman-proxy-plugin-dns-infoblox \
+  --foreman-proxy-dns true \
+  --foreman-proxy-dns-managed false \
+  --foreman-proxy-dns-provider infoblox \
+  --foreman-proxy-plugin-dns-infoblox-dns-server {{ foreman_instance_network_settings[0]['auth_nameserver'] | default(foreman_infoblox_host) }} \
+  --foreman-proxy-plugin-dns-infoblox-username {{ foreman_infoblox_user }} \
+  --foreman-proxy-plugin-dns-infoblox-password {{ foreman_infoblox_password }} \
+  --foreman-proxy-plugin-dns-infoblox-dns-view {{ foreman_infoblox_dns_view }} \
+
+foreman_dhcp_scenario_infoblox: |-
+  --enable-foreman-proxy-plugin-dhcp-infoblox \
+  --foreman-proxy-dhcp true \
+  --foreman-proxy-dhcp-managed false \
+  --foreman-proxy-dhcp-provider infoblox \
+  --foreman-proxy-plugin-dhcp-infoblox-record-type fixedaddress \
+  --foreman-proxy-dhcp-server {{ foreman_instance_network_settings[0]['auth_nameserver'] | default(foreman_infoblox_host) }} \
+  --foreman-proxy-plugin-dhcp-infoblox-username {{ foreman_infoblox_user }} \
+  --foreman-proxy-plugin-dhcp-infoblox-password {{ foreman_infoblox_password }} \
+  --foreman-proxy-plugin-dhcp-infoblox-network-view {{ foreman_infoblox_network_view }} \
+  --foreman-proxy-plugin-dhcp-infoblox-dns-view {{ foreman_infoblox_dns_view }} \

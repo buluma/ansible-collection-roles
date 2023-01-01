@@ -1,0 +1,30 @@
+---
+# defaults file for docker_env
+
+# default container variables
+state: started
+command: sleep 1d
+privileged: yes
+interactive: yes
+tty: yes
+volumes:
+  - /sys/fs/cgroup:/sys/fs/cgroup:ro
+capabilities:
+  - SYS_ADMIN
+restart_policy: unless-stopped
+container_default_behavior: no_defaults
+
+# pull images/create containers
+prepare_ubuntu: false
+prepare_centos: false
+prepare_rockylinux: false
+prepare_fedora: false
+
+# delete containers
+prune_rockylinux: false
+prune_centos: false
+prune_ubuntu: false
+prune_fedora: false
+
+# prune everything, i.e. docker system prune
+prune_everything: false

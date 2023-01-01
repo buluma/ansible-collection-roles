@@ -1,0 +1,11 @@
+---
+# handlers file for oscommerce
+- name: restart apache
+  service:
+    name: apache2
+    state: restarted
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted

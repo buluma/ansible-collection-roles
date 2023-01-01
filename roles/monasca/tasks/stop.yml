@@ -1,0 +1,5 @@
+---
+# ©Copyright 2015 Hewlett-Packard Development Company, L.P.
+
+- name: Stop Monasca-Agent
+  service: name="{{ monasca_agent_systemd_unit_filename }}" state=stopped

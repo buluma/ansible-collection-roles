@@ -1,0 +1,212 @@
+---
+# defaults file for netdata
+# Adds installer flag to enable auto updates
+# https://docs.netdata.cloud/packaging/installer/update/#auto-update
+netdata_auto_updates:
+  enabled: true
+  day: "*"
+  hour: 6
+  minute: 0
+  user: root
+  weekday: "*"
+  # WARNING: when you set this variable to 'true' and are migrating from an old version
+  # of Netdata (< v1.11.0) then the cron will be removed from your system.
+  # You will then need to launch the netdata installer manually to make sure
+  # netdata installs the cron by itself with: `./netdata-installer.sh --auto-update`
+  clean_legacy_cron: true
+
+# The IP address and port to listen to. This is a space separated list of
+# IPv4 or IPv6 address and ports. The default will bind to all IP addresses
+netdata_bind_to:
+  - "*"
+
+# Defines if Netdata should be configured
+netdata_config: true
+
+# Defines location of Netdata configuration file
+netdata_config_file: /etc/netdata/netdata.conf
+
+# Defines the Git repo to pull down for installs
+netdata_git_repo: https://github.com/netdata/netdata.git
+
+# Defines the latest version tag to clone for installation
+netdata_git_version_tag: v1.35.0
+
+# Defines whether Netdata health is enabled
+netdata_health_enabled: true
+
+# Defines if Netdata health alarms should be configured
+netdata_alarm_configure: false
+
+# Defines location of Netdata health_alarm_notify.conf
+netdata_alarm_config_file: /etc/netdata/health_alarm_notify.conf
+
+# Define configuration for health_alarm_notify.conf.
+# Example:
+# netdata_health_alarm_notify_configs:
+#   https_proxy: http://localhost:3128
+#   SLACK_WEBHOOK_URL: https://hooks.slack.com/...
+netdata_alarm_notify_configs: {}
+
+# Define custom_sender function in health_alarm_notify.conf
+# only the body of the function should be in there
+# Exemple: netdata_custom_sender_function: "curl -X POST url"
+# netdata_custom_sender_function: ""
+
+# Defines path to alarm-notify.sh
+netdata_health_alarm_script: /usr/libexec/netdata/plugins.d/alarm-notify.sh
+
+# Defines how often a critical alarm is repeated
+netdata_default_repeat_critical: never
+
+# Defines how often a warning alarm is repeated
+netdata_default_repeat_warning: never
+
+# The host name displayed in netdata
+netdata_hostname: "{{ ansible_hostname }}"
+# The number of entries the netdata daemon will by default keep in memory
+# for each chart dimension.
+netdata_history: 3996
+
+# Defines Netdata installer script
+netdata_installer: ./netdata-installer.sh
+
+# Defines Netdata requirements installer script
+netdata_requirements_installer: packaging/installer/install-required-packages.sh
+
+# Defines Netdata requirements installer options (if we want morre complete requirements)
+netdata_requirements_installer_options:
+  - "--non-interactive"
+  - netdata
+
+# When set to save netdata will save its round robin database on exit and
+# load it on startup. When set to map the cache files will be updated in
+# real time (check man mmap - do not set this on systems with heavy load or
+# slow disks - the disks will continuously sync the in-memory database of
+# netdata). When set to ram the round robin database will be temporary and it
+# will be lost when netdata exits.
+netdata_memory_mode: save
+
+# This variables are only used if netdata_memory_mode is set to dbengine
+netdata_dbengine_page_cache_size: 32
+netdata_dbengine_multihost_disk_space: 256
+
+# Defines the mode the web-server will run in
+# static-threaded is a web server with a fix (configured number of threads)
+# single-threaded is a simple web server running with a single thread
+# multi-threaded is a web server that spawns a thread for each client connection
+# none will disable the web-server and the API
+netdata_web_mode: multi-threaded
+
+# The default port to listen for web clients.
+netdata_default_port: 19999
+
+netdata_epel_setup: false
+netdata_epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+netdata_epel_repo_gpg_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+netdata_epel_repofile_path: "/etc/yum.repos.d/epel.repo"
+netdata_centos6_install_okay: false
+
+# Defines if Netdata host should be enabled as a registry
+# https://github.com/firehol/netdata/wiki/mynetdata-menu-item
+netdata_registry_enabled: false
+
+# https://registry.my-netdata.io
+# https://github.com/firehol/netdata/wiki/mynetdata-menu-item
+netdata_registry_to_announce: https://registry.my-netdata.io
+
+# Defines directory to store install source from Git repo
+netdata_source_dir: /usr/local/src/netdata
+
+# Defines if Netdata streaming should be configured
+# https://github.com/firehol/netdata/wiki/Monitoring-ephemeral-nodes
+netdata_stream_enabled: false
+
+# Defines location of Netdata stream configuration file
+netdata_stream_config_file: /etc/netdata/stream.conf
+
+# Defines Netdata API Keys (must be generated with command uuidgen)
+netdata_stream_api_key: 11111111-2222-3333-4444-555555555555
+netdata_stream_send_api_key: "{{ netdata_stream_api_key }}"
+netdata_stream_receive_api_key: "{{ netdata_stream_api_key }}"
+
+# Defines Netdata master node and port (e.g. 127.0.0.1:19999)
+netdata_stream_master_node: ""
+
+# Defines whether the netdata node is acting as a proxy
+netdata_stream_proxy: false
+
+# Defines client ssl configuration
+# netdata_client_ssl_options:
+#   ssl skip certificate verification: "yes"
+#   CAfile: /etc/ssl/certs/ca-certificates.crt
+netdata_client_ssl_options: {}
+
+# Defines if Netdata should be uninstalled
+# Caution: This does not prompt for uninstall as the original script
+# was intended.
+# https://github.com/firehol/netdata/wiki/Installation#uninstalling-netdata
+netdata_uninstall: false
+
+# Defines the Netdata uninstaller script
+netdata_uninstaller: ./netdata-uninstaller.sh
+
+# Defines if Netdata should be updated
+# Not the same as auto_updates
+netdata_update: false
+# Force the update. Sometimes the update script skips installing new plugins.
+netdata_update_force: false
+
+# The frequency in seconds, for data collection
+netdata_update_every: 1
+
+# Defines Netdata update script
+netdata_updater: ./netdata-updater.sh
+
+# Defines Netdata user info
+netdata_user_info:
+  group: netdata
+  user: netdata
+
+# Defines if Netdata should store data in a backend
+netdata_configure_archive: false
+
+# Defines Netdata backend for long term datastorage
+# https://github.com/firehol/netdata/wiki/netdata-backends
+# Defines if the Netdata backend is enabled
+netdata_archive_enabled: "yes"
+
+# Defines the backend type as one of
+# graphite | opentsdb | json
+netdata_archive_type: "opentsdb"
+
+# Defines the host(s) and ports netdata should send data to
+netdata_archive_destination:
+  - localhost
+  # - "{{ vip }}:5252"
+
+# Defines how to send the archive data as one of
+# as collected, average, sum
+netdata_archive_data_source: "average"
+
+# Defines a prefix for the archive data
+netdata_archive_prefix: "netdata"
+
+# Defines how often to send archive data in seconds
+netdata_archive_update: 1
+
+# Defines the number of update intervals
+# after which dataloss occurs
+netdata_archive_buffer_on_failures: 30
+
+# Defines when to timeout sending to a backend in milliseconds
+netdata_archive_timeout: 20000
+
+# Defines if Netdata sends metric names or UUIDs
+netdata_archive_send_names: true
+
+# Defines the flood protection period
+netdata_errors_flood_protection_period: 1200
+
+# Defines when to trigger flood proctection
+netdata_errors_to_trigger_flood_protection: 200

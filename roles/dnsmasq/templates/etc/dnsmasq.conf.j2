@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+{% for line in dnsmasq_dnsmasq_conf | default([]) %}
+{{ line }}
+{% endfor %}

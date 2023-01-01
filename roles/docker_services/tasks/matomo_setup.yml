@@ -1,0 +1,73 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'matomo_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'matomo_db', owner: '999'}
+    - {name: 'matomo_data', owner: '33'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Check if config.ini.php is present'
+  file:
+    path: "{{ docker_data_dir }}/matomo_data/config.ini.php"
+    state: 'touch'
+    owner: '33'
+    group: '33'
+    mode: 0644
+    access_time: 'preserve'
+    modification_time: 'preserve'
+
+- name: 'Deploy MariaDB for Matomo'
+  community.docker.docker_swarm_service:
+    name: 'matomo_mariadb'
+    image: 'mariadb'
+    env:
+      - "MYSQL_ROOT_PASSWORD={{ db_root_password }}"
+      - 'MYSQL_DATABASE=matomo'
+      - 'MYSQL_USER=matomo'
+      - "MYSQL_PASSWORD={{ matomo_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/matomo_db"
+        target: '/var/lib/mysql'
+        type: 'bind'
+    networks:
+      - 'matomo_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Matomo'
+  community.docker.docker_swarm_service:
+    name: 'matomo'
+    image: "matomo:{{ matomo_image_version }}"
+    env:
+      - 'MATOMO_DATABASE_HOST=tasks.matomo_mariadb'
+      - 'MATOMO_DATABASE_USERNAME=matomo'
+      - 'MATOMO_DATABASE_ADAPTER=PDO\MYSQL'
+      - 'MATOMO_DATABASE_TABLES_PREFIX=matomo_'
+      - "MATOMO_DATABASE_PASSWORD={{ matomo_db_password }}"
+      - 'MATOMO_DATABASE_DBNAME=matomo'
+    networks:
+      - 'matomo_backend'
+      - 'traefik_backend'
+    labels:
+      traefik.http.routers.matomo.rule: "HostHeader(`{{ matomo_fqdn }}`)"
+      traefik.http.routers.matomo.tls: "true"
+      traefik.http.services.matomo.loadbalancer.server.port: '80'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

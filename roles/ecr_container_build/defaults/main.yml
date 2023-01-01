@@ -1,0 +1,21 @@
+---
+# defaults file for ecr_container_build
+
+ecr_image_src_dir: ../my-project
+ecr_image_name: namespace/my-project
+
+ecr_image_buildargs: {}
+
+# You can add one or more tags.
+ecr_image_tags: ['latest']
+
+# Set this to true if you need to pull from ECR for the image build.
+ecr_login_required: false
+
+# Whether to push the built image to ECR.
+ecr_push: true
+
+# AWS account details for ECR.
+ecr_region: us-east-1
+ecr_account_id: '123456789012'
+ecr_url: "{{ ecr_account_id }}.dkr.ecr.{{ ecr_region }}.amazonaws.com"

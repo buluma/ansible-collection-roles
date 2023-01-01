@@ -1,0 +1,115 @@
+---
+# tasks file for docker_env
+
+- name: Pull/create containers
+  block:
+    - name: Deploy os_Ubuntu images.
+      docker_container:
+        name: "{{ item.name }}"
+        image: "{{ item.image }}"
+        state: "{{ state }}"
+        command: "{{ command }}"
+        privileged: "{{ privileged }}"
+        interactive: "{{ interactive }}"
+        tty: "{{ tty }}"
+        volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        capabilities: "{{ capabilities }}"
+        restart_policy: "{{ restart_policy }}"
+        container_default_behavior: "{{ container_default_behavior }}"
+      with_items: "{{ ubuntu_images }}"
+      when: prepare_ubuntu | bool
+
+    - name: Deploy os_CentOS/EL images.
+      docker_container:
+        name: "{{ item.name }}"
+        image: "{{ item.image }}"
+        state: "{{ state }}"
+        command: "{{ command }}"
+        privileged: "{{ privileged }}"
+        interactive: "{{ interactive }}"
+        tty: "{{ tty }}"
+        volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        capabilities: "{{ capabilities }}"
+        restart_policy: "{{ restart_policy }}"
+        container_default_behavior: "{{ container_default_behavior }}"
+      with_items: "{{ centos_images }}"
+      when: prepare_centos | bool
+
+    - name: Deploy os_RockyLinux
+      docker_container:
+        name: "{{ item.name }}"
+        image: "{{ item.image }}"
+        state: "{{ state }}"
+        command: "{{ command }}"
+        privileged: "{{ privileged }}"
+        interactive: "{{ interactive }}"
+        tty: "{{ tty }}"
+        volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        capabilities: "{{ capabilities }}"
+        restart_policy: "{{ restart_policy }}"
+        container_default_behavior: "{{ container_default_behavior }}"
+      with_items: "{{ rockylinux_images }}"
+      when: prepare_rockylinux | bool
+
+    - name: Deploy os_Fedora
+      docker_container:
+        name: "{{ item.name }}"
+        image: "{{ item.image }}"
+        state: "{{ state }}"
+        command: "{{ command }}"
+        privileged: "{{ privileged }}"
+        interactive: "{{ interactive }}"
+        tty: "{{ tty }}"
+        volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        capabilities: "{{ capabilities }}"
+        restart_policy: "{{ restart_policy }}"
+        container_default_behavior: "{{ container_default_behavior }}"
+      with_items: "{{ fedora_images }}"
+      when: prepare_fedora | bool
+
+# destroy docker_container
+- name: Destroy block
+  block:
+    - name: Remove os_Ubuntu containers
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        state: absent
+      with_items: "{{ ubuntu_images }}"
+      when: prune_ubuntu | bool
+
+    - name: Remove os_CentOS/EL containers
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        state: absent
+      with_items: "{{ centos_images }}"
+      when: prune_centos | bool
+
+    - name: Remove os_RockyLinux containers
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        state: absent
+      with_items: "{{ rockylinux_images }}"
+      when: prune_rockylinux | bool
+
+    - name: Remove os_Fedora containers
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        state: absent
+      with_items: "{{ fedora_images }}"
+      when: prune_fedora | bool
+
+# docker system prune
+- name: Prune docker system
+  block:
+    - name: Docker system prune
+      community.docker.docker_prune:
+        containers: yes
+        images: yes
+        networks: yes
+        volumes: yes
+        builder_cache: yes
+      when: prune_everything | bool

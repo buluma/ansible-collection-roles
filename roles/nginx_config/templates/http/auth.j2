@@ -1,0 +1,80 @@
+{{ ansible_managed | comment }}
+{# NGINX Authentication templates -- Add directives under its corresponding block #}
+
+{# NGINX HTTP Access -- ngx_http_access_module #}
+{% macro access(access) %}
+{% if access['allow'] is defined and access['allow'] is not mapping %}
+{% for allow in access['allow'] if access['allow'] is not string %}
+allow {{ allow }};
+{% else %}
+allow {{ access['allow'] }};
+{% endfor %}
+{% endif %}
+{% if access['deny'] is defined and access['deny'] is not mapping %}
+{% for deny in access['deny'] if access['deny'] is not string %}
+deny {{ deny }};
+{% else %}
+deny {{ access['deny'] }};
+{% endfor %}
+{% endif %}
+
+{% endmacro %}
+
+{# NGINX HTTP Auth Basic -- ngx_http_auth_basic_module #}
+{% macro auth_basic(auth_basic) %}
+{% if auth_basic['realm'] is defined %}
+auth_basic {{ 'off' if not auth_basic['realm'] else auth_basic['realm'] }};
+{% endif %}
+{% if auth_basic['user_file'] is defined %}
+auth_basic_user_file {{ auth_basic['user_file'] }};
+{% endif %}
+
+{% endmacro %}
+
+{# NGINX HTTP Auth Request -- ngx_http_auth_request_module #}
+{% macro auth_request(auth_request) %}
+{% if auth_request['uri'] is defined %}
+auth_request {{ 'off' if not auth_request['uri'] else auth_request['uri'] }};
+{% endif %}
+{% if auth_request['set']['variable'] is defined and auth_request['set']['value'] is defined %}
+auth_request_set {{ auth_request['set']['variable'] }} {{ auth_request['set']['value'] }};
+{% endif %}
+
+{% endmacro %}
+
+{# NGINX HTTP Auth JWT -- ngx_http_auth_jwt_module #}
+{% macro auth_jwt(auth_jwt) %}
+{% if auth_jwt['enable'] is defined %}
+auth_jwt {{ 'off' if not auth_jwt['enable'] }}{{ auth_jwt['enable']['realm'] if auth_jwt['enable']['realm'] is defined }}{{ (' token=' + auth_jwt['enable']['token'] | string) if auth_jwt['enable']['token'] is defined }};
+{% endif %}
+{% if auth_jwt['claim_set'] is defined %}{# 'claim_set' directive is only available in the 'http' context #}
+{% for claim in auth_jwt['claim_set'] if auth_jwt['claim_set'] is not mapping %}
+auth_jwt_claim_set {{ claim['variable'] }} {{ (claim['name'] if claim['name'] is string else claim['name'] | join(' ')) }};
+{% else %}
+auth_jwt_claim_set {{ auth_jwt['claim_set']['variable'] }} {{ (auth_jwt['claim_set']['name'] if auth_jwt['claim_set']['name'] is string else auth_jwt['claim_set']['name'] | join(' ')) }};
+{% endfor %}
+{% endif %}
+{% if auth_jwt['header_set'] is defined %}{# 'header_set' directive is only available in the 'http' context #}
+{% for claim in auth_jwt['header_set'] if auth_jwt['header_set'] is not mapping %}
+auth_jwt_header_set {{ claim['variable'] }} {{ (claim['name'] if claim['name'] is string else claim['name'] | join(' ')) }};
+{% else %}
+auth_jwt_header_set {{ auth_jwt['header_set']['variable'] }} {{ (auth_jwt['header_set']['name'] if auth_jwt['header_set']['name'] is string else auth_jwt['header_set']['name'] | join(' ')) }};
+{% endfor %}
+{% endif %}
+{% if auth_jwt['key_file'] is defined %}
+auth_jwt_key_file {{ auth_jwt['key_file'] }};
+{% endif %}
+{% if auth_jwt['key_request'] is defined %}
+auth_jwt_key_request {{ auth_jwt['key_request'] }};
+{% endif %}
+{% if auth_jwt['leeway'] is defined %}
+auth_jwt_leeway {{ auth_jwt['leeway'] }};
+{% endif %}
+{% if auth_jwt['type'] is defined and auth_jwt['type'] in ['signed', 'encrypted', 'nested'] %}
+auth_jwt_type {{ auth_jwt['type'] }};
+{% endif %}
+{% if auth_jwt['require'] is defined %}
+auth_jwt_require {{ auth_jwt['require']['values'] if auth_jwt['require']['values'] is string else auth_jwt['require']['values'] | join(' ') }}{{ (' ' + auth_jwt['require']['error'] | string) if auth_jwt['require']['error'] in ['401', '403'] }};
+{% endif %}
+
+{% endmacro %}

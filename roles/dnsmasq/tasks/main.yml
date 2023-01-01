@@ -1,0 +1,82 @@
+# tasks file
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: "{{ dnsmasq_dependencies }}"
+    state: "{{ apt_install_state | default('latest') }}"
+    update_cache: true
+    cache_valid_time: "{{ apt_update_cache_valid_time | default(3600) }}"
+  tags:
+    - configuration
+    - dnsmasq
+    - dnsmasq-install
+    - dnsmasq-install-dependencies
+
+- name: Update configuration file(s)
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    validate: "{{ item.validate | default(omit) }}"
+  with_items:
+    - src: "{{ dnsmasq_etc_default_file.lstrip('/') }}.j2"
+      dest: "{{ dnsmasq_etc_default_file }}"
+    - src: "{{ dnsmasq_etc_conf_file.lstrip('/') }}.j2"
+      dest: "{{ dnsmasq_etc_conf_file }}"
+      validate: 'dnsmasq --test -C %s'
+  notify: Restart dnsmasq
+  tags:
+    - configuration
+    - dnsmasq
+    - dnsmasq-configuration
+
+- name: Add specific configuration files
+  ansible.builtin.template:
+    src: etc/dnsmasq.d/config.j2
+    dest: "/etc/dnsmasq.d/{{ item.key }}"
+    owner: root
+    group: root
+    mode: 0644
+    validate: 'dnsmasq --test -C %s'
+  with_dict: "{{ dnsmasq_dnsmasq_d_files_present }}"
+  notify: Restart dnsmasq
+  tags:
+    - configuration
+    - dnsmasq
+    - dnsmasq-configuration
+    - dnsmasq-configuration-add-specific-configuration-files
+
+- name: Remove specific configuration files
+  ansible.builtin.file:
+    path: "/etc/dnsmasq.d/{{ item.key }}"
+    state: absent
+  with_dict: "{{ dnsmasq_dnsmasq_d_files_absent }}"
+  notify: Restart dnsmasq
+  tags:
+    - configuration
+    - dnsmasq
+    - dnsmasq-configuration
+    - dnsmasq-configuration-remove-specific-configuration-files
+
+- name: Stop and disable (systemd-resolved) service
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: stopped
+    enabled: false
+  when: dnsmasq_service_resolved_disabled | bool
+  tags:
+    - configuration
+    - dnsmasq
+    - dnsmasq-stop-disable-service
+
+- name: Start and enable service
+  ansible.builtin.service:
+    name: dnsmasq
+    state: "{{ dnsmasq_service_state }}"
+    enabled: "{{ dnsmasq_service_enabled | bool }}"
+  tags:
+    - configuration
+    - dnsmasq
+    - dnsmasq-start-enable-service

@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: robertdebock
+  role_name: gitlab_runner
+  description: Install and configure gitlab-runner on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+
+  galaxy_tags:
+    - gitlabrunner
+
+dependencies: []

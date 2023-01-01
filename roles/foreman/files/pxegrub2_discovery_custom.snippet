@@ -1,0 +1,23 @@
+<%#
+kind: snippet
+name: pxegrub2_discovery
+model: ProvisioningTemplate
+snippet: true
+-%>
+<%#
+Managed by Ansible, your changed will be lost
+This Snippet is based on pxegrub2_discovery, the only change made it the removal of proxy.url in favor of using SRV records in DNS. And the countdown for FDI has been reduced to 10 seconds
+-%>
+common="rootflags=loop root=live:/fdi.iso rootfstype=auto ro rd.live.image acpi=force rd.luks=0 rd.md=0 rd.dm=0 rd.lvm=0 rd.bootif=0 rd.neednet=0 nokaslr nomodeset proxy.type=foreman BOOTIF=01-$net_default_mac fdi.countdown=10"
+
+if [ ${grub_platform} == "pc" ]; then
+  menuentry 'Foreman Discovery Image' --id discovery {
+    linux boot/fdi-image/vmlinuz0 ${common}
+    initrd boot/fdi-image/initrd0.img
+  }
+else
+  menuentry 'Foreman Discovery Image EFI' --id discovery {
+    linuxefi boot/fdi-image/vmlinuz0 ${common}
+    initrdefi boot/fdi-image/initrd0.img
+  }
+fi

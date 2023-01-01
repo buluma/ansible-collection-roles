@@ -1,0 +1,124 @@
+---
+# Supervisord installation and configuration recipe
+
+#______________________________________
+# CentOS 7
+
+- name: '[EL] Check and install Supervisor dependencies'
+  yum:
+    name: '{{ packages }}'
+    state: present
+  vars:
+    packages:
+    - supervisor
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "RedHat"
+
+- name: '[EL] Set supervisord conf path'
+  set_fact:
+    supervisord_conf_path: '/etc'
+  when: ansible_os_family == "RedHat"
+
+- name: '[EL] Copy supervisord configuration file'
+  template:
+    src: 'supervisord.conf.j2'
+    dest: '/etc/supervisord.d/galaxy_web.ini'
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "RedHat"
+
+#______________________________________
+# Ubuntu
+# On Ubuntu Supervisord service is started by default after installation. We need to reread and update the configuration.
+# The service is stopped here and restarted using galaxy-startup script.
+
+- name: '[Ubuntu] Check and install Supervisor dependencies'
+  apt:
+    name: '{{ packages }}'
+    state: present
+  vars:
+    packages:
+    - python-meld3
+    - supervisor
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+- name: '[Ubuntu] Stop supervisor'
+  service:
+    name: supervisor
+    state: stopped
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+- name: '[Ubuntu] Set supervisord conf path'
+  set_fact:
+    supervisord_conf_path: '/etc/supervisor'
+  when: ansible_os_family == "Debian"
+
+- name: '[Ubuntu] Copy supervisord configuration file'
+  template:
+    src: 'supervisord.conf.j2'
+    dest: '/etc/supervisor/conf.d/galaxy_web.conf'
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+#______________________________________
+# Change supervisord.sock ownership
+- name: '[VM] Grant {{ galaxy_user }} supervisor access' 
+  ini_file:
+    dest: '{{ supervisord_conf_path }}/supervisord.conf'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'unix_http_server', option: 'chmod', value: '0770' }
+    - { section: 'unix_http_server', option: 'chown', value: 'root:{{ galaxy_user }}' }
+  when:
+    - ansible_virtualization_type != "docker"
+  become_user: root
+  become_method: sudo
+
+- name: '[VM] Edit supervisor.sock directory permissions'
+  file:
+    path: /var/run/supervisor
+    state: directory
+    mode: 0755
+  become_user: root
+  become_method: sudo
+  when:
+    - ansible_virtualization_type != "docker"
+    - ansible_os_family == "RedHat"
+
+- name: '[Docker] Switch from socket file to http for supervisor'
+  replace:
+    dest: '{{ supervisord_conf_path }}/supervisord.conf'
+    regexp: '{{ item.regexp }}'
+    replace: '{{ item.replace }}'
+  with_items:
+    - { regexp: '[unix_http_server]', replace: ';[unix_http_server]' }
+    - { regexp: 'file=/var/run/supervisor/supervisor.sock   ; (the path to the socket file)', replace: ';file=/var/run/supervisor/supervisor.sock   ; (the path to the socket file)' }
+    - { regexp: 'serverurl=unix:///var/run/supervisor/supervisor.sock ; use a unix:// URL  for a  unix socket', replace: ';serverurl=unix:///var/run/supervisor/supervisor.sock ; use a unix:// URL  for a  unix socket' }
+    - { regexp: ';[inet_http_server]         ; inet (TCP) server disabled by default', replace: '[inet_http_server]' }
+    - { regexp: ';port=127.0.0.1:9001        ; (ip_address:port specifier, *:port for all iface)', replace: 'port=127.0.0.1:30901' }
+    - { regexp: ';serverurl=http://127.0.0.1:9001 ; use an http:// url to specify an inet socket', replace: 'serverurl=http://127.0.0.1:30901' }
+  become_user: root
+  become_method: sudo
+  when:
+    - ansible_virtualization_type == "docker"
+    - ansible_os_family == "RedHat"
+
+#______________________________________
+# Supervisord systemd unit file
+# this is needed installing supervisord using pip
+
+#- name: '[EL/Ubuntu 16.04] Copy systemd scripts'
+#  template:
+#    src: 'supervisord.service.j2'
+#    dest: '/etc/systemd/system/supervisord.service'
+#  when: ansible_os_family == "RedHat" or (ansible_os_family == "Debian" and ansible_distribution_version == "16.04")
+#  become_user: root
+#  become_method: sudo

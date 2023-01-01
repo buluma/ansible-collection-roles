@@ -1,0 +1,15 @@
+---
+# vars file for hswong3i.ganesha (trusty)
+
+_apt_repository: [
+  { state: "present", repo: "ppa:nfs-ganesha/libntirpc-4" },
+  { state: "present", repo: "ppa:nfs-ganesha/nfs-ganesha-4" },
+]
+_apt: [
+  { state: "absent", name: "nfs-kernel-server" },
+  { state: "latest", name: "libjemalloc1" },
+  { state: "latest", name: "nfs-ganesha" },
+  { state: "latest", name: "nfs-ganesha-doc" },
+  { state: "latest", name: "nfs-ganesha-fsal" },
+  { state: "latest", name: "python-nfs-ganesha" },
+]

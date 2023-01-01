@@ -1,0 +1,74 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'teamspeak_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'teamspeak_db', owner: '999'}
+    - {name: 'teamspeak_data', owner: '1000'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy MariaDB for TeamSpeak'
+  community.docker.docker_swarm_service:
+    name: 'teamspeak_mariadb'
+    image: 'mariadb'
+    env:
+      - "MYSQL_ROOT_PASSWORD={{ db_root_password }}"
+      - 'MYSQL_DATABASE=teamspeak'
+      - 'MYSQL_USER=teamspeak'
+      - "MYSQL_PASSWORD={{ teamspeak_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/teamspeak_db"
+        target: '/var/lib/mysql'
+        type: 'bind'
+    networks:
+      - 'teamspeak_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy TeamSpeak'
+  community.docker.docker_swarm_service:
+    name: 'teamspeak'
+    image: 'teamspeak'
+    env:
+      - 'TS3SERVER_DB_PLUGIN=ts3db_mariadb'
+      - 'TS3SERVER_DB_SQLCREATEPATH=create_mariadb'
+      - 'TS3SERVER_DB_HOST=tasks.teamspeak_mariadb'
+      - 'TS3SERVER_DB_USER=teamspeak'
+      - "TS3SERVER_DB_PASSWORD={{ teamspeak_db_password }}"
+      - 'TS3SERVER_DB_NAME=teamspeak'
+      - 'TS3SERVER_DB_WAITUNTILREADY=30'
+      - 'TS3SERVER_LICENSE=accept'
+    networks:
+      - 'teamspeak_backend'
+    publish:
+      - published_port: 9987
+        target_port: 9987
+        protocol: 'udp'
+      - published_port: 10011
+        target_port: 10011
+        protocol: 'tcp'
+      - published_port: 30033
+        target_port: 30033
+        protocol: 'tcp'
+    mounts:
+      - source: "{{ docker_data_dir }}/teamspeak_data"
+        target: '/var/ts3server'
+        type: 'bind'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

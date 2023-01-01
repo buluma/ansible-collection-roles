@@ -1,0 +1,19 @@
+---
+# defaults file for ssmtp
+
+sansible_ssmtp_auth: yes
+sansible_ssmtp_group: ~
+sansible_ssmtp_hostname: ''
+sansible_ssmtp_mailserver_fromlineoverride: no
+sansible_ssmtp_mailserver_host: ~
+sansible_ssmtp_mailserver_password: ~
+sansible_ssmtp_mailserver_port: ~
+sansible_ssmtp_mailserver_rewritedomain: no
+sansible_ssmtp_mailserver_root: no
+sansible_ssmtp_mailserver_username: ~
+sansible_ssmtp_restrict: yes
+sansible_ssmtp_revaliases: yes
+sansible_ssmtp_use_inventory_hostname: no
+sansible_ssmtp_use_start_tls: true
+sansible_ssmtp_use_tls: true
+sansible_ssmtp_user: ~

@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  role_name: bios_update
+  author: buluma
+  description: Download, extract and write bootable USB image.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+        - bionic
+    - name: EL
+      versions:
+        - "8"
+        - "7"
+    - name: opensuse
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Fedora
+      versions:
+        - "36"
+        - "35"
+  galaxy_tags:
+    - sqlite
+dependencies: []

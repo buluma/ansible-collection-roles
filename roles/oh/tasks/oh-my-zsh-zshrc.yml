@@ -1,0 +1,14 @@
+---
+- name: Derive user .zshrc path.
+  ansible.builtin.set_fact:
+    omz_user_zshrc_path: "/{{ omz_user_home_dir }}/{{ omz_user.name }}/.zshrc"
+
+- name: Template .zshrc into place if required.
+  ansible.builtin.template:
+    src: "{{ omz_zshrc_template }}"
+    dest: "{{ omz_user_zshrc_path }}"
+    owner: "{{ omz_user.name }}"
+    group: "{{ omz_user.group }}"
+    backup: "{{ omz_zshrc_backup }}"
+    force: "{{ omz_zshrc_force }}"
+  when: "omz_zshrc_create"

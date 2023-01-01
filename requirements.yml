@@ -1,11 +1,15 @@
 ---
 collections:
+  - name: amazon.aws
   - name: andrewrothstein.unarchive-deps
   - name: ansible.netcommon
   - name: ansible.posix
+  - name: bngsudheer.centos_base
+  - name: bngsudheer.ruby
   - name: bukuma.apache
   - name: community.aws
   - name: community.crypto
+  - name: community.docker
   - name: community.general
   - name: community.mysql
   - name: community.postgresql
@@ -17,17 +21,26 @@ collections:
   - name: elliotweiser.osx-command-line-tools
   - name: enix.postgresql
   - name: f5networks.f5_modules
+  - name: geerlingguy.mysql
+  - name: geerlingguy.nginx
   - name: geerlingguy.php-mysql
   - name: geerlingguy.postgresql
   - name: geerlingguy.redis
   - name: geerlingguy.repo-epel
   - name: geerlingguy.repo-remi
   - name: gluster.gluster
+  - name: jonaspammer.apache2
+  - name: jonaspammer.bootstrap
   - name: lean_delivery.java
+  - name: nginxinc.nginx
   - name: openjdk
   - name: operator_sdk.util
   - name: robertdebock.bootstrap
   - name: robertdebock.container_docs
+  - name: robertdebock.docker_compose
   - name: robertdebock.elastic_repo
   - name: robertdebock.elasticsearch
   - name: robertdebock.grub
+  - name: sansible.users_and_groups
+  - name: wilmardo.ansible_role_tautulli
+  - name: wilmardo.plexupdate

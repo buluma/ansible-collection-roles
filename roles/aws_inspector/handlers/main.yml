@@ -1,0 +1,5 @@
+---
+# handlers file for aws_inspector
+
+- name: Restart awsagent
+  ansible.builtin.service: name=awsagent state=restarted

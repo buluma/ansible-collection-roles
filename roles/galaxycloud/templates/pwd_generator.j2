@@ -1,0 +1,27 @@
+#!/usr/bin/python
+
+# argparse needs python 2.7
+
+import sys, argparse
+import string
+import random
+
+def __main__():
+
+   # Parse pwd-generator command line options
+   parser = argparse.ArgumentParser(description='Random password generator.')
+   parser.add_argument( '-l', dest='pwdSize', help='Password size' )
+   parser.add_argument( '-p', action='store_true', dest='punctuation_pwd', help='Generate alphanumeric + special characters password' )
+   args = parser.parse_args()
+
+   # Alphanumeric characters
+   chars = string.letters + string.digits
+
+   # Alphanumeric + special characters
+   if args.punctuation_pwd == True:
+     chars = string.letters + string.digits + string.punctuation
+
+   print ''.join((random.choice(chars)) for x in range(int(args.pwdSize)))
+
+if __name__ == "__main__":
+   __main__()

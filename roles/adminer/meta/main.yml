@@ -1,0 +1,30 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: adminer
+  description: Installs Adminer for Database management.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.1"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+    - name: Fedora
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - system
+    - database
+    - development
+    - adminer
+    - mysql
+    - mariadb
+    - php
+dependencies: []

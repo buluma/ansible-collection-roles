@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Setup your macOS in quick simple steps using ansible.
+    description: >
+      Setup your macOS in quick simple steps using ansible.
+    author: Michael Buluma

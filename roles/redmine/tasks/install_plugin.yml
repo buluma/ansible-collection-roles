@@ -1,0 +1,89 @@
+---
+- name: Debug plugin info
+  ansible.builtin.debug:
+    msg: item details "{{ item }}"
+    verbosity: 3
+
+- name: Stat the plugin directory
+  ansible.builtin.stat:
+    path: "{{ redmine_runtime_directory }}/plugins/{{ item.base_name }}"
+  register: plugin_directory_stat
+
+- name: Download plugin
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ redmine_runtime_directory }}/plugins/"
+  when: not plugin_directory_stat.stat.exists
+  register: plugin_download
+  become: true
+  become_user: redmine
+
+- name: Debug plugin_download
+  ansible.builtin.debug:
+    msg: "{{ plugin_download }}"
+    verbosity: 3
+  when: not plugin_directory_stat.stat.exists
+
+- name: Create plugin base directory
+  ansible.builtin.file:
+    path: "{{ redmine_runtime_directory }}/plugins/{{ item.base_name }}"
+    state: directory
+  become: true
+  become_user: redmine
+  when: item.create_base_directory
+
+- name: Set plugin archvie extraction target path - archive contains base_name root directory
+  ansible.builtin.set_fact:
+    plugin_directory: "{{ redmine_runtime_directory }}/plugins/"
+  when: not item.create_base_directory
+
+- name: Set plugin archvie extraction target path - archive does not contains base_name root directory
+  ansible.builtin.set_fact:
+    plugin_directory: "{{ redmine_runtime_directory }}/plugins/"
+  when: item.create_base_directory
+
+- name: Debug target dir
+  ansible.builtin.debug:
+    msg: "{{ plugin_directory }}"
+    verbosity: 3
+
+- name: Extract plugin
+  ansible.builtin.unarchive:
+    remote_src: true
+    dest: "{{ plugin_directory }}"
+    src: "{{ plugin_download.dest }}"
+  when: not plugin_directory_stat.stat.exists
+  become: true
+  become_user: redmine
+
+
+- name: Rename plugin mapping directory
+  command: mv "{{ redmine_runtime_directory }}/plugins/{{ item.map_directory.src }}" "{{ redmine_runtime_directory }}/plugins/{{ item.map_directory.dest }}"
+  args:
+    creates: "{{ redmine_runtime_directory }}/.ansible-plugin-{{ item.base_name }}.creates"
+  register: mapping_creates
+  when:
+    - item.map_directory is defined
+    - item.map_directory
+
+- name: Creates file for plugin mapping directory task
+  ansible.builtin.file:
+    path: "{{ redmine_runtime_directory }}/.ansible-plugin-{{ item.base_name }}.creates"
+    state: touch
+  when: mapping_creates.changed
+  tags:
+    - skip_ansible_lint
+
+- name: Plugins migrate
+  environment:
+    RAILS_ENV: production
+  shell: /home/redmine/bin/bundle exec /home/redmine/bin/rake redmine:plugins:migrate
+  args:
+    chdir: "{{ redmine_runtime_directory }}"
+  notify:
+    redmine restart
+  when: plugin_download.changed
+  tags:
+    - skip_ansible_lint
+  become: true
+  become_user: redmine

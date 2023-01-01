@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<job_conf>
+    <plugins>
+        <plugin id="local" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="{{galaxy_workers}}"/>
+{% if galaxy_lrms == "slurm" %}
+        <plugin id="slurm" type="runner" load="galaxy.jobs.runners.drmaa:DRMAAJobRunner" workers="100">
+            <param id="drmaa_library_path">/usr/local/lib/libdrmaa.so</param>
+            <param id="internalexception_retries">100</param>
+        </plugin>
+{% endif %}
+    </plugins>
+    <handlers default="handlers">
+	<handler id="handler0" tags="handlers"/>	
+	<handler id="handler1" tags="handlers"/>
+	<handler id="handler2" tags="handlers"/>
+        <handler id="handler3" tags="handlers"/>
+    </handlers>
+{% if galaxy_lrms == "slurm" %}
+    <destinations default="slurm">
+        <destination id="slurm" runner="slurm" tags="mycluster" >
+            <param id="nativeSpecification">--nodes=1 --ntasks=2</param>
+        </destination>
+{% else %}
+    <destinations>
+{% endif %}
+        <destination id="local" runner="local">
+		<param id="local_slots">{{ galaxy_local_slot }}</param>
+	</destination>
+    </destinations>
+{% if galaxy_lrms == "slurm" %}
+    <tools>
+        <tool id="upload1" destination="local"/>
+    </tools>
+{% endif %}
+    <limits>
+	<limit type="registered_user_concurrent_jobs">{{ galaxy_registered_concurrent_jobs }}</limit>
+        <limit type="unregistered_user_concurrent_jobs">{{ galaxy_unregistered_concurrent_jobs }}</limit>
+	<limit type="job_walltime">72:00:00</limit>
+       	<limit type="output_size">268435456000</limit> 
+    </limits>
+</job_conf>
+

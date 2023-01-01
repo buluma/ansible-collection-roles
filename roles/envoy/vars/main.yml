@@ -1,0 +1,16 @@
+---
+# vars file for auto_update
+
+_envoy_packages:
+  Debian:
+    - xz-utils
+    - python-setuptools
+  RedHat-7:
+    - xz
+    - tar
+  RedHat: &redhat_packages
+    - xz
+    - tar
+  Rocky: *redhat_packages
+
+auto_update_packages: "{{ _envoy_packages[ansible_os_family ~ '-' ~ ansible_distribution_major_version] | default(_envoy_packages[ansible_os_family] | default(_envoy_packages['default'] )) }}"

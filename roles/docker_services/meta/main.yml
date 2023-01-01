@@ -1,0 +1,33 @@
+---
+galaxy_info:
+  author: thulium_drake
+  description: Docker services catalogue
+  company:
+  role_name: docker_services
+
+  license: GPLv3
+
+  min_ansible_version: 2.8
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+    - name: Debian
+      versions:
+        - buster
+        - stretch
+    - name: Ubuntu
+      versions:
+        - bionic
+
+  galaxy_tags:
+    - docker
+    - awx
+    - traefik
+    - portainer
+    - provisioning
+    - drone
+    - gitea
+
+dependencies: []

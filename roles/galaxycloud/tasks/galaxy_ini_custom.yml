@@ -1,0 +1,58 @@
+---
+#______________________________________
+## Add uWSGI section to galaxy.ini file
+## Galaxy < release_18.01
+
+- name: '[release_17.**] galaxy.ini configuration'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'brand', value: "{{ galaxy_instance_description }}" }
+    - { section: 'app:main', option: 'tool_dependency_dir', value: "{{ tool_deps_path }}" }
+
+- name: '[release_17.**] Galaxy user login options'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'require_login', value: '{{ require_login }}' }
+    - { section: 'app:main', option: 'allow_user_creation', value: '{{ allow_user_creation }}' }
+    - { section: 'app:main', option: 'allow_user_impersonation', value: '{{ allow_user_impersonation }}' }
+    - { section: 'app:main', option: 'new_user_dataset_access_role_default_private', value: '{{ new_user_dataset_access_role_default_private }}' }
+  when: item.value|bool
+
+- name: '[release_17.**] Database directory configuration'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'job_working_directory', value: "{{ galaxy_db_dir }}/job_working_directory" }
+    - { section: 'app:main', option: 'file_path', value: "{{ galaxy_db_dir }}/files" }
+    - { section: 'app:main', option: 'new_file_path', value: "{{ galaxy_db_dir }}/tmp" }
+    - { section: 'app:main', option: 'template_cache_path', value: "{{ galaxy_db_dir }}/compiled_templates" }
+    - { section: 'app:main', option: 'citation_cache_data_dir', value: "{{ galaxy_db_dir }}/citations/data" }
+    - { section: 'app:main', option: 'citation_cache_lock_dir', value: "{{ galaxy_db_dir }}/citations/lock" }
+    - { section: 'app:main', option: 'whoosh_index_dir', value: "{{ galaxy_db_dir }}/whoosh_indexes" }
+    - { section: 'app:main', option: 'object_store_cache_path', value: "{{ galaxy_db_dir }}/object_store_cache" }
+    - { section: 'app:main', option: 'cluster_file_directory', value: "{{ galaxy_db_dir }}/pbs" }
+    - { section: 'app:main', option: 'ftp_upload_dir', value: "{{ galaxy_db_dir }}/ftp" }
+  when: galaxy_db_dir != "{{ galaxy_install_path }}/database"
+
+- name: '[release_17.**] Enable and configure Conda'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'conda_auto_install', value: "True" }
+    - { section: 'app:main', option: 'conda_auto_init', value: "True" }
+    - { section: 'app:main', option: 'conda_prefix', value: '{{ conda_prefix }}' }
+    #- { section: 'app:main', option: 'conda_ensure_channels', value: "{{ conda_channels }}" }

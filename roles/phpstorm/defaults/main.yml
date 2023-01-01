@@ -1,0 +1,5 @@
+---
+# defaults file for phpstorm
+phpstorm_version: 10.0.2
+phpstorm_install_dir: /opt
+phpstorm_bin: /usr/local/bin/phpstorm

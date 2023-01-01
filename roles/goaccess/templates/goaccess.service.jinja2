@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+[Unit]
+Description={{ goaccess_systemd_description }}
+After=network.target
+
+[Service]
+Restart=always
+ExecStart={{ goaccess_command_dir }}/goaccess --real-time-html --output="{{ goaccess_systemd_html_output_file }}"
+# Configuration is grabbed from the user's home directory:
+User={{ goaccess_conf_file_owner }}
+Group={{ goaccess_conf_file_group }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,79 @@
+---
+- set_fact:
+    galaxyctl_bin_path: '/usr/bin'
+  when: ansible_os_family == "RedHat"
+
+- set_fact:
+    galaxyctl_bin_path: '/usr/local/bin'
+  when: ansible_os_family == "Debian"
+
+- name: Check galaxyctl
+  command: '{{ galaxyctl_bin_path }}/galaxyctl --version'
+  ignore_errors: true
+  changed_when: false # read-only task
+  register: galaxyctl_is_installed
+  become_user: root
+  become_method: sudo
+
+- set_fact:
+    galaxyctl_path: '{{ galaxy_FS_path }}/.galaxyctl'
+  when: galaxyctl_is_installed.rc != 0
+
+- name: 'Clone Galaxy Central Management Tool (galaxyctl)'
+  git:
+    repo: 'https://github.com/Laniakea-elixir-it/galaxyctl.git'
+    version: HEAD
+    clone: yes
+    update: yes
+    dest: '{{ galaxyctl_path }}'
+  when: galaxyctl_is_installed.rc != 0
+
+- name: Find system pip path
+  command: '/usr/bin/which pip'
+  register: pip_path
+  environment:
+    PATH: '/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin'
+
+- name: Install galaxyctl
+  pip:
+    name: '{{ galaxyctl_path }}/.'
+    executable: '{{ pip_path.stdout }}'
+  become_user: root
+  become_method: sudo
+  when: galaxyctl_is_installed.rc != 0
+
+- name: Edit galaxyctl ini file
+  ini_file:
+    dest: '/etc/galaxyctl/galaxyctl.ini'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'galaxy', option: 'init_system', value: '{{ init_type }}' }          
+    - { section: 'galaxy', option: 'supervisord_conf_file', value: '{{ supervisord_conf_path }}/supervisord.conf' }
+    - { section: 'galaxy', option: 'galaxy_config_file', value: '{{ galaxy_config_file }}' }      
+    - { section: 'galaxy', option: 'uwsgi_pid_file', value: '{{ galaxy_log_path }}/uwsgi.pid' }
+    - { section: 'galaxy', option: 'galaxyctl_log_file', value: '{{ galaxy_log_path }}/galaxyctl.log' }
+  become_user: root
+  become_method: sudo
+
+- name: Create api virtual environment
+  pip:
+    requirements: '{{ galaxyctl_path }}/api/requirements.txt'
+    virtualenv: '{{ galaxyctl_path }}/api/venv'
+
+- name: Copy systemd unit file
+  copy:
+    src: '{{ galaxyctl_path }}/api/gunicorn/galaxyctl-api.service'
+    dest: '/etc/systemd/system/galaxyctl-api.service'
+    remote_src: yes
+  become_user: root
+  become_method: sudo
+
+- name: Start and enable galaxyyctl_api
+  service:
+    name: galaxyctl-api
+    state: started
+    enabled: yes
+  become_user: root
+  become_method: sudo

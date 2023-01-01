@@ -1,0 +1,12 @@
+---
+- name: Identify the primary package manager (dnf or yum)
+  shell: command -v dnf || command -v yum
+  register: pkg_mgr_output
+
+- name: Set fact for the used package manager binary
+  set_fact:
+    pkg_mgr: "{{ pkg_mgr_output.stdout }}"
+
+- name: Set fact for pkg_mgr_suffix
+  set_fact:
+    pkg_mgr_suffix: "{{ pkg_mgr.split('/')[-1] }}"

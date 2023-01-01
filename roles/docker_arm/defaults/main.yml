@@ -1,0 +1,23 @@
+---
+# defaults file for docker_arm
+
+# Different ARM platforms may have different versions of Docker available. By
+# default, this role will install the latest version available. You can override
+# this behavior by setting a specific version, like:
+#
+# docker_version: 5:20.10.10~3-0~debian-buster (for arm64)
+#
+# Check available versions: `apt-cache madison docker-ce`
+docker_version: "latest"
+
+# Whether to install recommended packages alongside docker-ce.
+docker_install_recommends: false
+
+# Whether to install Docker Compose via Pip.
+docker_install_compose: true
+
+# A list of users who will be added to the docker group.
+docker_users: []
+
+# The executable to use for Pip.
+docker_pip_executable: pip3

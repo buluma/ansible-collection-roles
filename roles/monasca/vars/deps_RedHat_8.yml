@@ -1,0 +1,13 @@
+---
+# ©Copyright 2015-2016 Hewlett Packard Enterprise Development Company, LP
+
+monasca_os_dependencies:
+  - python3-virtualenv
+  - python3-pyyaml
+  - python3-libxml2
+  - libxml2-devel
+  - libxslt-devel
+  - libffi-devel
+  - openssl-devel
+  - gcc
+  - lshw

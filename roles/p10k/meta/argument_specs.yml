@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Ansible role for installing powerlevel10k
+    description: >
+      Ansible role for installing powerlevel10k
+    author: Michael Buluma

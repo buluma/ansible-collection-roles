@@ -1,0 +1,83 @@
+---
+# vars file for nagios
+_nagios_packages:
+  centos:
+    7:
+      - gcc
+      - gd
+      - gd-devel
+      - glibc
+      - glibc-common
+      - make
+      - perl
+      - php
+      - rsync
+      - unzip
+      - wget
+    8:
+      - gcc
+      - gd
+      - gd-devel
+      - glibc
+      - glibc-common
+      - make
+      - perl
+      - php
+      - rsync
+      - wget
+  debian:
+    - apache2
+    - apache2-utils
+    - autoconf
+    - gcc
+    - libc6
+    - libgd-dev
+    - make
+    - php
+    - rsync
+    - unzip
+    - wget
+
+_nagios_plugin_packages:
+  centos:
+    7:
+      - autoconf
+      - automake
+      - epel-release
+      - gcc
+      - gettext
+      - glibc
+      - glibc-common
+      - make
+      - net-snmp
+      - net-snmp-utils
+      - openssl-devel
+      - perl-Net-SNMP
+      - wget
+    8:
+      - gcc
+      - glibc
+      - glibc-common
+      - make
+      - gettext
+      - automake
+      - autoconf
+      - wget
+      - openssl-devel
+      - net-snmp
+      - net-snmp-utils
+  debian:
+    - autoconf
+    - bc
+    - build-essential
+    - dc
+    - gawk
+    - gcc
+    - gettext
+    - libc6
+    - libmcrypt-dev
+    - libnet-snmp-perl
+    - libssl-dev
+    - make
+    - snmp
+    - wget

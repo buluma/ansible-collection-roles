@@ -1,0 +1,60 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'portainer_agent_network'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/portainer_data"
+    state: 'directory'
+
+- name: 'Deploy Portainer Agent'
+  community.docker.docker_swarm_service:
+    name: 'portainer_agent'
+    image: 'portainer/agent'
+    env:
+      - 'AGENT_CLUSTER_ADDR=tasks.portainer_agent'
+    mounts:
+      - source: '/var/run/docker.sock'
+        target: '/var/run/docker.sock'
+        type: 'bind'
+      - source: '/var/lib/docker/volumes'
+        target: '/var/lib/docker/volumes'
+        type: 'bind'
+    networks:
+      - 'portainer_agent_network'
+    mode: 'global'
+    restart_config:
+      condition: "{{ restart_condition }}"
+    placement:
+      constraints:
+        - 'node.platform.os == linux'
+    user: null
+
+- name: 'Deploy Portainer'
+  community.docker.docker_swarm_service:
+    name: 'portainer'
+    image: 'portainer/portainer-ce'
+    command: '/portainer -H tcp://tasks.portainer_agent:9001 --tlsskipverify'
+    env:
+      - 'AGENT_CLUSTER_ADDR=tasks.portainer_agent'
+    mounts:
+      - source: "{{ docker_data_dir }}/portainer_data"
+        target: '/data'
+        type: 'bind'
+    networks:
+      - 'traefik_backend'
+      - 'portainer_agent_network'
+    labels:
+      traefik.http.routers.portainer.rule: "HostHeader(`{{ portainer_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.portainer.tls: "true"
+      traefik.http.services.portainer.loadbalancer.server.port: '9000'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    placement:
+      constraints:
+        - 'node.role == manager'
+    user: null

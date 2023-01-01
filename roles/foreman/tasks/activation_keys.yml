@@ -1,0 +1,53 @@
+---
+- name: "Create Activation Keys for {{ key_lifecycle['os'] }} - {{ key_lifecycle['lifecycle'] }}"
+  theforeman.foreman.activation_key:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ key['name'] }}-{{ key_lifecycle['lifecycle'] }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    lifecycle_environment: "{{ key_lifecycle['lifecycle'] }}"
+    content_view: "{{ key['content_view'] }}"
+    subscriptions: "{{ ( foreman_simple_content_mode) | ternary(omit, key['subscriptions']) | default(omit) }}"
+    content_overrides: "{{ key['content_overrides'] | default(omit) }}"
+    host_collections: >-
+      {{ key_lifecycle['host_collection'] +
+      [ key['name'] | lower ] +
+      [ key['os'] | lower ] }}
+    release_version: "{{ key['release_version'] }}"
+  loop: "{{ foreman_activation_keys }}"
+  when:
+    - key['os'] == key_lifecycle['os']
+    - key['host_collections'] is not defined
+  loop_control:
+    loop_var: 'key'
+    label: "{{ key['name'] }}"
+
+- name: "Create Activation Keys for {{ key_lifecycle['os'] }} - {{ key_lifecycle['lifecycle'] }}"
+  theforeman.foreman.activation_key:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ key['name'] }}-{{ key_lifecycle['lifecycle'] }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    lifecycle_environment: "{{ key_lifecycle['lifecycle'] }}"
+    content_view: "{{ key['content_view'] }}"
+    subscriptions: "{{ key['subscriptions'] | default(omit) }}"
+    content_overrides: "{{ key['content_overrides'] | default(omit) }}"
+    host_collections: >-
+      {{ key_lifecycle['host_collection'] +
+      [ key['name'] | lower ] +
+      [ key['os'] | lower ] +
+      key['host_collections'] }}
+    release_version: "{{ key['release_version'] }}"
+  loop: "{{ foreman_activation_keys }}"
+  when:
+    - key['os'] == key_lifecycle['os']
+    - key['host_collections'] is defined
+  loop_control:
+    loop_var: 'key'
+    label: "{{ key['name'] }}"

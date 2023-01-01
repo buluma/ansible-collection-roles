@@ -1,0 +1,33 @@
+---
+- name: 'Ensure Composite Content Views (COVs)'
+  theforeman.foreman.content_view:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ comp_content_view['name'] }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    composite: true
+    auto_publish: true
+    components: "{{ comp_content_view['components'] }}"
+  register: 'cov_created'
+  loop: "{{ foreman_composite_content_views }}"
+  loop_control:
+    loop_var: 'comp_content_view'
+    label: "{{ comp_content_view['name'] }}"
+
+- name: 'Promote content view version for newly created composite content views'  # noqa no-handler
+  theforeman.foreman.content_view_version:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    content_view: "{{ comp_content_view['comp_content_view']['name'] }}"
+    lifecycle_environments: "{{ foreman_lifecycle + foreman_infrastructure_lifecycle }}"
+  when: comp_content_view['changed']
+  loop: "{{ cov_created['results'] }}"
+  loop_control:
+    loop_var: 'comp_content_view'
+    label: "{{ comp_content_view['comp_content_view']['name'] }}"

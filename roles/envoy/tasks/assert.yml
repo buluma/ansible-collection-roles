@@ -1,0 +1,29 @@
+---
+
+- name: Test if envoy_user is set correctly
+  ansible.builtin.assert:
+    that:
+      - envoy_user is defined
+      - envoy_user is string
+    quiet: yes
+
+- name: Test if envoy_systemd is set correctly
+  ansible.builtin.assert:
+    that:
+      - envoy_systemd is defined
+      - envoy_systemd is boolean
+    quiet: yes
+
+- name: Test if envoy_version is set correctly
+  ansible.builtin.assert:
+    that:
+      - envoy_version is defined
+      - envoy_version is string
+    quiet: yes
+
+- name: Test if envoy_arch is set correctly
+  ansible.builtin.assert:
+    that:
+      - envoy_arch is defined
+      - envoy_arch is string
+    quiet: yes

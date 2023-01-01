@@ -1,0 +1,101 @@
+---
+- name: 'Set server_type'
+  ansible.builtin.set_fact:
+    foreman_server_type: 'satellite_capsule'
+
+- name: 'Ensure Red Hat Subscriptions'
+  community.general.redhat_subscription:
+    username: "{{ foreman_redhat_support_user }}"
+    password: "{{ foreman_redhat_support_password }}"
+    auto_attach: true
+    pool: 'Red Hat Satellite Capsule'
+    state: 'present'
+
+- name: 'Update packages'  # noqa package-latest
+  ansible.builtin.package:
+    name: '*'
+    state: 'latest'
+
+  # The dnf ansible module cannot handle dnf modules without a default profile
+  # such as satellite-capsule
+- name: 'Ensure Satellite module'
+  ansible.builtin.command: dnf module enable -y satellite-capsule:el8
+  register: module_enable
+  changed_when: "'Nothing to do' not in module_enable['stdout']"
+  when: ansible_facts['distribution_major_version'] == '8'
+
+- name: 'Install dependencies'
+  ansible.builtin.package:
+    name:
+      - 'satellite-capsule'
+    state: 'present'
+
+- name: 'Enable Satellite firewalld service'
+  ansible.posix.firewalld:
+    service: 'RH-Satellite-6-capsule'
+    state: 'enabled'
+    permanent: true
+    immediate: true
+
+- name: 'Generate certificates on Satellite Server'
+  ansible.builtin.shell: |
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    /usr/sbin/foreman-proxy-certs-generate \
+      --no-colors \
+      --foreman-proxy-fqdn "{{ ansible_facts['fqdn'] | lower }}" \
+      --certs-tar /root/{{ ansible_facts['fqdn'] | lower }}.tar
+  delegate_to: "{{ groups['foreman'][0] }}"
+  register: 'foreman_certs_gen'
+  changed_when: true
+
+- name: 'Copy certificate tar to Ansible Controller'
+  ansible.builtin.fetch:
+    src: "/root/{{ ansible_facts['fqdn'] | lower }}.tar"
+    dest: '/tmp/'
+    flat: true
+  delegate_to: "{{ groups['foreman'][0] }}"
+
+- name: 'Copy certificate tar to Satellite Capsule'
+  ansible.builtin.copy:
+    src: "/tmp/{{ ansible_facts['fqdn'] | lower }}.tar"
+    dest: '/root'
+    mode: 0600
+
+- name: 'Remove certificate tar from Ansible Controller'
+  ansible.builtin.file:
+    path: "/tmp/{{ ansible_facts['fqdn'] | lower }}.tar"
+    state: 'absent'
+  delegate_to: 'localhost'
+
+- name: 'Compose foreman-installer command'
+  ansible.builtin.set_fact:
+    foreman_installer_cmd: "{{ foreman_certs_gen['stdout_lines'][-9:] + ['--detailed-exitcodes'] }}"
+
+- name: 'Run foreman-installer on Proxy'
+  ansible.builtin.shell: |
+    set -o pipefail
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    echo {{ foreman_installer_cmd | join(' ') }} | sed 's/\\//' | bash
+  register: 'installer_output'
+  changed_when: installer_output['rc'] == 2
+  failed_when: installer_output['rc'] == 1 or installer_output['rc'] >= 4
+
+- name: 'Configure Host Deployment and Discovery'
+  when: foreman_configure_deployment
+  block:
+    - name: 'Configure Foreman for deployment'
+      ansible.builtin.include_tasks: 'configure_deployment.yml'
+
+    - name: 'Configure Host Discovery'
+      ansible.builtin.shell: |
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+        /usr/sbin/foreman-installer \
+        --enable-foreman-proxy-plugin-discovery \
+        --no-lock-package-versions \
+        --detailed-exitcodes
+      register: 'installer_output'
+      changed_when: installer_output['rc'] == 2
+      failed_when: installer_output['rc'] == 1 or installer_output['rc'] == 4 or installer_output['rc'] == 6

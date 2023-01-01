@@ -1,0 +1,34 @@
+---
+- name: 'Create empty list'
+  ansible.builtin.set_fact:
+    cv_repo_list: []
+
+- name: 'Make repo list for content views'
+  ansible.builtin.set_fact:
+    cv_repo_list: "{{ cv_repo_list + [{'product': repo['product'], 'name': repo['repo'] } ] }}"
+  loop: "{{ item['repositories'] }}"
+  loop_control:
+    loop_var: 'repo'
+
+- name: 'Ensure base content views'
+  theforeman.foreman.content_view:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ item['name'] }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    repositories: "{{ cv_repo_list }}"
+    state: 'present'
+  register: 'cv_created'
+
+- name: 'Publish content view version for newly created content views. This may take long...'  # noqa no-handler
+  theforeman.foreman.content_view_version:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    content_view: "{{ item['name'] }}"
+  when: cv_created['changed']

@@ -1,0 +1,30 @@
+---
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'minecraft_server_data'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy Minecraft Server'
+  community.docker.docker_swarm_service:
+    name: 'minecraft_server'
+    image: 'itzg/minecraft-server'
+    env:
+      - 'EULA=true'
+      - "TYPE={{ minecraft_server_type }}"
+    mounts:
+      - source: '{{ docker_data_dir }}/minecraft_server_data'
+        target: '/data'
+        type: 'bind'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    publish:
+      - published_port: 25565
+        target_port: 25565
+    user: null

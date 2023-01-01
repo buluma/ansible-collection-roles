@@ -1,0 +1,11 @@
+---
+# tasks file for cloud_init
+
+- name: install cloud init package
+  ansible.builtin.package:
+    name: "{{ cloud_init_packages }}"
+    state: present
+  register: result
+  until: result is succeeded
+
+- debug: var=result

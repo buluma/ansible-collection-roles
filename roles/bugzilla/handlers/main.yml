@@ -1,0 +1,19 @@
+---
+# handlers file for bugzilla
+- name: restart apache
+  ansible.builtin.service:
+    name: "{{ apache_service }}"
+    state: restarted
+  changed_when: false
+  failed_when: false
+  listen: "restart apache"
+
+- name: restart mariadb
+  service:
+    name: mariadb
+    state: restarted
+
+- name: restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

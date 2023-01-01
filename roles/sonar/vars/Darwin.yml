@@ -1,0 +1,5 @@
+---
+# vars file for sonar-scanner in Darwin system
+
+# Define Darwin sonarsource
+sonar_src: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{{ sonar_scanner_version_to_install }}-Darwin.zip"

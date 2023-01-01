@@ -1,0 +1,197 @@
+---
+- name: 'Get Package Versions'
+  ansible.builtin.package_facts:
+  tags: 'always'
+
+- name: 'Check input'
+  ansible.builtin.assert:
+    that:
+      - foreman_server_type in foreman_supported_server_types
+      - foreman_download_policy in foreman_supported_download_policies
+      - foreman_http_proxy_policy in foreman_supported_http_proxy_policies
+
+# - name: 'Disable foreman-protector plugin'
+#   ansible.builtin.copy:
+#     content: |
+#       # This file is managed by Ansible, YOUR CHANGES WILL BE LOST!
+#       [main]
+#       enabled = 0
+#     dest: '/etc/yum/pluginconf.d/foreman-protector.conf'
+#     mode: 0640
+#     owner: 'root'
+#     group: 'root'
+#   when: foreman_disable_foreman_protector_plugin
+
+- name: 'Disable automatic creation of new Operating Systems based on facts'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'ignore_facts_for_operatingsystem'
+    value: true
+
+- name: 'Ensure firewall ports'
+  ansible.posix.firewalld:
+    port: "{{ port['name'] }}"
+    permanent: true
+    immediate: true
+    state: 'enabled'
+  loop:
+    - name: '7/tcp'
+    - name: '7/udp'
+    - name: '53/tcp'
+    - name: '53/udp'
+    - name: '67/udp'
+    - name: '69/udp'
+    - name: '80/tcp'
+    - name: '443/tcp'
+    - name: '5000/tcp'
+    - name: '5646/tcp'
+    - name: '5647/tcp'
+    - name: '8000/tcp'
+    - name: '8140/tcp'
+      enable: "{{ foreman_puppet_enabled }}"
+    - name: '8443/tcp'
+    - name: '9090/tcp'
+  loop_control:
+    loop_var: 'port'
+  when:
+    - port['enable'] | default(true)
+    - foreman_server_type == 'foreman'
+
+- name: 'Ensure Red Hat Satellite firewalld profile'
+  ansible.posix.firewalld:
+    service: 'RH-Satellite-6'
+    permanent: true
+    immediate: true
+    state: 'enabled'
+  when: foreman_server_type == 'satellite'
+
+- name: 'Ensure Organizations, Locations and Lifecycles'
+  ansible.builtin.import_tasks: 'organization_lifecycle.yml'
+
+- name: 'Update Foreman Server Smart Proxy Config'
+  theforeman.foreman.smart_proxy:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ ansible_facts['fqdn'] }}"
+    url: "https://{{ ansible_facts['fqdn'] }}:9090"
+    download_policy: "{{ foreman_smartproxy_download_policy }}"
+    organizations:
+      - "{{ foreman_organization }}"
+    locations: "{{ foreman_locations }}"
+    state: 'present'
+
+- name: 'Ensure Host Collections'
+  ansible.builtin.import_tasks: 'host_collections.yml'
+
+- name: 'Configure HTTP proxy'
+  ansible.builtin.include_tasks: 'http_proxy.yml'
+  when: foreman_http_proxy_policy != 'none'
+
+- name: 'Set sync timeout for downloading content'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ (ansible_facts['packages']['foreman'][0]['version'] is version('2.5', 'le')) | ternary('sync_conn  ect_timeout', 'sync_connect_timeout_v2') }}"
+    value: "{{ foreman_sync_timeout }}"
+
+- name: 'Ensure daily sync plan'
+  theforeman.foreman.sync_plan:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    interval: 'daily'
+    name: 'Daily repo sync'
+    description: 'Managed by Ansible, your changes will be lost'
+    enabled: true
+    sync_date: '2020-01-01 00:00:00 UTC'
+    state: 'present'
+
+- name: 'Ensure Red Hat Products and Repositories'
+  ansible.builtin.include_tasks: 'products_redhat.yml'
+  when: foreman_configure_redhat_repos
+
+- name: 'Ensure Products and Repositories'
+  ansible.builtin.import_tasks: 'products.yml'
+
+- name: 'Ensure Content Views (CVs) and versions for Products'
+  ansible.builtin.include_tasks: 'cv_add_base_product.yml'
+  loop: "{{ foreman_products | default([]) }}"
+
+- name: 'Ensure Content Views (CVs) and versions for other Content Views'
+  ansible.builtin.include_tasks: 'cv_add_base.yml'
+  loop: "{{ foreman_content_views | default([]) }}"
+
+- name: 'Ensure Composite Content Views (COVs)'
+  ansible.builtin.import_tasks: 'comp_content_views.yml'
+
+- name: 'Ensure Activation keys'
+  ansible.builtin.include_tasks: 'activation_keys.yml'
+  loop: >-
+    {%- set results = [] -%}
+    {%- for lifecycle in foreman_lifecycle + foreman_infrastructure_lifecycle -%}
+    {%-   for os in foreman_host_collections_os -%}
+    {%-     set line = {'os': os, 'host_collection': [os + '-' + lifecycle|lower], 'lifecycle': lifecycle} -%}
+    {%-     set _ = results.append(line) if lifecycle != 'Library' -%}
+    {%-   endfor -%}
+    {%- endfor -%}
+    {{ results }}
+  loop_control:
+    loop_var: 'key_lifecycle'
+
+- name: 'Configure Host deploment and discovery'
+  block:
+    - name: 'Configure Foreman for deployment'
+      ansible.builtin.include_tasks: 'configure_deployment.yml'
+
+    - name: 'Configure PXE'
+      ansible.builtin.include_tasks: 'configure_pxe.yml'
+
+    - name: 'Ensure Domains and Subnets'
+      ansible.builtin.include_tasks: 'domains_subnets.yml'
+
+    - name: 'Ensure Installation Media and Operating Systems'
+      ansible.builtin.include_tasks: 'installmedia_os.yml'
+
+    - name: 'Ensure Host Groups'
+      ansible.builtin.include_tasks: 'host_groups.yml'
+
+    - name: 'Set Random Hostname generator to MAC based'
+      theforeman.foreman.setting:
+        username: "{{ foreman_admin_user }}"
+        password: "{{ foreman_admin_password }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: "{{ foreman_validate_certs }}"
+        name: 'name_generator_type'
+        value: 'MAC-based'
+  when: foreman_configure_deployment
+
+- name: 'Set Default Download Policies'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'default_download_policy'
+    value: "{{ foreman_download_policy }}"
+
+- name: 'Set Smartproxy Default Download Policies'
+  theforeman.foreman.setting:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: 'default_proxy_download_policy'
+    value: "{{ foreman_smartproxy_download_policy }}"
+
+- name: 'Configure IPA authentication'
+  ansible.builtin.include_tasks: 'configure_ipa_authentication.yml'
+  when: foreman_configure_ipa

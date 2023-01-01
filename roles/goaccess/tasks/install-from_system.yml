@@ -1,0 +1,11 @@
+---
+# tasks file of ansible-role jonaspammer.goaccess
+
+- name: Include Tasks for installing GoAccess's own Debian Repository (when enabled)
+  ansible.builtin.include_tasks: install_deb_repo.yml
+  when: ansible_os_family == 'Debian' and goaccess_system_install_official_repo
+
+- name: Install GoAccess from system package manager.
+  ansible.builtin.package:
+    name: goaccess
+    state: "{{ goaccess_system_package_state }}"

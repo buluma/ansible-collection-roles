@@ -1,0 +1,4 @@
+---
+exceptions:
+  - variation: centos:7
+    reason: "Current envoy version (1.22) not supported on CentOS 7"

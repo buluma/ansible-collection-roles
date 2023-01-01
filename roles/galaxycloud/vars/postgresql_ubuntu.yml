@@ -1,0 +1,4 @@
+---
+postgresql_pgdata: '/var/lib/postgresql/{{ postgresql_version }}/main'
+postgresql_conf_dir: '/etc/postgresql/{{ postgresql_version }}/main'
+postgresql_service_name: postgresql

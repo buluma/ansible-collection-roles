@@ -1,0 +1,6 @@
+---
+# SLES 12 SP2
+extra_package_names:
+  - libXtst6-32bit
+  - libXrender1-32bit
+  - libXi6-32bit

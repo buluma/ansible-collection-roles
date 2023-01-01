@@ -1,0 +1,47 @@
+---
+- name: Add ElasticSearch apt key.
+  ansible.builtin.apt_key:
+    id: "{{ beats_client_elastic_pgp_key }}"
+    url: "{{ beats_client_elastic_gpg_key_url }}"
+    state: present
+
+- name: Install beats pre-req software
+  ansible.builtin.apt:
+    name: "{{ item }}"
+  with_items: "{{ beats_client_beats_prereq }}"
+
+- name: Add Beats apt repository.
+  ansible.builtin.apt_repository:
+    repo: "{{ beats_client_elastic_repo_url }}"
+    state: present
+
+- name: Install beat packages.
+  ansible.builtin.apt:
+    name: "{{ item }}={{ beats_client_version }}"
+    state: present
+  with_items: "{{ beats_client_beats_packages }}"
+
+- name: Copy beat configuration
+  become: yes
+  ansible.builtin.copy:
+    content: "{{ beats_clients_configs[item] | to_nice_yaml }}"
+    dest: "/etc/{{ item }}/{{ item }}.yml"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: "Restart {{ item }}"
+  with_items: "{{ beats_client_beats_packages }}"
+
+- name: Enable beat service
+  become: yes
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items: "{{ beats_client_beats_packages }}"
+
+- name: Load default templates into elasticsearch
+  ansible.builtin.command: |
+    {{ item }} setup --template -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=["localhost:9200"]'
+  with_items: "{{ beats_client_beats_packages }}"
+  when: beats_client_inject_templates

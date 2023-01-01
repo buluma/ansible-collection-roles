@@ -1,0 +1,10 @@
+# handlers file for cassandra
+---
+- name: cassandra_restart_service
+  ansible.builtin.service:
+    name: cassandra
+    state: restarted
+    enabled: "{{ cassandra_service_enabled }}"
+  when:
+    - cassandra_service_restart|bool
+    - not ansible_check_mode

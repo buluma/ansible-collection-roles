@@ -1,0 +1,14 @@
+FROM {{ source_image }}
+LABEL modified_append_tag={{ modified_append_tag }}
+
+WORKDIR /
+USER root
+
+{% for rpm in rpms_list %}
+COPY {{ rpm | basename }} /tmp/
+{% endfor %}
+
+COPY rpm_install.sh /tmp/
+RUN /tmp/rpm_install.sh
+
+USER "{{ original_user }}"

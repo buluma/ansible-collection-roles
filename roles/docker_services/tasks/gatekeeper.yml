@@ -1,0 +1,29 @@
+---
+- name: 'Set facts for Keycloak Gatekeeper'
+  set_fact:
+    gatekeeper_app_name: 'appname'
+    gatekeeper_client_id: 'appname'
+    gatekeeper_client_secret: "{{ appname_gatekeeper_client_secret }}"
+    gatekeeper_upstream_url: 'http://tasks.appname'
+
+- name: 'Deploy Keycloak Gatekepeer for Appname'
+  community.docker.docker_swarm_service:
+    name: 'appname_gatekeeper'
+    image: 'keycloak/keycloak-gatekeeper'
+    env:
+      - 'PROXY_LISTEN=:3000'
+      - "PROXY_DISCOVERY_URL={{ gatekeeper_discovery_url }}"
+      - "PROXY_CLIENT_ID={{ gatekeeper_client_id }}"
+      - "PROXY_CLIENT_SECRET={{ gatekeeper_client_secret }}"
+      - "PROXY_REDIRECTION_URL=https://{{ gatekeeper_app_name }}.{{ traefik_domain }}"
+      - 'PROXY_ENABLE_REFRESH_TOKEN=true'
+      - "PROXY_UPSTREAM_URL={{ gatekeeper_upstream_url }}"
+      - "PROXY_ENCRYPTION_KEY={{ gatekeeper_session_key }}"
+    networks:
+      - 'appname_backend'
+      - 'traefik_backend'
+    labels:
+      traefik.backend.loadbalancer.sticky: 'true'
+      traefik.docker.network: 'traefik_backend'
+      traefik.port: '3000'
+      traefik.frontend.rule: "HostHeader:{{ drone_app_name }}.{{ traefik_domain }}"

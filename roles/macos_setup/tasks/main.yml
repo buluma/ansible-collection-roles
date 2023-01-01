@@ -1,0 +1,58 @@
+---
+# tasks file for macos_setup
+# - name: install homebrew
+#   include_role:
+#     name: buluma.mac.homebrew
+#   tags:
+#     - notest
+#
+# - name: install mas
+#   include_role:
+#     name: buluma.mac.mas
+#   tags:
+#     - notest
+
+- name: ensuring homebrew binary is in path
+  ansible.builtin.lineinfile:
+    path: /etc/paths
+    state: present
+    line: '/opt/homebrew/bin'
+  become: true
+  # become_user: root
+  tags:
+    - notest
+
+- name: adding custom homebrew repos
+  community.general.homebrew_tap:
+    name: [
+      adoptopenjdk/openjdk,
+      homebrew/cask-versions,
+      weaveworks/tap,
+      homebrew/cask-fonts
+    ]
+  tags:
+    - notest
+
+- name: installing main packages using brew casks
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+  ignore_errors: yes
+  with_items:
+    - visual-studio-code
+    - vlc
+    - postman
+    - notion
+    # - rancher
+    - zoom
+    - iterm2
+    # - slack
+    - wireshark
+    - coconutbattery
+    - telegram-desktop
+    # - affinity-designer
+    - licecap
+    - sequel-ace
+    - transmit
+    - sublime-text
+  tags:
+    - notest

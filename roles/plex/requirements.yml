@@ -1,0 +1,7 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: wilmardo.plexupdate
+  - name: wilmardo.ansible_role_tautulli
+collections:
+  - name: community.general

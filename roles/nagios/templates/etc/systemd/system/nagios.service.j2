@@ -1,0 +1,16 @@
+[Unit]
+Description=Nagios Core {{ nagios_version | default('') }}
+Documentation=https://www.nagios.org/documentation
+After=network.target local-fs.target
+
+[Service]
+Type=forking
+ExecStartPre={{ nagios_bin_path }} -v "{{ __nagios_primary_config_file }}"
+ExecStart={{ nagios_bin_path }} -d "{{ __nagios_primary_config_file }}"
+ExecStop=/bin/kill -s TERM ${MAINPID}
+ExecStopPost=/bin/rm -f {{ nagios_prefix_dir }}/var/rw/nagios.cmd
+ExecReload={{ nagios_bin_path }} -v "{{ __nagios_primary_config_file }}"
+ExecReload=/bin/kill -s HUP ${MAINPID}
+
+[Install]
+WantedBy=multi-user.target

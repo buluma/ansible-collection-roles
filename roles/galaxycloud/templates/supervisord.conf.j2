@@ -1,0 +1,104 @@
+# This is a sample supervisor config file.
+# In this configuration, 2 handlers and 1 uwsgi (uwsgi is more performant than the default Paste) instance with 2 processes and 2 threads will be started.
+# In order for this to work, you will need to have a [uwsgi] section in galaxy.ini, as such:
+#
+# [uwsgi]
+# master = True
+#
+# Further, this assumes uwsgi has been installed through pip into a virtualenv (/home/galaxy/galaxy/.venv/, in this example). 
+# If this is not the case, adjust the path to uwsgi accordingly.
+# If uwsgi was not installed through pip, include "--plugin python" in the uwsgi command.
+# This configuration has been tested with galaxy release_16.01 and uWSGI==2.0.12.
+# This assumes galaxy is installed in /home/galaxy/galaxy, so change occurences of /home/galaxy/galaxy accordingly.
+# If you want to run galaxy under a different username, change "user = galaxy" to "user = <your user>".
+# You will probably want to proxy uwsgi (you can't connect with a browser to uwsgi port 4001) with nginx or apache, 
+# see https://galaxyproject.org/admin/config/performance/scaling/#apache
+# or https://galaxyproject.org/admin/config/performance/scaling/#nginx
+
+{% if supervisor_manage_postgres == "True" %}
+
+{% if ansible_virtualization_type != "docker" %}
+[program:pre_postgresql]
+user            = root
+startsecs       = 0
+command         = /bin/bash -c "install -d -m 2775 -o postgres -g postgres /var/run/postgresql"
+{% endif %}
+
+[program:postgresql]
+user            = postgres
+{% if ansible_os_family == "Debian" %}
+command         = /usr/lib/postgresql/{{ postgresql_version }}/bin/postgres -D /var/lib/postgresql/{{ postgresql_version }}/main -c config_file=/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+{% else %}
+command         = /usr/pgsql-{{ postgresql_version }}/bin/postgres -D {{ postgresql_pgdata }}
+{% endif %}
+process_name    = %(program_name)s
+stopsignal      = INT
+autostart       = true
+autorestart     = true
+redirect_stderr = true
+priority        = 100
+{% endif %}
+
+{% if supervisor_manage_nginx == "True" %}
+[program:nginx]
+command         = /usr/sbin/nginx
+directory       = /
+umask           = 022
+autostart       = true
+autorestart     = unexpected
+startsecs       = 5
+exitcodes       = 0
+user            = root
+priority        = 200
+{% endif %}
+
+{% if supervisor_manage_proftpd == "True" %}
+[program:proftpd]
+command         = /usr/sbin/proftpd -n -c {{proftpd_conf_path}}
+autostart       = true
+autorestart     = true
+stopasgroup     = true
+killasgroup     = true
+{% endif %}
+
+[program:galaxy_web]
+
+{% if (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01) %}
+command         = {{ galaxy_venv_path }}/bin/uwsgi --virtualenv {{ galaxy_venv_path }} --ini-paste {{ galaxy_config_file }} --pidfile {{ uwsgi_pidfile }} 
+{% elif (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18) %} 
+command         = {{ galaxy_venv_path }}/bin/uwsgi --virtualenv {{ galaxy_venv_path }} --yaml {{ galaxy_config_file }} --pidfile {{ uwsgi_pidfile }} 
+{% endif %}
+directory       = {{ galaxy_install_path }}
+umask           = 022
+autostart       = true
+autorestart     = true
+startsecs       = 20
+user            = {{ galaxy_user }}
+{%if galaxy_lrms == "slurm"%}
+environment     = PATH="{{ galaxy_venv_path }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",DRMAA_LIBRARY_PATH="/usr/local/lib/libdrmaa.so"
+{% else %}
+environment     = PATH="{{ galaxy_venv_path }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+{% endif %}
+numprocs        = 1
+stopsignal      = INT
+startretries    = 15
+stopasgroup     = true
+killasgroup     = true
+
+[program:handler]
+command         = {{ galaxy_venv_path }}/bin/python ./lib/galaxy/main.py -c {{ galaxy_config_file }} --server-name=handler%(process_num)s --log-file={{ galaxy_log_path }}/handler%(process_num)s.log
+directory       = {{ galaxy_install_path }}
+process_name    = handler%(process_num)s
+numprocs        = 4
+umask           = 022
+autostart       = true
+autorestart     = true
+startsecs       = 20
+user            = {{ galaxy_user }}
+{%if galaxy_lrms == "slurm"%}
+environment     = DRMAA_LIBRARY_PATH="/usr/local/lib/libdrmaa.so"
+{% endif %}
+startretries    = 15
+
+[group:galaxy]
+programs = handler, galaxy_web

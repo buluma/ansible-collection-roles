@@ -1,0 +1,18 @@
+---
+# defaults file for centos_base
+
+centos_base_secure_sshd: false
+centos_base_basic_vim_tweaks: false
+centos_base_htop_configuration: false
+centos_base_fail2ban_configuration: false
+centos_base_selinux_packages: false
+centos_base_firewalld_services: []
+centos_base_nagios_packages: false
+centos_base_utility_packages: false
+centos_base_basic_packages: false
+centos_base_debug_packages: false
+centos_base_enable_epel: false
+centos_base_lockprg: false
+centos_base_security_packages: false
+centos_base_firewalld: true
+centos_base_development_packages: false

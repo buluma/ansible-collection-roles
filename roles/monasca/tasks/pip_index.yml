@@ -1,0 +1,10 @@
+---
+# ©Copyright 2015 Hewlett-Packard Development Company, L.P.
+
+- name: Create pip conf dir if pip index URL specified
+  file: path={{ pip_conf_dir }} state=directory owner=root group=root mode=770
+  when: pip_index_url is defined
+
+- name: Use pip index URL if specified
+  template: dest="{{ pip_conf_dir }}/pip.conf" src=pip.conf.j2 backup=yes owner=root group=root mode=660
+  when: pip_index_url is defined

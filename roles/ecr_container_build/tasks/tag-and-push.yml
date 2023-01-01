@@ -1,0 +1,25 @@
+---
+- name: Set the current image tag.
+  ansible.builtin.set_fact:
+    image_tag: "{{ outer_item }}"
+
+- name: Print the current tag being pushed.
+  ansible.builtin.debug: var=image_tag
+
+- name: Ensure there's not already an image locally tagged with the ecr_url.
+  ansible.builtin.docker_image:
+    name: "{{ ecr_url }}/{{ ecr_image_name }}:{{ image_tag }}"
+    force_tag: true
+    state: absent
+
+- name: Apply additional tag if there's more than one.
+  ansible.builtin.command: "docker tag {{ ecr_image_name }}:{{ ecr_image_tags.0 }} {{ ecr_url }}/{{ ecr_image_name }}:{{ image_tag }}"
+  changed_when: true
+
+- name: Push image to ECR.
+  ansible.builtin.command: "docker push {{ ecr_url }}/{{ ecr_image_name }}:{{ image_tag }}"
+  register: push_result
+  changed_when: true
+  until: push_result is success
+  retries: 10
+  delay: 2

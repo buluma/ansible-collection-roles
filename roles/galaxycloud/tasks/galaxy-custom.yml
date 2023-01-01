@@ -1,0 +1,113 @@
+---
+# Galaxy customization recipe
+
+- name: Enable test toolShed
+  copy:
+    src: 'tool_sheds_conf.xml'
+    dest: '{{galaxy_config_path}}'
+
+#______________________________________
+## Add uWSGI section to galaxy.ini file
+## Galaxy < release_18.01
+
+- include: galaxy_ini_custom.yml
+  when: (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+
+#______________________________________
+## Edit uWSGI section in galaxy.tyml file
+## Galaxy >= release_18.05
+
+- include: galaxy_yaml_custom.yml
+  when: (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+
+#______________________________________
+# Galaxy administrator: email. username, password and api_key
+# IMPORTANT: start Galaxy database postgresql to setup the galaxy administrator credentials
+
+- name: '[release_17.**] Copy create/delete user script to {{ galaxy_custom_script_path }}'
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: 'create_galaxy_user.py.0.j2', dest: '{{ galaxy_custom_script_path }}/create_galaxy_user.py' }
+    - { src: 'delete_galaxy_user.py.0.j2', dest: '{{ galaxy_custom_script_path }}/delete_galaxy_user.py' }
+  become_user: root
+  become_method: sudo
+  when:
+    - (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+
+- name: '[release_17.**] Set Galaxy admin in galaxy.ini file'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: 'app:main'
+    option: 'admin_users'
+    value: '{{ GALAXY_ADMIN_EMAIL }}'
+  when:
+    - (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+    - create_galaxy_admin|bool
+
+- name: '[release_18.**] Copy create/delete user script to {{ galaxy_custom_script_path }}'
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: 'create_galaxy_user.py.j2', dest: '{{ galaxy_custom_script_path }}/create_galaxy_user.py' }
+    - { src: 'delete_galaxy_user.py.j2', dest: '{{ galaxy_custom_script_path }}/delete_galaxy_user.py' }
+  become_user: root
+  become_method: sudo
+  when:
+    - (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+
+- name: '[release_18.**] Set Galaxy admin in galaxy.ini file'
+  command: '{{ galaxy_venv_path }}/bin/python
+            {{ galaxy_custom_script_path }}/parse_galaxy_yaml.py
+            -c "{{ galaxy_config_file }}"
+            -s galaxy
+            -o admin_users
+            -v "{{ GALAXY_ADMIN_EMAIL }}"'
+  when:
+    - (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+    - create_galaxy_admin|bool
+
+- name: Setup Galaxy administrator
+  command: "{{ galaxy_venv_path }}/bin/python {{ galaxy_custom_script_path }}/create_galaxy_user.py --user {{ GALAXY_ADMIN_EMAIL }} --password {{ GALAXY_ADMIN_PASSWORD }} --username {{ GALAXY_ADMIN_USERNAME }} -c {{ galaxy_config_file }} --key {{ GALAXY_ADMIN_API_KEY }}"
+  args:
+    chdir: '{{ galaxy_install_path }}/'
+  environment:
+    PYTHONPATH: "{{ galaxy_install_path }}/lib"
+    VIRTUAL_ENV: "{{ galaxy_venv_path }}"
+  when: create_galaxy_admin|bool
+
+#______________________________________
+# id_secret configuration
+
+- name: Generate random id_secret key
+  command: "{{ galaxy_custom_script_path }}/pwd-generator -l 32"
+  register: galaxy_id_secret
+
+- name: '[release_17.**] Galaxy id_secret key configuration'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'id_secret', value: "{{ galaxy_id_secret.stdout }}" }
+  when:
+    - (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+
+- name: '[release_18.**] Galaxy id_secret key configuration'
+  command: '{{ galaxy_venv_path }}/bin/python
+            {{ galaxy_custom_script_path }}/parse_galaxy_yaml.py
+            -c {{ galaxy_config_file }}
+            -s galaxy
+            -o id_secret
+            -v "{{ galaxy_id_secret.stdout }}"'
+  when:
+    - (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+
+#______________________________________
+# Update UCSC genome database
+
+- include: updateucsc.yml
+  when: update_ucsc

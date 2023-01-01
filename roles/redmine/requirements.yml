@@ -1,0 +1,10 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: bngsudheer.centos_base
+  - name: bngsudheer.ruby
+  - name: geerlingguy.mysql
+  - name: geerlingguy.postgresql
+collections:
+  - name: ansible.posix
+  - name: community.general

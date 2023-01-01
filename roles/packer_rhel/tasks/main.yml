@@ -1,0 +1,137 @@
+---
+- name: get the current kernel release.
+  ansible.builtin.command: uname -r
+  changed_when: false
+  register: kernel_release
+
+- debug:
+    msg: "{{ kernel_release.stdout }}"
+
+- name: set the appropriate libselinux package for RHEL 8.
+  ansible.builtin.set_fact:
+    packer_rhel_libselinux_package: python3-libselinux
+  when: ansible_distribution_major_version == '8'
+
+- name: ensure necessary packages are installed.
+  ansible.builtin.yum:
+    name:
+      - wget
+      - perl
+      - cpp
+      - gcc
+      - make
+      - bzip2
+      - kernel-headers
+      - kernel-devel
+      # - "kernel-devel-{{ kernel_release.stdout }}"
+      - "{{ packer_rhel_libselinux_package }}"
+      - elfutils-libelf-devel
+      - cifs-utils
+    state: present
+
+# Fix slow DNS.
+- name: fix slow DNS (adapted from Bento).
+  ansible.builtin.lineinfile:
+    dest: /etc/sysconfig/network
+    regexp: '^RES_OPTIONS'
+    line: 'RES_OPTIONS="single-request-reopen"'
+    state: present
+
+- name: restart network service (RHEL < 8).
+  ansible.builtin.service: name=network state=restarted
+  when: ansible_distribution_major_version < '8'
+
+# SSH daemon configuration.
+- name: configure SSH daemon.
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: '^UseDNS'
+      line: 'UseDNS no'
+    - regexp: '^GSSAPIAuthentication'
+      line: 'GSSAPIAuthentication no'
+
+- name: Ensure group "vagrant" exists
+  ansible.builtin.group:
+    name: vagrant
+    state: present
+
+# Create Vagrant users
+- name: Add the user 'vagrant' and a primary group of 'vagrant'
+  ansible.builtin.user:
+    name: vagrant
+    group: vagrant
+
+# Vagrant SSH configuration.
+- name: configure vagrant .ssh directory.
+  ansible.builtin.file:
+    path: /home/vagrant/.ssh
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0700
+
+- name: get vagrant's public key.
+  ansible.builtin.get_url:
+    url: https://github.com/mitchellh/vagrant/raw/master/keys/vagrant.pub
+    dest: /home/vagrant/.ssh/authorized_keys
+    owner: vagrant
+    group: vagrant
+    mode: 0600
+
+# VirtualBox tools installation.
+- name: check if VirtualBox is running the guest VM.
+  ansible.builtin.stat: path=/home/vagrant/.vbox_version
+  register: virtualbox_check
+
+- include_tasks: virtualbox.yml
+  when: virtualbox_check.stat.exists
+
+# VMware tools installation.
+- name: check if VMWare is running the guest VM.
+  ansible.builtin.shell: "cat /proc/scsi/scsi | grep VMware"
+  changed_when: false
+  failed_when: false
+  register: vmware_check
+
+- include_tasks: vmware.yml
+  when: vmware_check.rc == 0
+
+# Cleanup tasks.
+- name: remove unneeded packages.
+  ansible.builtin.yum:
+    name:
+      - cpp
+      - kernel-devel
+      - kernel-headers
+    state: absent
+
+- name: clean up yum.
+  ansible.builtin.command: >
+    yum clean all
+    warn=false
+  changed_when: true
+
+- name: remove any remnants of VirtualBox ISOs.
+  ansible.builtin.shell: >
+    rm -rf VBoxGuestAdditions_*.iso VBoxGuestAdditions_*.iso.?
+    warn=false
+  tags: ['skip_ansible_lint']
+
+- name: remove RedHat interface persistence (step 1).
+  ansible.builtin.command: >
+    rm -f /etc/udev/rules.d/70-persistent-net.rules
+    warn=false
+  tags: ['skip_ansible_lint']
+
+- name: remove RedHat interface persistence (step 2).
+  ansible.builtin.lineinfile:
+    dest: /etc/sysconfig/network-scripts/ifcfg-eth0
+    regexp: "{{ item }}"
+    state: absent
+  with_items:
+    - '^HWADDR'
+    - '^UUID'

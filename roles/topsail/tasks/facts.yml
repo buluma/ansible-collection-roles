@@ -1,0 +1,64 @@
+---
+# Facts Block
+- name: ensure system is prepared
+  block:
+    - name: gather ansible facts
+      ansible.builtin.setup:
+
+    - name: install sudo packages (package)
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ sudo_facts_packages.split() }}"
+  become: no
+
+- name: collect package facts
+  ansible.builtin.package_facts:
+  when:
+    - ansible_os_family not in [ "Alpine", "Suse" ]
+
+# Print main facts
+- block:
+  - name: show ansible_distribution vars
+    ansible.builtin.debug:
+      var: vars.ansible_distribution
+
+  - name: show ansible_distribution_version vars
+    ansible.builtin.debug:
+      var: vars.ansible_distribution_version
+
+  - name: show ipv4_addresses var
+    ansible.builtin.debug:
+      var: vars.ansible_all_ipv4_addresses
+
+  - name: show ansible_default_ipv4 vars
+    ansible.builtin.debug:
+      msg: "{{ vars.ansible_default_ipv4.address }}"
+
+  - name: show ansible_dns.nameservers vars
+    ansible.builtin.debug:
+      var: vars.ansible_dns.nameservers
+
+  - name: show ansible_env vars
+    ansible.builtin.debug:
+      var: vars.ansible_env
+
+  - name: show ansible_eth0 vars
+    ansible.builtin.debug:
+      var: vars.ansible_eth0
+  when:
+    - show_facts | bool
+
+# Print services facts
+- block:
+  - name: collect service_facts
+    ansible.builtin.service_facts:
+    when:
+      - ansible_os_family != "Debian"
+      - ansible_distribution_version != "NA"
+
+  - name: show ansible package vars
+    ansible.builtin.debug:
+      var: vars.packages.ansible
+  when:
+    - show_services | bool

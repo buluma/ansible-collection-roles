@@ -1,0 +1,41 @@
+---
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+    mode: 0750
+  loop:
+    - {name: 'vaultwarden_data'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy Vaultwarden'
+  community.docker.docker_swarm_service:
+    name: 'vaultwarden'
+    image: "vaultwarden/server:{{ vaultwarden_release }}"
+    env:
+      - "DOMAIN=https://{{ vaultwarden_fqdn }}"
+      - "SIGNUPS_DOMAINS_WHITELIST={{ vaultwarden_signup_whitelist }}"
+      - "SMTP_HOST={{ vaultwarden_smtp_server }}"
+      - "SMTP_PORT={{ vaultwarden_smtp_port }}"
+      - "SMTP_FROM={{ vaultwarden_smtp_from }}"
+      - "SMTP_SSL={{ vaultwarden_smtp_ssl }}"
+      - "SMTP_USERNAME={{ vaultwarden_smtp_user | default(omit, true) }}"
+      - "SMTP_PASSWORD={{ vaultwarden_smtp_password | default(omit, true) }}"
+    networks:
+      - 'traefik_backend'
+    mounts:
+      - source: "{{ docker_data_dir }}/vaultwarden_data"
+        target: '/data'
+        type: 'bind'
+    labels:
+      traefik.http.routers.vaultwarden.rule: "HostHeader(`{{ vaultwarden_fqdn }}`)"
+      traefik.http.routers.vaultwarden.tls: "true"
+      traefik.http.services.vaultwarden.loadbalancer.server.port: '80'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

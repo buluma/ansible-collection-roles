@@ -1,0 +1,132 @@
+---
+# NGINX installation and configuration recipe
+
+#______________________________________
+# CentOS 7
+
+- name: '[EL] Add NGINX repository'
+  command: 'yum-config-manager --add-repo https://depot.galaxyproject.org/yum/galaxy.repo'
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "RedHat"
+
+- name: '[EL] Install NGINX'
+  yum:
+    name: '{{ packages }}'
+    state: present
+  vars:
+    packages:
+    - openssl-devel
+    - pcre-devel
+    - nginx-galaxy
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "RedHat"
+
+#______________________________________
+# Ubuntu
+# On Ubuntu NGINX service is started by default after installation.
+# It needs to be restarted after the configuration.
+
+- name: '[Ubuntu] Add NGINX repository'
+  apt_repository:
+    repo: 'ppa:galaxyproject/nginx'
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+- name: '[Ubuntu] Prevent nginx update from Ubuntu repository'
+  copy:
+    src: 'galaxyproject-nginx-pin-700'
+    dest: '/etc/apt/preferences.d/'
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+- name: '[Ubuntu] Install NGINX'
+  apt:
+    name: '{{ packages }}'
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+    - nginx
+    - nginx-extras
+    #- nginx-extras=1.4.6-1ubuntu3.4ppa1
+    #- nginx-common=1.4.6-1ubuntu3.4ppa1
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+# Stop NGINX before configuration
+- name: Stop NGINX server
+  service:
+    name: 'nginx'
+    state: stopped
+    enabled: no
+  become_user: root
+  become_method: sudo
+  ignore_errors: yes
+
+#______________________________________
+# NGINX configuration
+
+# /etc/nginx/nginx.conf configuration
+
+- name: Include NGINX specific variables.
+  include_vars: nginx_vars.yml
+
+- name: Copy the NGINX configuration file
+  template:
+    src: 'nginx.conf.release_17.05.j2'
+    dest: '/etc/nginx/nginx.conf'
+  become_user: root
+  become_method: sudo
+  when: (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+
+- name: Copy the NGINX configuration file
+  template:
+    src: 'nginx.conf.j2'
+    dest: '/etc/nginx/nginx.conf'
+  become_user: root
+  become_method: sudo
+  when: (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+
+#______________________________________
+# NGINX configuration in galaxy.ini
+
+- name: '[release_17.**] Edit galaxy.ini'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'filter-with', value: "proxy-prefix" }
+    - { section: 'app:main', option: 'cookie_path', value: "/galaxy" }
+    - { section: 'app:main', option: 'nginx_upload_store', value: "{{ nginx_upload_store_path }}" }
+    - { section: 'app:main', option: 'nginx_upload_path', value: "/galaxy/_upload" }
+    - { section: 'app:main', option: 'nginx_x_accel_redirect_base', value: "/_x_accel_redirect" }
+    - { section: 'app:main', option: 'nginx_x_archive_files_base', value: "/_x_accel_redirect" }
+  when: (galaxy_version_number is defined) and (galaxy_version_number|float < 18.01)
+
+- name: '[release_18.**] Edit galaxy.yml'
+  command: '{{ galaxy_venv_path }}/bin/python
+            {{ galaxy_custom_script_path }}/parse_galaxy_yaml.py
+            -c "{{ galaxy_config_file }}"
+            -s "{{ item.section }}"
+            -o "{{ item.option }}"
+            -v "{{ item.value }}"'
+  with_items:
+    - { section: 'galaxy', option: 'filter-with', value: "proxy-prefix" }
+    - { section: 'galaxy', option: 'cookie_path', value: "/galaxy" }
+    - { section: 'galaxy', option: 'nginx_upload_store', value: "{{ nginx_upload_store_path }}" }
+    - { section: 'galaxy', option: 'nginx_upload_path', value: "/galaxy/_upload" } 
+    - { section: 'galaxy', option: 'nginx_x_accel_redirect_base', value: "/_x_accel_redirect" }
+    - { section: 'galaxy', option: 'nginx_x_archive_files_base', value: "/_x_accel_redirect" }
+  when: (GALAXY_VERSION == 'master') or (GALAXY_VERSION == 'dev') or (galaxy_version_number|float >= 18)
+
+- name: Create NGINX upload_store dir
+  file:
+    path: '{{ nginx_upload_store_path }}'
+    state: directory

@@ -1,0 +1,61 @@
+---
+- name: 'Ensure iPXE dependencies'
+  ansible.builtin.package:
+    name: 'ipxe-bootimgs'
+    state: 'present'
+
+- name: 'Ensure iPXE images in tftproot'
+  ansible.builtin.copy:
+    src: "/usr/share/ipxe/{{ image }}"
+    dest: "/var/lib/tftpboot/{{ image }}"
+    remote_src: true
+    owner: 'foreman-proxy'
+    group: 'root'
+    mode: 0644
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'cobbler_var_lib_t'
+  loop:
+    - "{{ (ansible_facts['distribution_major_version'] == '7') | ternary('ipxe.efi', 'ipxe-x86_64.efi') }}"
+    - 'undionly.kpxe'
+  loop_control:
+    loop_var: 'image'
+
+- name: 'Ensure DHCP settings for iPXE'
+  ansible.builtin.copy:
+    dest: '/etc/dhcp/dhcpd-ipxe.conf'
+    content: |
+      if exists user-class and option user-class = "iPXE" {
+        filename "http://{{ ansible_facts[foreman_instance_deploy_interface]['ipv4']['address'] }}{{ (foreman_server_type == 'satellite') | ternary('', ':8000') }}/unattended/iPXE?bootstrap=1";
+      } elsif option architecture = 00:06 {
+        filename "{{ (ansible_facts['distribution_major_version'] == '7') | ternary('ipxe.efi', 'ipxe-x86_64.efi') }}";
+      } elsif option architecture = 00:07 {
+        filename "{{ (ansible_facts['distribution_major_version'] == '7') | ternary('ipxe.efi', 'ipxe-x86_64.efi') }}";
+      } elsif option architecture = 00:09 {
+        filename "{{ (ansible_facts['distribution_major_version'] == '7') | ternary('ipxe.efi', 'ipxe-x86_64.efi') }}";
+      } else {
+        filename "undionly.kpxe";
+      }
+    owner: 'root'
+    group: 'dhcpd'
+    mode: 0444
+
+- name: 'Configure DHCP server for iPXE'
+  ansible.builtin.lineinfile:
+    path: '/etc/foreman-installer/custom-hiera.yaml'
+    owner: 'root'
+    group: 'root'
+    mode: 0444
+    line: 'dhcp::includes: "/etc/dhcp/dhcpd-ipxe.conf"'
+    regexp: '^dhcp::includes'
+  register: 'set_dhcp_includes'
+
+- name: 'Run foreman-installer'  # noqa no-handler
+  ansible.builtin.shell: |
+    export LANG="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+    /sbin/foreman-installer --detailed-exitcodes
+  when: set_dhcp_includes['changed']
+  register: 'installer_output'
+  changed_when: installer_output['rc'] == 2
+  failed_when: installer_output['rc'] == 1 or installer_output['rc'] >= 4

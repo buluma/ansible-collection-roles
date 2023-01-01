@@ -1,0 +1,16 @@
+---
+- name: 'Deploy Drawio'
+  community.docker.docker_swarm_service:
+    name: 'drawio'
+    image: "{{ drawio_image }}"
+    networks:
+      - 'traefik_backend'
+    labels:
+      traefik.http.routers.drawio.rule: "HostHeader(`{{ drawio_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.drawio.tls: "true"
+      traefik.http.services.drawio.loadbalancer.server.port: '8080'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null

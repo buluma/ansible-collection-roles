@@ -1,0 +1,11 @@
+---
+- name: Create envoy config file
+  ansible.builtin.template:
+    src: "envoy.yaml.j2"
+    dest: "{{ envoy_conf_path }}/envoy.yaml"
+    owner: "{{ envoy_user }}"
+    group: "{{ envoy_group }}"
+    mode: "0640"
+  notify:
+    - Restart envoy
+  when: envoy_config | length > 0

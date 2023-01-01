@@ -1,0 +1,39 @@
+---
+- name: Install nagios core dependency packages
+  package:
+    name: "{{ __nagios_packages }}"
+    state: present
+    update_cache: true
+
+- name: Install epel
+  package:
+    name: epel-release
+    state: present
+  when:
+    - "ansible_distribution == 'CentOS'"
+    - "nagios_centos_install_epel"
+    - "nagios_plugin_source_tarball is not none"
+
+- name: Install nagios plugin dependencies
+  package:
+    name: "{{ __nagios_plugin_packages }}"
+    state: present
+  when:
+    - "nagios_plugin_source_tarball is not none"
+
+- name: Install plugin dependencies (special case for CentOS 8)
+  package:
+    name: "{{ __nagios_plugin_packages }}"
+    state: present
+  when:
+    - "ansible_distribution == 'CentOS'"
+    - "ansible_distribution_major_version|int == 8"
+
+- name: Install plugin dependencies (special case for CentOS 8)
+  dnf:
+    name: "{{ __nagios_plugin_packages }}"
+    state: present
+    enablerepo: "PowerTools,epel"
+  when:
+    - "ansible_distribution == 'CentOS'"
+    - "ansible_distribution_major_version|int == 8"

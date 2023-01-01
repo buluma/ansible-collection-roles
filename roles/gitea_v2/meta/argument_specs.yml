@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Install and configure gitea on your system.
+    description: >
+      Install and configure gitea on your system.
+    author: Michael Buluma

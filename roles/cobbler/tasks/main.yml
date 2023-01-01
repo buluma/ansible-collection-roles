@@ -1,0 +1,47 @@
+---
+# tasks file for cobbler
+- name: Ensure EPEL repository is installed
+  yum:
+    pkg: epel-release
+    state: installed
+  tags: cobbler
+
+- name: Install packages
+  yum:
+    pkg: "{{ item }}"
+    state: installed
+  with_items: "{{ cobbler_packages }}"
+  tags: cobbler
+#
+# - name: Ensure httpd can talk to cobblerd
+#   seboolean:
+#     name: httpd_can_network_connect
+#     state: yes
+#     persistent: yes
+#   tags: cobbler
+
+- name: Provide main configuration file
+  template:
+    src: etc_cobbler_settings.j2
+    dest: /etc/cobbler/settings
+  notify:
+    - restart cobbler
+    # - sync cobbler
+  tags: cobbler
+
+- name: Ensure service is started
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  with_items: "{{ cobbler_services }}"
+  tags: cobbler
+
+- name: Get network boot-loaders
+  shell: cobbler get-loaders
+  args:
+    creates: /var/lib/cobbler/loaders/pxelinux.0
+  register: bootloader_results
+  tags: cobbler
+
+- debug: var=bootloader_results

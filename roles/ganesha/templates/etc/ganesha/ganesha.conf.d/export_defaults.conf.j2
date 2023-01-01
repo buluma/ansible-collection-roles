@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+EXPORT_DEFAULTS {
+    access_type = {{ ganesha_export_defaults_access_type }};
+    delegations = {{ ganesha_export_defaults_delegations }};
+    protocols   = {{ ganesha_export_defaults_protocols }};
+    sectype     = {{ ganesha_export_defaults_sectype }};
+    squash      = {{ ganesha_export_defaults_squash }};
+    transports  = {{ ganesha_export_defaults_transports }};
+}

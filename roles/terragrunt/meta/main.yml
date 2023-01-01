@@ -1,0 +1,56 @@
+galaxy_info:
+  role_name: terragrunt
+  author: buluma
+  company: ShadowNet
+  namespace: buluma
+  description: Install terragrunt on your systems.
+  license: Apache-2.0
+
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "7"
+    - name: Fedora
+      versions:
+        - "36"
+        - "35"
+        - "34"
+        - "33"
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Amazon
+      versions:
+        - all
+    - name: opensuse
+      versions:
+        - all
+    - name: SLES
+      versions:
+        - all
+    - name: ArchLinux
+      versions:
+        - all
+    - name: Alpine
+      versions:
+        - all
+    - name: MacOSX
+      versions:
+        - "10.11"
+        - "10.12"
+        - "10.13"
+
+  galaxy_tags:
+    - system
+    - packaging
+    - cloud
+    - terragrunt
+    - gruntwork
+
+dependencies: []

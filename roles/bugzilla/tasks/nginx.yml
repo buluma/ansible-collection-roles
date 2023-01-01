@@ -1,0 +1,40 @@
+---
+- name: Buzilla | Install nginx
+  ansible.builtin.apt:
+    pkg: nginx
+    update_cache: yes
+    cache_valid_time: 86400
+    state: present
+  when: bz_webserver == "nginx"
+
+- name: Buzilla | Nginx | Figure out PHP FPM socket location
+  ansible.builtin.shell: dpkg -l | grep php-fpm  | awk '{print $3}' | grep -o '[0-9]\.[0-9]' | head -n 1
+  register: 'php_ver'
+  run_once: true
+
+- name: Start service php{{ php_ver.stdout }}
+  ansible.builtin.service:
+    name: "php{{ php_ver.stdout }}-fpm"
+    state: started
+
+- name: Start service nginx
+  ansible.builtin.service:
+    name: "nginx"
+    state: started
+
+- name: Buzilla | Nginx | Copy virtual host configuration file
+  ansible.builtin.template:
+    src: "nginx-vhost.j2"
+    dest: "/etc/nginx/sites-available/{{ bz_sitename }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Buzilla | Nginx | Symlink virtual host configuration file from sites-available to sites-enabled
+  ansible.builtin.file:
+    state: link
+    src: "/etc/nginx/sites-available/{{ bz_sitename }}"
+    dest: "/etc/nginx/sites-enabled/{{ bz_sitename }}"
+    owner: root
+    group: root
+    mode: 0644

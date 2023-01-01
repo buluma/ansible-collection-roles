@@ -1,0 +1,82 @@
+---
+- name: 'Check input'
+  ansible.builtin.assert:
+    that:
+      - foreman_deploy_dns_scenario in foreman_deploy_dns_scenarios
+      - foreman_deploy_dhcp_scenario in foreman_deploy_dhcp_scenarios
+
+- name: 'Get Package Versions'
+  ansible.builtin.package_facts:
+
+- name: 'Retrieve Foreman instance network settings'
+  ansible.builtin.set_fact:
+    foreman_instance_network_settings: "{{ foreman_deploy_networks | selectattr('smart_proxy', 'equalto', ansible_facts['fqdn']) }}"
+
+- name: 'Set up prerequisites for nsupdate scenario'
+  block:
+    - name: 'Check permissions on rndc key'
+      ansible.builtin.file:
+        path: "{{ foreman_deploy_dns_rndc_key }}"
+        owner: 'root'
+        group: 'foreman-proxy'
+        mode: 0640
+        setype: 'dnssec_t'
+        serole: 'object_r'
+
+    - name: 'Ensure nsupdate is installed'
+      ansible.builtin.package:
+        name: 'bind-utils'
+        state: 'present'
+  when: foreman_deploy_dns_scenario == 'nsupdate'
+
+- name: 'Configure Foreman instance for deployment'
+  ansible.builtin.shell: |
+    export LANG="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+    /usr/sbin/foreman-installer \
+    {{ lookup('vars', 'foreman_dns_scenario_' + foreman_deploy_dns_scenario ) }}
+    {{ lookup('vars', 'foreman_dhcp_scenario_' + foreman_deploy_dhcp_scenario ) }}
+    --foreman-proxy-templates true \
+    --foreman-trusted-proxies {{ ansible_facts[foreman_instance_deploy_interface]['ipv4']['address'] }} \
+    --foreman-proxy-httpboot true \
+    --foreman-proxy-http true \
+    --foreman-proxy-httpboot-listen-on both \
+    --foreman-proxy-templates-listen-on both \
+    {{ (ansible_facts['packages']['foreman-proxy-content'] is defined) | ternary('--enable-foreman-proxy-plugin-discovery', '--enable-foreman-plugin-discovery') }} \
+    --foreman-proxy-tftp true \
+    --foreman-proxy-tftp-managed true \
+    --foreman-proxy-tftp-servername {{ ansible_facts[foreman_instance_deploy_interface]['ipv4']['address'] }} \
+    --detailed-exitcodes
+  register: 'installer_output'
+  changed_when: installer_output['rc'] == 2
+  failed_when: installer_output['rc'] == 1 or installer_output['rc'] >= 4
+  when: foreman_deploy_run_installer
+
+- name: 'Set environment facts (placeholder)'
+  ansible.builtin.set_fact:
+    proxy_env:
+      empty_var: 'Just_a_placeholder'
+  when: foreman_http_proxy_policy == 'none'
+
+- name: 'Set environment facts (http_proxy)'
+  ansible.builtin.set_fact:
+    proxy_env:
+      http_proxy: "{{ foreman_http_proxy_url }}"
+      https_proxy: "{{ foreman_http_proxy_url }}"
+      no_proxy: "{{ foreman_http_proxy_exceptions | join(',') }}"
+  when: foreman_http_proxy_policy == 'global_default_http_proxy'
+
+- name: 'Ensure Discovery Image present (Foreman)'
+  ansible.builtin.unarchive:
+    src: "http://downloads.theforeman.org/discovery/releases/{{ foreman_discovery_image_release }}/fdi-image-latest.tar"
+    dest: '/var/lib/tftpboot/boot'
+    remote_src: true
+  when: foreman_server_type == 'foreman'
+  environment: "{{ proxy_env }}"
+
+- name: 'Ensure Discovery Image present (Satellite)'
+  ansible.builtin.yum:
+    name: 'foreman-discovery-image'
+    state: 'present'
+    disable_plugin: 'foreman-protector'
+  when: ('satellite' in foreman_server_type)

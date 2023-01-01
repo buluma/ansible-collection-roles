@@ -1,0 +1,45 @@
+---
+- import_tasks: precheck.yml
+  tags:
+    - always
+
+- name: Ensure that modify_dir_path is defined
+  assert:
+    that:
+      - modify_dir_path is defined
+      - modify_dir_path | length > 0
+
+- name: Create Dockerfile tempfile name
+  tempfile:
+    path: "{{ modify_dir_path }}"
+    prefix: Dockerfile.
+  register: dockerfile
+
+- name: Copy Dockerfile to {{ dockerfile.path }}
+  copy:
+    src: "{{ modify_dir_path }}/Dockerfile"
+    dest: "{{ dockerfile.path }}"
+    remote_src: true
+
+- name: Replace FROM directive
+  lineinfile:
+    path: "{{ dockerfile.path }}"
+    regexp: "^FROM "
+    line: "FROM {{ source_image }}"
+
+- name: Add LABEL modified_append_tag={{ modified_append_tag }}
+  lineinfile:
+    path: "{{ dockerfile.path }}"
+    insertafter: "^FROM "
+    line: "LABEL modified_append_tag={{ modified_append_tag }}"
+
+- name: Modify image from {{ modify_dir_path }}
+  command: >-
+    buildah bud
+    --format docker
+    --tag {{ target_image | default(source_image) }}{{ modified_append_tag }}
+    --file {{ dockerfile.path }} --network host ./
+  # FIXME: buildah should not required root commands to build an image
+  become: true
+  args:
+    chdir: "{{ modify_dir_path }}"

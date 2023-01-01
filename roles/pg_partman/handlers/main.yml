@@ -1,0 +1,7 @@
+---
+# handlers file for pg_partman
+
+- name: Restart postgresql
+  ansible.builtin.systemd:
+    name: postgresql-10
+    state: restarted

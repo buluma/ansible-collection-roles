@@ -1,0 +1,39 @@
+---
+# Update ucsc genome database
+
+#______________________________________
+# Default Update via updateucsc.sh script
+
+- name: Create updateucsc script
+  copy:
+    src: '{{ galaxy_install_path}}/cron/updateucsc.sh.sample'
+    dest: '{{ galaxy_install_path}}/cron/updateucsc.sh'
+    mode: a+x
+    remote_src: true
+
+- name: Change PYTHONPATH directory
+  lineinfile:
+    dest: '{{ galaxy_install_path}}/cron/updateucsc.sh'
+    regexp: '#GALAXY=/galaxy/path'
+    line: 'GALAXY={{ galaxy_install_path }}'
+
+- name: run updateucsc monthly cron job on the first sunday
+  cron:
+    name: updateucsc
+    minute: 0
+    hour: 0
+    weekday: 7
+    job: '[ $(date +\%d) -le 07 ] && {{ galaxy_install_path }}/updateucsc.sh'
+
+#______________________________________
+# Fast Update
+
+- name: Copy ucsc genome idexes
+  copy:
+    src: 'ucsc.tar.gz'
+    dest: '/tmp/ucsc.tar.gz'
+  when: fast_update
+
+- name: Copy ucsc genome indexes
+  unarchive: src=/tmp/ucsc.tar.gz dest=/home/galaxy/galaxy/tool-data/shared/ remote_src=yes
+  when: fast_update

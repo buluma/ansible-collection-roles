@@ -1,0 +1,36 @@
+---
+# tasks file for install terragrunt on Darwin system
+
+- name: get the latest published release for the repository
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/gruntwork-io/terragrunt/releases/latest
+    return_content: yes
+  register: terragrunt_index
+  check_mode: no
+  when: terragrunt_version == "latest"
+
+- name: filter the latest terragrunt version.
+  ansible.builtin.set_fact:
+    terragrunt_version_to_install: "{{ (terragrunt_index.content | from_json).name }}"
+  when: terragrunt_version == 'latest'
+
+- name: use the specified terragrunt version when latest var is not define.
+  ansible.builtin.set_fact:
+    terragrunt_version_to_install: "{{ terragrunt_version }}"
+  when: terragrunt_version != 'latest'
+
+# avoid downloading terragrunt every time
+- name: check if terragrunt is present with the right version.
+  ansible.builtin.command: "{{ terragrunt_path }}/terragrunt --version"
+  register: terragrunt_installed_version
+  ignore_errors: yes
+  changed_when: false
+  failed_when: false
+
+- name: install terragrunt.
+  ansible.builtin.get_url:
+    url: "https://github.com/gruntwork-io/terragrunt/releases/download/{{ terragrunt_version_to_install }}/terragrunt_darwin_{{ base_arch[ansible_architecture] | default('amd64') }}"
+    dest: "{{ terragrunt_path }}terragrunt"
+    mode: u+x,g+x,o+x
+    force: yes
+  when: terragrunt_version_to_install not in terragrunt_installed_version.stdout | default('empty')

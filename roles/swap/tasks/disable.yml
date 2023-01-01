@@ -1,0 +1,16 @@
+---
+- name: Disable swap (if configured).
+  ansible.builtin.command: swapoff -a
+  changed_when: false
+  tags: ['skip_ansible_lint']
+
+- name: Ensure swap file doesn't exist (if configured).
+  ansible.builtin.file:
+    path: "{{ swap_file_path }}"
+    state: absent
+
+- name: Disable swappiness.
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: 0
+    state: present

@@ -1,0 +1,13 @@
+---
+# ©Copyright 2015 Hewlett-Packard Development Company, L.P.
+
+monasca_checks: {}
+monasca_agent_system_only: False
+monasca_agent_custom_plugin_repos: []
+monasca_agent_git_repo: https://git.openstack.org/openstack/monasca-agent
+monasca_agent_systemd_unit_filename: monasca-agent.target
+agent_reconfigure_script: /usr/local/bin/monasca-reconfigure
+skip_install: False
+monasca_virtualenv_dir: /opt/monasca
+pip_conf_dir: ~/.pip
+run_mode: Deploy

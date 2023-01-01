@@ -1,0 +1,21 @@
+---
+
+# The location of the swap file on the server.
+swap_file_path: /swapfile
+
+# How large (in mebibytes) to make the swap file.
+swap_file_size_mb: '512'
+
+# The vm.swappiness value to be configured in sysconfig.
+swap_swappiness: '60'
+
+# Controls the tendency of the kernel to reclaim the memory used for caching of VFS caches, versus pagecache and swap
+swap_vfs_cache_pressure: '50'
+
+# If you wish to remove your swapfile, and disable swap, set this to absent.
+swap_file_state: present
+
+# The command used to create the swap file.
+swap_file_create_command: "dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_file_size_mb }}"
+
+swap_test_mode: false

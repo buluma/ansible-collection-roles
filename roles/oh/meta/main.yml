@@ -1,0 +1,26 @@
+---
+galaxy_info:
+  author: ctorgalson
+  role_name: oh_my_zsh
+  namespace: buluma
+  description: Installs and configures oh-my-zsh for one or more users on macOS or Ubuntu.
+
+  license: MIT
+
+  min_ansible_version: "1.9"
+
+  platforms:
+    - name: MacOSX
+      versions:
+        - "10.12"
+        - "10.13"
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+
+  galaxy_tags:
+    - zsh
+    - ohmyzsh
+
+dependencies: []

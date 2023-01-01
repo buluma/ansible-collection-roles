@@ -1,0 +1,57 @@
+---
+- name: Download envoy binary
+  ansible.builtin.get_url:
+    url: "{{ envoy_download_url }}"
+    dest: "{{ envoy_download_path }}"
+    checksum: "{{ envoy_checksum | default(omit) }}"
+    mode: "0644"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+  when:
+    - not envoy_is_installed.stat.exists or envoy_version not in envoy_current_version.stdout
+
+- name: Unpack envoy binaries
+  ansible.builtin.unarchive:
+    src: "{{ envoy_download_path }}"
+    dest: "{{ envoy_unarchive_dest }}"
+    creates: "{{ envoy_unarchive_creates }}"
+    remote_src: true
+  when:
+    - not envoy_is_installed.stat.exists or envoy_version not in envoy_current_version.stdout
+
+- name: Delete existing version if it's different.
+  ansible.builtin.file:
+    path: "{{ envoy_bin_path }}/envoy"
+    state: absent
+  when:
+    - envoy_is_installed.stat.exists
+    - envoy_version not in envoy_current_version.stdout
+
+- name: Propagate envoy binary
+  ansible.builtin.copy:
+    src: "{{ envoy_unarchive_creates }}"
+    dest: "{{ envoy_bin_path }}/envoy"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+    remote_src: true
+  notify:
+    - Restart envoy
+  when:
+    - not envoy_is_installed.stat.exists or envoy_version not in envoy_current_version.stdout
+
+- name: Create systemd service unit
+  ansible.builtin.template:
+    src: envoy.systemd.j2
+    dest: "/etc/systemd/system/envoy.service"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart envoy
+  when:
+    - envoy_systemd

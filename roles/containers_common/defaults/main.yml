@@ -1,0 +1,31 @@
+---
+
+# Used to change the name of the default AppArmor profile of container engine.
+containers_common_containers_apparmor_profile: ""
+
+# Path to the seccomp.json profile which is used as the default seccomp profile
+# for the runtime.
+containers_common_containers_seccomp_profile: "/usr/share/containers/seccomp.json"
+
+# Default OCI runtime.
+containers_common_engine_runtime: "{{ _containers_common_engine_runtime }}"
+
+# Cgroup management implementation used for the runtime.
+# Valid options "systemd" or "cgroupfs".
+containers_common_engine_cgroup_manager: "{{ _containers_common_engine_cgroup_manager }}"
+
+# Default Storage Driver.
+containers_common_storage_driver: "overlay"
+
+# Temporary storage location.
+containers_common_storage_runroot: "/run/containers/storage"
+
+# Primary Read/Write location of container storage.
+containers_common_storage_graphroot: "/var/lib/containers/storage"
+
+# Path to an helper program to use for mounting the file system instead of
+# mounting it directly.
+containers_common_storage_options_overlay_mount_program: "/usr/bin/fuse-overlayfs"
+
+# mountopt specifies comma separated list of extra mount options.
+containers_common_storage_options_overlay_mountopt: "nodev"

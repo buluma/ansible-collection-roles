@@ -1,0 +1,73 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'mediawiki_backend'
+    driver: 'overlay'
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'mediawiki_db', owner: '999'}
+    - {name: 'mediawiki_data/images', owner: '33'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Check if LocalSettings.php is present'
+  file:
+    path: "{{ docker_data_dir }}/mediawiki_data/LocalSettings.php"
+    state: 'touch'
+    owner: '1000'
+    group: '1000'
+    mode: 0644
+    access_time: 'preserve'
+    modification_time: 'preserve'
+
+- name: 'Deploy MariaDB for Mediawiki'
+  community.docker.docker_swarm_service:
+    name: 'mediawiki_mariadb'
+    image: 'mariadb'
+    env:
+      - "MYSQL_ROOT_PASSWORD={{ db_root_password }}"
+      - 'MYSQL_DATABASE=mediawiki'
+      - 'MYSQL_USER=mediawiki'
+      - "MYSQL_PASSWORD={{ mediawiki_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/mediawiki_db"
+        target: '/var/lib/mysql'
+        type: 'bind'
+    networks:
+      - 'mediawiki_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Mediawiki'
+  community.docker.docker_swarm_service:
+    name: 'mediawiki'
+    image: "{{ mediawiki_image }}"
+    networks:
+      - 'mediawiki_backend'
+      - 'traefik_backend'
+    mounts:
+      - source: "{{ docker_data_dir }}/mediawiki_data/LocalSettings.php"
+        target: '/var/www/html/LocalSettings.php'
+        type: 'bind'
+      - source: "{{ docker_data_dir }}/mediawiki_data/images"
+        target: '/var/www/html/images'
+        type: 'bind'
+    labels:
+      traefik.http.routers.mediawiki.rule: "HostHeader(`{{ mediawiki_app_name }}.{{ traefik_domain }}`)"
+      traefik.http.routers.mediawiki.tls: "true"
+      traefik.http.services.mediawiki.loadbalancer.server.port: '80'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

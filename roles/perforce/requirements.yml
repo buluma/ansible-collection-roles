@@ -1,0 +1,4 @@
+---
+roles:
+  - name: buluma.bootstrap
+collections:

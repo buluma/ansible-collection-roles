@@ -1,0 +1,79 @@
+---
+#______________________________________
+# Add uWSGI section to galaxy.ini file
+# Galaxy < release_18.01
+
+- name: '[release_17.**] Copy uwsgi section to galaxy.ini'
+  template:
+    src: 'uwsgi.ini.j2'
+    dest: '/tmp/uwsgi.ini.sample'
+
+- name: '[release_17.**] Copy uwsgi section to galaxy.ini'
+  shell: 'cat /tmp/uwsgi.ini.sample >> {{ galaxy_config_file }}'
+
+- name: '[release_17.**] uWSGI section config'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'uwsgi', option: 'master', value: 'True' }
+    - { section: 'uwsgi', option: 'processes', value: '{{ uwsgi_processes }}' }
+    - { section: 'uwsgi', option: 'socket', value: '{{ uwsgi_socket_port }}' }
+    - { section: 'uwsgi', option: 'stats', value: '{{ uwsgi_stats_port }}' }
+    - { section: 'uwsgi', option: 'pythonpath', value: '{{ galaxy_install_path }}/lib' }
+    - { section: 'uwsgi', option: 'pythonhome', value: '{{ galaxy_venv_path }}' }
+    - { section: 'uwsgi', option: 'threads', value: '{{ uwsgi_threads }}' }
+    - { section: 'uwsgi', option: 'logto', value: '{{ uwsgi_errorlog }}' }
+    - { section: 'uwsgi', option: 'no-orphans', value: 'True' }
+    - { section: 'uwsgi', option: 'buffer-size', value: '{{ uwsgi_buffer_size }}' }
+
+- name: '[release_17.**] uWSGI options for performance and robustness'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { section: 'uwsgi', option: 'single-interpreter', value: '{{ uwsgi_single_interpreter }}' }
+    - { section: 'uwsgi', option: 'thunder-lock', value: '{{ uwsgi_thunder_lock }}' }
+    - { section: 'uwsgi', option: 'harakiri', value: '{{ uwsgi_harakiri_value }}' }
+  when: enable_robustness_features|bool
+
+- name: '[VM][release_17.**] Set at least 2 uWSGI wn if proc<=2'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: 'uwsgi'
+    option: 'processes'
+    value: '2'
+  when: ansible_processor_vcpus <= 2
+
+- name: '[VM][release_17.**] Set 8 uWSGI wn if proc>8'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: 'uwsgi'
+    option: 'processes'
+    value: '8'
+  when: ansible_processor_vcpus > 8
+
+- name: '[Docker][release_17.**] Force processes to 2 on Docker for automated build' 
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: 'uwsgi'
+    option: 'processes'
+    value: '2'
+  when: ansible_virtualization_type == "docker"
+
+#______________________________________
+# Edit galaxy.ini file
+
+- name: '[release_17.**] Edit galaxy.ini'
+  ini_file:
+    dest: '{{ galaxy_config_file }}'
+    section: '{{ item.section }}'
+    option: '{{ item.option }}'
+    value: ' {{item.value }}'
+  with_items:
+    - { section: 'app:main', option: 'static_enabled', value: 'False' }
+    - { section: 'app:main', option: 'track_jobs_in_database', value: 'True' }

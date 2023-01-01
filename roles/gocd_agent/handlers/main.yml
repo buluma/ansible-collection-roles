@@ -1,0 +1,22 @@
+---
+# handlers file for gocd_agent
+- name: start go agents
+  become: yes
+  service:
+    name: go-{{ item }}
+    state: started
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: stop go agents
+  become: yes
+  service:
+    name: go-{{ item }}
+    state: stopped
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: restart go agents
+  become: yes
+  service:
+    name: go-{{ item }}
+    state: restarted
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"

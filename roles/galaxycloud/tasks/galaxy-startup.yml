@@ -1,0 +1,109 @@
+---
+# Galaxy startup recipe
+
+- include: galaxyctl.yml
+
+- name: Copy Galaxy startup script
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: '{{ item.mode }}'
+  with_items:
+    - { src: 'galaxy_startup.j2', dest: '{{ galaxy_custom_script_path }}/galaxy-startup', mode: 'a+x' }
+  become_user: root
+  become_method: sudo
+
+- name: '[EL/Ubuntu 16.04] Copy systemd scripts'
+  template:
+    src: 'galaxy.service.j2'
+    dest: '/etc/systemd/system/galaxy.service'
+  when: ansible_os_family == "RedHat" or (ansible_os_family == "Debian" and ansible_distribution_version == "16.04")
+  become_user: root
+  become_method: sudo
+
+- name: '[Ubuntu 14.04] Copy init.d scripts'
+  template:
+    src: 'galaxy.init.j2'
+    dest: '/etc/init.d/galaxy'
+    mode: a+x
+  when: ansible_os_family == "Debian" and ansible_distribution_version == "14.04"
+  become_user: root
+  become_method: sudo
+
+#______________________________________
+# Stop services
+
+- name: '[EL] Stop PostgreSQL server'
+  shell: '/usr/pgsql-{{ postgresql_version }}/bin/pg_ctl -D {{ postgresql_pgdata }} stop'
+  become: yes
+  become_user: postgres
+  when: ansible_os_family == "RedHat"
+
+- name: '[Ubuntu] Stop PostgreSQL server'
+  shell: '/etc/init.d/postgresql stop'
+  become_user: root
+  become_method: sudo
+  when: ansible_os_family == "Debian"
+
+#______________________________________
+# Start Galaxy on VM
+
+- name: '[VM] Enable and start PostgreSQL server'
+  service:
+    name: '{{ postgresql_service_name }}'
+    enabled: yes
+    state: started
+  become_user: root
+  become_method: sudo
+  when: supervisor_manage_postgres == "False"
+
+- name: '[VM] Wait PostgreSQL is up'
+  wait_for:
+    host: 0.0.0.0
+    port: '{{ galaxy_db_port }}'
+    timeout: 10
+  when: ansible_virtualization_type != "docker"
+
+- name: '[VM] Start NGINX server'
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+  become_user: root
+  become_method: sudo
+  when: supervisor_manage_nginx == "False"
+
+- name: '[VM] Wait NGINX is up'
+  wait_for:
+    host: 0.0.0.0
+    port: 80
+    timeout: 10
+  when: ansible_virtualization_type != "docker"
+
+- name: '[VM] Enable and start the proftpd server'
+  service:
+    name: proftpd
+    enabled: yes
+    state: started
+  become_user: root
+  become_method: sudo
+  when: supervisor_manage_proftpd == "False"
+
+- name: '[VM] Wait proftpd is up'
+  wait_for:
+    host: 0.0.0.0
+    port: '{{ proftpd_ftp_port }}'
+    timeout: 10
+  when: ansible_virtualization_type != "docker"
+
+- name: '[VM] Start Galaxy'
+  shell: "{{ galaxy_custom_script_path }}/galaxy-startup >> /tmp/galaxy-startup.log"
+  become_user: root
+  become_method: sudo
+  when: ansible_virtualization_type != "docker"
+
+- name: '[VM] Update Conda'
+  shell: '{{ conda_prefix }}/bin/python {{ conda_prefix }}/bin/conda update conda'
+  become_user: root
+  become_method: sudo
+  when: ansible_virtualization_type != "docker"

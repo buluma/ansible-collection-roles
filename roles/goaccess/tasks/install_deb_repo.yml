@@ -1,0 +1,14 @@
+---
+# tasks file of ansible-role jonaspammer.goaccess
+
+- name: Add GoAccess's APT signing key.
+  ansible.builtin.apt_key:
+    url: "https://deb.goaccess.io/gnugpg.key"
+    state: present
+
+- name: Add GoAccess's APT repository to system repository list and update cache.
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/goaccess.gpg] https://deb.goaccess.io/ {{ ansible_distribution_release }} main"
+    filename: goaccess
+    state: present
+    update_cache: true

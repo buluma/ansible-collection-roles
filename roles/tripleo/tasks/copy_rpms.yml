@@ -1,0 +1,20 @@
+---
+- name: List RPMs
+  find:
+    paths: "{{ rpms_path }}"
+    patterns: "^.*?\\.rpm$"
+    use_regex: true
+  when: rpms_path is defined
+  register: context_rpms
+
+- name: Set rpms_list
+  set_fact:
+    rpms_list: "{{  context_rpms.files|json_query('[*].path') }}"
+  when: rpms_path is defined
+
+- name: Copy RPMs to context dir
+  copy:
+    src: "{{ item }}"
+    dest: "{{ modify_dir_path }}"
+  with_list: "{{ rpms_list }}"
+  when: rpms_path is defined

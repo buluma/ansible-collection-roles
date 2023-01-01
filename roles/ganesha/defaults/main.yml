@@ -1,0 +1,19 @@
+---
+# defaults file for hswong3i.ganesha
+
+ganesha_cacheinode_attr_expiration_time: "60"
+ganesha_export_defaults_access_type: "rw"
+ganesha_export_defaults_delegations: "rw"
+ganesha_export_defaults_protocols: "4"
+ganesha_export_defaults_sectype: "sys"
+ganesha_export_defaults_squash: "no_root_squash"
+ganesha_export_defaults_transports: "tcp"
+ganesha_nfs_core_param_clustered: "true"
+ganesha_nfs_core_param_drc_disabled: "false"
+ganesha_nfs_core_param_enable_fast_stats: "true"
+ganesha_nfs_core_param_enable_nlm: "false"
+ganesha_nfs_core_param_enable_rquota: "false"
+ganesha_nfs_core_param_nfs_port: "2049"
+ganesha_nfs_core_param_nfs_protocols: "4"
+ganesha_nfsv4_delegations: "true"
+ganesha_nfsv4_graceless: "true"

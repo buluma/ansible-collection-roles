@@ -1,0 +1,9 @@
+---
+# tasks file for nsswitch
+- name: deploy nsswitch.conf
+  ansible.builtin.template:
+    src: '{{ lookup("first_found", __nsswitch_template) }}'
+    dest: /etc/nsswitch.conf
+    owner: root
+    group: root
+    mode: 0644

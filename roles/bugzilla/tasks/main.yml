@@ -1,0 +1,101 @@
+---
+# tasks file for bugzilla
+- name: Update Cache on Debian.
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == 'Debian'
+
+- name: Install php
+  apt:
+    pkg: ['php-pear', 'php-fpm', 'php-dev', 'php-zip', 'php-curl',
+          'php-xmlrpc', 'php-gd', 'php-mysql', 'php-mbstring', 'php-xml']
+    update_cache: yes
+    cache_valid_time: 86400
+    state: present
+
+# restore later
+- include_tasks: nginx.yml
+  when: bz_webserver == "nginx"
+
+- include_tasks: apache.yml
+  when: bz_webserver == "apache"
+
+- include_tasks: setup-mysql.yml
+  when: bz_webserver == "apache"
+
+- name: Create /var/www/localhost directory if it does not exist
+  ansible.builtin.file:
+    path: /var/www/localhost
+    state: directory
+    mode: '0755'
+
+- name: extract bugzilla archive in {{ bz_install_dir }}
+  ansible.builtin.unarchive:
+    src: "https://ftp.mozilla.org/pub/mozilla.org/webtools/bugzilla-{{ bz_version }}.tar.gz"
+    dest: "{{ bz_install_dir }}"
+    remote_src: yes
+
+- name: verify extract
+  command: |
+    ls -lh "{{ bz_install_dir }}"
+  register: extract_file
+
+# - debug: var=extract_file.stdout_lines
+
+- name: move bugzilla extract
+  command: |
+    mv * "{{ bz_install_dir }}"/bugzilla-5.0.6 /var/www/html/
+  register: extract_file_move
+  ignore_errors: true
+
+# - debug: var=extract_file_move.stdout_lines
+
+- name: verify move
+  command: |
+    ls -la "{{ bz_install_dir }}"
+  register: extract_file_move_results
+
+# - debug: var=extract_file_move_results.stdout_lines
+
+- name: install perl and dependencies
+  command: |
+    apt install -y build-essential perl libappconfig-perl libdate-calc-perl libtemplate-perl libmime-tools-perl build-essential libdatetime-timezone-perl libdatetime-perl libemail-sender-perl libemail-mime-perl libemail-mime-perl libdbi-perl libdbd-mysql-perl libcgi-pm-perl libmath-random-isaac-perl libmath-random-isaac-xs-perl libapache2-mod-perl2 libapache2-mod-perl2-dev libchart-perl libxml-perl libxml-twig-perl perlmagick libgd-graph-perl libtemplate-plugin-gd-perl libsoap-lite-perl libhtml-scrubber-perl libjson-rpc-perl libdaemon-generic-perl libtheschwartz-perl libtest-taint-perl libauthen-radius-perl libfile-slurp-perl libencode-detect-perl libmodule-build-perl libnet-ldap-perl libfile-which-perl libauthen-sasl-perl libfile-mimeinfo-perl libhtml-formattext-withlinks-perl libgd-dev graphviz sphinx-common rst2pdf libemail-address-perl libemail-reply-perl libmariadb-dev-compat libmariadb-dev
+
+# - name: check system
+#   command: /usr/bin/perl install-module.pl --all
+
+- name: check /var/www/html/localconfig
+  command: cat /var/www/html/localconfig
+  register: localconfig_results
+
+- debug: var=localconfig_results.stdout_lines
+
+- name: Update localconfig
+  lineinfile:
+    path: /var/www/html/localconfig
+    regexp: '^$db_pass'
+    line: '$db_pass="YourStrongPasswordHere";'
+
+- name: Update localconfig
+  lineinfile:
+    path: /var/www/html/localconfig
+    regexp: '^$db_user'
+    line: '$db_user = "bugzilla";'
+
+- name: check /var/www/html/localconfig
+  command: cat /var/www/html/localconfig
+  register: localconfig_results2
+
+- debug: var=localconfig_results2
+
+- name: ./checksetup.pl
+  command: ./checksetup.pl
+  args:
+    chdir: "{{ bz_install_dir }}"
+
+- name: check /var/www/html/localconfig
+  command: cat /var/www/html/localconfig
+  register: localconfig_results
+
+- debug: var=localconfig_results

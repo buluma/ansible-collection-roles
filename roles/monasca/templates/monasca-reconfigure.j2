@@ -1,0 +1,23 @@
+#!/bin/sh
+'{{ monasca_virtualenv_dir }}/bin/monasca-setup' \
+    {% if monasca_user is defined %} --user '{{ monasca_user }}' {% endif %} \
+    -u '{{ monasca_agent_user }}' \
+    -p '{{ monasca_agent_password }}' \
+    {% if monasca_agent_service is defined %} -s '{{ monasca_agent_service }}' {% endif %} \
+    --keystone_url '{{ keystone_url }}' \
+    --project_name '{{ monasca_agent_project }}' \
+    {% if monasca_api_url is defined %} --monasca_url '{{ monasca_api_url }}' {% endif %} \
+    {% if monasca_agent_dimensions is defined %} --dimensions '{{ monasca_agent_dimensions }}' {% endif %} \
+    {% if monasca_agent_check_frequency is defined %} --check_frequency '{{ monasca_agent_check_frequency }}' {% endif %} \
+    {% if monasca_agent_system_only %} --system_only {% endif %} \
+    {% if monasca_log_level is defined %} --log_level '{{ monasca_log_level }}' {% endif %} \
+    {% if monasca_endpoint_type is defined %} --endpoint_type '{{ monasca_endpoint_type }}' {% endif %} \
+    {% if monasca_project_domain_name is defined %} --project_domain_name '{{ monasca_project_domain_name }}' {% endif %} \
+    {% if monasca_project_domain_id is defined %} --project_domain_id '{{ monasca_project_domain_id }}' {% endif %} \
+    {% if monasca_region_name is defined %} --region_name '{{ monasca_region_name }}' {% endif %} \
+    {% if monasca_service_type is defined %} --service_type '{{ monasca_service_type }}' {% endif %} \
+    {% if monasca_user_domain_name is defined %} --user_domain_name '{{ monasca_user_domain_name }}' {% endif %} \
+    {% if monasca_user_domain_id is defined %} --user_domain_id '{{ monasca_user_domain_id }}' {% endif %} \
+    {% if monasca_skip_detection_plugins is defined %} --skip_detection_plugins '{{ monasca_skip_detection_plugins }}' {% endif %} \
+    {% if monasca_agent_statsd_aggregation_interval is defined %} --monasca_statsd_interval '{{ monasca_agent_statsd_aggregation_interval }}' {% endif %} \
+    --overwrite

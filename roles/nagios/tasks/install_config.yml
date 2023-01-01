@@ -1,0 +1,115 @@
+---
+- name: Set the src file
+  set_fact:
+    __src_file: >-
+      {%- if (nagios_config is mapping) and
+             ('config' not in nagios_config) -%}
+        {{ nagios_config.src }}
+      {%- elif (nagios_config is not mapping) -%}
+        {{ nagios_config }}
+      {%- endif -%}
+
+- name: Stat local file
+  stat:
+    path: "{{ __src_file }}"
+  register: src_st
+  delegate_to: localhost
+  become: false
+
+- name: Fail if the src file can't be found
+  fail:
+    msg: "No local file matching {{ __src_file }} could be found!"
+  when:
+    - "'config' not in nagios_config"
+    - "src_st is defined"
+    - "not src_st.stat.exists"
+
+- name: Get the full destination path
+  set_fact:
+    __dest_path: >-
+      {%- if 'dest' in nagios_config -%}
+        {%- if nagios_config.dest.startswith('/') -%}
+          {{ nagios_config.dest }}
+        {%- else -%}
+          {{ nagios_config_dir + '/' + nagios_config.dest }}
+        {%- endif -%}
+      {%- else -%}
+        {{ nagios_config_dir }}/{{ __src_file | basename }}
+      {%- endif -%}
+
+- name: Stat the dest file
+  stat:
+    path: "{{ __dest_path }}"
+  register: dest_st
+
+- name: Stat the dest dir
+  stat:
+    path: >-
+      {%- if (
+              'config' in nagios_config or
+              (
+                (src_st is defined) and
+                (src_st is not none) and
+                (src_st.stat.isdir)
+              )
+          ) -%}
+        {{ __dest_path }}
+      {%- else -%}
+        {{ __dest_path | dirname }}
+      {%- endif -%}
+  register: dest_dir_st
+
+- name: >-
+    If 'src' is a directory, create and/or update the directory ownership,
+    otherwise if 'src' is a file, create the directory if it doesn't exist
+  file:
+    path: "{{ __src_file }}"
+    state: directory
+    mode: "{{ nagios_config.dirmode | default(nagios_default_config_dir_mode) }}"
+    owner: "{{ nagios_config.owner | default(nagios_user) }}"
+    group: "{{ nagios_config.group | default(nagios_group) }}"
+  when:
+    - "__src_file is defined"
+    - "__src_file is not none"
+    - "'config' not in nagios_config"
+    - >-
+      (not dest_dir_st.stat.exists) or
+      (src_st.stat.isdir)
+
+- name: Copy the src to dest
+  copy:
+    src: "{{ __src_file }}{%- if src_st.stat.isdir %}/{%- endif -%}"
+    dest: "{{ __dest_path }}"
+    owner: "{{ nagios_config.owner | default(nagios_user) }}"
+    group: "{{ nagios_config.group | default(nagios_group) }}"
+    mode: "{{ nagios_config.mode | default(nagios_default_config_file_mode) }}"
+    checksum: "{{ nagios_config.checksum | default(omit) }}"
+  notify: restart nagios
+  when:
+    - "__src_file is defined"
+    - "__src_file is not none"
+    - "'config' not in nagios_config"
+
+- name: Ensure that the destination directory for a 'config' exists
+  file:
+    path: "{{ __dest_path | dirname }}"
+    state: directory
+    owner: "{{ nagios_config.owner | default(nagios_user) }}"
+    group: "{{ nagios_config.group | default(nagios_group) }}"
+    mode: "{{ nagios_config.dirmode | default(nagios_default_config_dir_mode) }}"
+  when:
+    - "'config' in nagios_config"
+
+- name: Deposit the template when using 'config' instead of 'src'
+  template:
+    src: etc/nagios/nagios.cfg.j2
+    dest: "{{ __dest_path }}"
+    owner: "{{ nagios_config.owner | default(nagios_user) }}"
+    group: "{{ nagios_config.group | default(nagios_group) }}"
+    mode: "{{ nagios_config.mode | default(nagios_default_config_file_mode) }}"
+  notify: restart nagios
+  vars:
+    __nagios_config: "{{ nagios_config.config }}"
+  when:
+    - "nagios_config is mapping"
+    - "'config' in nagios_config"

@@ -1,0 +1,111 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'peertube_backend'
+    driver: 'overlay'
+
+- name: 'Get Traefik network info'
+  community.docker.docker_network_info:
+    name: 'traefik_backend'
+  register: 'traefik_network_info'
+
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+  loop:
+    - 'peertube_data/config'
+    - 'peertube_data/data'
+    - 'peertube_db'
+    - 'peertube_redis'
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy PostgreSQL for PeerTube'
+  community.docker.docker_swarm_service:
+    name: 'peertube_postgres'
+    image: "postgres:{{ peertube_postgres_release }}"
+    env:
+      - 'POSTGRES_DB=peertube'
+      - 'POSTGRES_USER=peertube'
+      - "POSTGRES_PASSWORD={{ peertube_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/peertube_db"
+        target: '/var/lib/postgresql/data'
+        type: 'bind'
+    networks:
+      - 'peertube_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Redis for PeerTube'
+  community.docker.docker_swarm_service:
+    name: 'peertube_redis'
+    image: "redis:{{ peertube_redis_release }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/peertube_redis"
+        target: '/data'
+        type: 'bind'
+    networks:
+      - 'peertube_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+
+- name: 'Set trusted proxy list'
+  set_fact:
+    peertube_trusted_proxies:
+      - '127.0.0.0/8'
+      - 'loopback'
+      - "{{ traefik_network_info['network']['IPAM']['Config'][0]['Subnet'] }}"
+      - "{{ traefik_upstream_proxy }}"
+
+- name: 'Deploy PeerTube'
+  community.docker.docker_swarm_service:
+    name: 'peertube'
+    image: "{{ peertube_image }}:{{ peertube_release }}"
+    env:
+      - 'PEERTUBE_DB_USERNAME=peertube'
+      - "PEERTUBE_DB_PASSWORD={{ peertube_db_password }}"
+      - 'PEERTUBE_DB_SSL=false'
+      - 'PEERTUBE_DB_HOSTNAME=tasks.peertube_postgres'
+      - "PEERTUBE_WEBSERVER_HOSTNAME={{ peertube_fqdn }}"
+      - 'PEERTUBE_REDIS_HOSTNAME=tasks.peertube_redis'
+      - 'PEERTUBE_REDIS_PORT=6379'
+      - "PEERTUBE_ADMIN_EMAIL={{ peertube_admin_email }}"
+      - "PEERTUBE_SMTP_HOSTNAME={{ peertube_smtp_server }}"
+      - "PEERTUBE_SMTP_USERNAME={{ peertube_smtp_user | default(omit, true) }}"
+      - "PEERTUBE_SMTP_PASSWORD={{ peertube_smtp_password | default(omit, true) }}"
+      - "PEERTUBE_SMTP_POST={{ peertube_smtp_port }}"
+      - "PEERTUBE_SMTP_FROM={{ peertube_smtp_from }}"
+      - "PEERTUBE_TRUST_PROXY={{ peertube_trusted_proxies | to_json }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/peertube_data/data"
+        target: '/data'
+        type: 'bind'
+      - source: "{{ docker_data_dir }}/peertube_data/config"
+        target: '/config'
+        type: 'bind'
+    networks:
+      - 'peertube_backend'
+      - 'traefik_backend'
+    publish:
+      - published_port: 1935
+        target_port: 1935
+    labels:
+      traefik.http.routers.peertube_fqdn.rule: "HostHeader(`{{ peertube_fqdn }}`)"
+      traefik.http.routers.peertube_fqdn.tls: "true"
+      traefik.http.services.peertube.loadbalancer.server.port: '9000'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

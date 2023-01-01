@@ -1,0 +1,4 @@
+---
+mandatory_services:
+  - 'traefik'
+  - 'portainer'

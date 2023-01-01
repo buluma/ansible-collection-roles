@@ -1,0 +1,58 @@
+---
+#______________________________________
+## job_conf section
+## Local runner configuration
+## https://wiki.galaxyproject.org/Admin/Config/Performance/Cluster
+
+- name: if proc==4
+  set_fact:
+    galaxy_workers: "4"
+    galaxy_local_slot: "2"
+    galaxy_registered_concurrent_jobs: "2"
+  when: ansible_processor_vcpus == "4"
+
+- name: if proc==8
+  set_fact:
+    galaxy_workers: "8"
+    galaxy_local_slot: "2"
+    galaxy_registered_concurrent_jobs: "2"
+  when: ansible_processor_vcpus == "8"
+
+- name: if proc==16
+  set_fact:
+    galaxy_workers: "16"
+    galaxy_local_slot: "4"
+    galaxy_registered_concurrent_jobs: "2"
+  when: ansible_processor_vcpus == "16"
+
+- name: if proc==32
+  set_fact:
+    galaxy_workers: "32"
+    galaxy_local_slot: "4"
+    galaxy_registered_concurrent_jobs: "4"
+  when: ansible_processor_vcpus == "32"
+
+- name: if proc==64
+  set_fact:
+    galaxy_workers: "64"
+    galaxy_local_slot: "4"
+    galaxy_registered_concurrent_jobs: "4"
+  when: ansible_processor_vcpus == "64"
+
+- name: Check if CLUES is installed
+  shell: command -v clues --help >/dev/null 2>&1
+  register: is_elastic
+  ignore_errors: yes
+  when: galaxy_lrms == "slurm"
+
+- debug:
+    msg: "{{ is_elastic.rc }}"
+  when: galaxy_lrms == "slurm"
+- debug:
+    var: is_elastic
+  when: galaxy_lrms == "slurm"
+
+- name: Copy job_conf configuration file
+  template:
+    src: 'job_conf.xml.j2'
+    dest: '{{ galaxy_config_path }}/job_conf.xml'

@@ -1,0 +1,112 @@
+---
+# Install OSSEC HIDS
+# - include_tasks: ossec.yml
+
+- name: (OSSEC) Determine development tools package name for Debian OS family
+  ansible.builtin.set_fact:
+    dev_tools: "build-essential"
+    pexpect: "python3-pexpect"
+  when: ansible_os_family == "Debian"
+
+- name: (OSSEC) Determine development tools package name for Red Hat OS family
+  ansible.builtin.set_fact:
+    dev_tools: "@Development Tools"
+    pexpect: "pexpect"
+  when: ansible_os_family == "RedHat"
+
+
+## Actions
+- name: (OSSEC) Install prerequisites for Debian OS family-
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - "{{ dev_tools }}"
+    - "{{ pexpect }}"
+    - git
+  when: ansible_os_family == "Debian"
+
+- name: (OSSEC) Install prerequisites for Red Hat OS family
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - "{{ dev_tools }}"
+    - git
+    - python3-pip
+  when: ansible_os_family == "RedHat"
+
+- name: (OSSEC) Install Python library pexpect (Red Hat only)
+  ansible.builtin.pip:
+    name: pexpect
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: (OSSEC) Check if OSSEC is already installed
+  ansible.builtin.stat:
+    path: "{{ ossec_dir }}"
+  register: ossec
+
+- name: (OSSEC) Retrieve latest version of OSSEC from GitHub
+  ansible.builtin.git:
+    repo: https://github.com/ossec/ossec-hids.git
+    dest: /opt/ossec-hids
+    update: yes
+  register: gitupdate
+
+- name: (OSSEC) Install OSSEC-HIDS in local mode
+  ansible.builtin.expect:
+    command: "/bin/bash /opt/ossec-hids/install.sh"
+    timeout: 300
+    responses:
+      en/br: "en"
+      Press ENTER: ""
+      What kind of installation do you want: "{{ ossec_install_type }}"
+      Choose where to install the OSSEC HIDS: "{{ ossec_dir }}"
+      Do you want e-mail notification: "{{ ossec_email }}"
+      e-mail address: "{{ ossec_email_address }}"
+      Do you want to use it: "{{ ossec_detected_smtp_use }}"
+      SMTP server ip: "{{ ossec_smtp_server }}"
+      Do you want to run the integrity check daemon: "{{ ossec_integritycheck_daemon }}"
+      Do you want to run the rootkit detection engine: "{{ ossec_rootkit_engine }}"
+      Do you want to enable active response: "{{ ossec_active_response }}"
+      Do you want to enable the firewall-drop response: "{{ ossec_firewalldrop_response }}"
+      Do you want to add more IPs to the white list: "n"
+  become: yes
+  notify: restart ossec
+  when: not ossec.stat.exists
+  register: ossecinstall
+
+- name: (OSSEC) Cleanup local changes in GIT repository
+  command: "{{ item }}"
+  args:
+    chdir: /opt/ossec-hids
+  with_items:
+    - git checkout -f
+    - git clean -fd
+  register: gitcleanup
+  when: ossecinstall is changed
+
+- name: (OSSEC) Update OSSEC-HIDS
+  ansible.builtin.expect:
+    command: "/bin/bash /opt/ossec-hids/install.sh"
+    responses:
+      en/br: "en"
+      Press ENTER: ""
+      Do you want to update it: "y"
+      Do you want to update the rules: "y"
+  notify: restart ossec
+  become: yes
+  when: ossec.stat.exists and gitupdate is changed
+
+- name: (OSSEC) Start OSSEC service
+  ansible.builtin.service:
+    name: ossec
+    state: started
+
+- name: (OSSEC) Whitelist Ansible Controller IP address
+  ansible.builtin.lineinfile:
+    path: /var/ossec/etc/ossec.conf
+    insertafter: '</white_list>'
+    state: present
+    line: "    <white_list>{{ ansible_controller_ip }}</white_list>"

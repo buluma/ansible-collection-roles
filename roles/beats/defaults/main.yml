@@ -1,0 +1,178 @@
+---
+
+#### PACKAGING #################################################################
+
+# The libbeat packages to install.
+# Options: www.elastic.co/guide/en/beats/libbeat/master/installing-beats.html
+beats_client_beats_packages:
+  - filebeat
+  - metricbeat
+
+# Identifier for host sending logs. Sane default as hostname.
+beats_client_shipper_name: "{{ ansible_hostname }}"
+
+beats_client_version: 6.1.2
+# The apt repo URL pegs minor versions (e.g. 5.x) to avoid unexpected upgrades
+beats_client_major_version_abbreviated: 6.x
+
+beats_client_beats_prereq:
+  - apt-transport-https
+
+# Elastic's PGP key for signing their repository
+beats_client_elastic_pgp_key: "46095ACC8548582C1A2699A9D27D666CD88E42B4"
+beats_client_elastic_gpg_key_url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+
+# Elastic's beats debian repository
+beats_client_elastic_repo_url: "deb https://artifacts.elastic.co/packages/{{ beats_client_major_version_abbreviated }}/apt stable main"
+
+# Whether to inject templates (should really only be run on the same system that
+# has direct elasticsearch access
+beats_client_inject_templates: no
+
+#### FILEBEAT ##################################################################
+
+
+# Sane default of localhost. Override to set to the IP address/DNS of the Logstash server.
+beats_client_logserver: "127.0.0.1"
+beats_client_port: 5000
+
+# Controls how often Topbeat reports stats (in seconds)
+beats_client_topbeat_period: 10
+
+beats_client_logfiles:
+  - paths:
+      - /var/log/syslog
+      - /var/log/auth.log
+    tags: ['syslog']
+
+  - paths:
+      - /var/log/dpkg.log
+    tags: ['dpkg']
+
+  - paths:
+      - /var/log/apache2/*log
+    tags: ['apache']
+
+  - paths:
+      - /var/log/mail.info
+      - /var/log/mail.warn
+      - /var/log/mail.err
+    tags: ['postfix']
+
+# To send additional logfiles, override the following list.
+# See
+# https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html#_literal_tags_literal
+beats_client_extra_logfiles: []
+
+beats_client_filebeat_combined_logfiles: "{{ beats_client_logfiles + beats_client_extra_logfiles }}"
+
+beats_client_filebeat_logging:
+  level: warning
+  to_files: true
+  to_syslog: false
+  files:
+    path: /var/log/
+    name: filebeat.log
+    keepfiles: 2
+
+beats_client_filebeat_config:
+  filebeat.inputs: "{{ beats_client_filebeat_combined_logfiles }}"
+  output: "{{ beats_client_output }}"
+  logging: "{{ beats_client_filebeat_logging }}"
+  setup: "{{ beats_client_filebeat_setup }}"
+  # https://www.elastic.co/guide/en/beats/filebeat/master/configuration-general-options.html#_literal_name_literal
+  name: "{{ beats_client_shipper_name }}"
+
+#### METRICBEAT ##################################################################
+# See: www.elastic.co/guide/en/beats/metricbeat/master/metricbeat-configuration-options.html
+
+# See: www.elastic.co/guide/en/beats/metricbeat/master/metricbeat-modules.html
+beats_client_metricbeat_modules:
+  - module: system
+    metricsets:
+      - cpu
+      - load
+      - diskio
+      - filesystem
+      - fsstat
+      - memory
+      - network
+      - process
+      - socket
+    enabled: true
+    period: "{{ beats_client_topbeat_period }}s"
+    processes: ['.*']
+
+beats_client_metricbeat_logging:
+  level: warning
+  to_files: true
+  to_syslog: false
+  files:
+    path: /var/log/
+    name: metricbeat.log
+    keepfiles: 2
+
+beats_client_metricbeat_config:
+  metricbeat.modules: "{{ beats_client_metricbeat_modules }}"
+  output: "{{ beats_client_output }}"
+  logging: "{{ beats_client_metricbeat_logging }}"
+  setup: "{{ beats_client_metricbeat_setup }}"
+  # https://www.elastic.co/guide/en/beats/filebeat/master/configuration-general-options.html#_literal_name_literal
+  name: "{{ beats_client_shipper_name }}"
+
+#### PACKETBEAT ##################################################################
+# See: www.elastic.co/guide/en/beats/packetbeat/master/configuring-packetbeat.html
+beats_client_packetbeat_config: {}
+
+#### HEARTBEAT ##################################################################
+beats_client_heartbeat_config: {}
+
+#### KIBANA ##################################################################
+
+# Section more for testing at this point. Previously for <=5.x this role was
+# assisting with dashboard import. Now that the feature is integrated into the
+# 6.x+ clients and is not backwards compat. - decided to just rip out the old
+# functionality.
+
+# Here how it might look now
+#    beats_client_filebeat_setup:
+#      dashboards:
+#        enabled: true
+#        index: "{{ beats_client_kibana_indices['filebeat'] }}"
+#    beats_client_metricbeat_setup:
+#      dashboards:
+#        enabled: true
+#        index: "{{ beats_client_kibana_indices['metricbeat'] }}"
+
+beats_client_kibana_url_base: http://localhost:9200
+beats_client_kibana_url: "{{ beats_client_kibana_url_base }}/.kibana"
+beats_client_kibana_indices:
+  metricbeat: metrics-logstash-*
+  filebeat: syslog-*
+beats_client_kibana_dash_search:
+  metricbeat: Metricbeat*
+  filebeat: Filebeat*
+
+#### SHARED ##################################################################
+
+# Note that SSL is disabled here by default, you'll need to override this
+# variable using attributes from
+# www.elastic.co/guide/en/beats/metricbeat/master/logstash-output.html
+beats_client_output:
+  logstash:
+    enabled: true
+    hosts:
+      - "{{ beats_client_logserver }}:{{ beats_client_port }}"
+
+# Added in 6.x series for among other things,
+# dashboard setup
+# https://www.elastic.co/guide/en/beats/filebeat/current/configuration-dashboards.html
+beats_client_filebeat_setup: {}
+beats_client_metricbeat_setup: {}
+
+# Master config dictionary variable.
+beats_clients_configs:
+  filebeat: "{{ beats_client_filebeat_config }}"
+  metricbeat: "{{ beats_client_metricbeat_config }}"
+  packetbeat: "{{ beats_client_packetbeat_config }}"
+  heartbeat: "{{ beats_client_heartbeat_config }}"

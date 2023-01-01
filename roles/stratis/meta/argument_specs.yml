@@ -1,0 +1,10 @@
+---
+#
+# Ansible managed
+#
+argument_specs:
+  main:
+    short_description: Install stratis and carves pools and filesystems.
+    description: >
+      Install stratis and carves pools and filesystems.
+    author: Michael Buluma

@@ -1,0 +1,11 @@
+---
+# Origin: https://github.com/MakarenaLabs/ansible-role-wordpress/blob/master/tasks/main.yml
+- name: restart apache
+  ansible.builtin.service:
+    name: apache2
+    state: restarted
+
+- name: restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

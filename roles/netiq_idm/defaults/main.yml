@@ -1,0 +1,3 @@
+---
+# defaults file for netiq-idm
+SERVER_KEYSTORE: /etc/ssl/servercerts/server.p12

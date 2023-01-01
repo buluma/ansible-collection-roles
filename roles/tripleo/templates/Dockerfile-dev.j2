@@ -1,0 +1,15 @@
+FROM {{ source_image }}
+LABEL modified_append_tag={{ modified_append_tag }}
+
+USER root
+
+COPY refspec_projects /root/refspec_projects
+RUN /bin/bash -c 'PKG="$(command -v dnf || command -v yum)"; \
+    PKG_MGR="$(echo ${PKG:(-3)})"; \
+    if [ $PKG_MGR == "dnf" ]; then $PKG install -y python3-pip; PIP=pip3; else $PKG install -y python-pip; \
+    PIP=pip; fi; \
+    cd /; \
+    for X in $(ls /root/refspec_projects/*.tar.gz); do $PIP install $X; done; \
+    rm -Rf /root/refspec_projects'
+
+USER "{{ original_user }}"

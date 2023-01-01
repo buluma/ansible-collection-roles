@@ -1,0 +1,580 @@
+---
+# tasks file for testing that variables of ansible-role jonaspammer.goaccess are set correctly
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_tests.html
+
+- name: test if goaccess_dependency_packages is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_dependency_packages is defined
+      - goaccess_dependency_packages is string or
+        goaccess_dependency_packages is iterable
+    quiet: true
+
+- name: test if goaccess_install_method is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_install_method is defined
+      - goaccess_install_method in ["source", "system"]
+    quiet: true
+
+- name: test if goaccess_system_install_official_repo is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_system_install_official_repo is boolean
+    quiet: true
+
+### Role Variables used by the `source`-installation-method ###
+- name: test if goaccess_source_version is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_source_version is string
+    quiet: true
+
+- name: test if goaccess_source_dependency_packages is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_source_dependency_packages is iterable or
+        goaccess_source_dependency_packages is string
+    quiet: true
+
+### Role Variables for creating a GoAccess Configuration File ###
+- name: test if goaccess_conf_file is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_file is defined
+      - goaccess_conf_file is string
+    quiet: true
+
+- name: test if goaccess_conf_file_owner is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_file_owner is defined
+      - goaccess_conf_file_owner is string
+    quiet: true
+
+- name: test if goaccess_conf_file_group is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_file_group is defined
+      - goaccess_conf_file_group is string
+    quiet: true
+
+- name: test if goaccess_conf_file_mode is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_file_mode is defined
+    quiet: true
+
+## Time Format ##
+
+- name: test if goaccess_conf_time_format is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_time_format is defined
+      - goaccess_conf_time_format is string
+    quiet: true
+
+## Date Format ##
+
+- name: test if goaccess_conf_date_format is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_date_format is defined
+      - goaccess_conf_date_format is string
+    quiet: true
+
+## Log Format ##
+
+- name: test if goaccess_conf_log_format is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_log_format is string
+    quiet: true
+  when: goaccess_conf_log_format is defined and goaccess_conf_log_format is not none
+
+## UI Options ##
+
+- name: test if goaccess_conf_color_scheme is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_color_scheme in [1,2,3]
+    quiet: true
+  when: goaccess_conf_color_scheme is defined and goaccess_conf_color_scheme is not none
+
+- name: test if goaccess_conf_config_dialog is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_config_dialog is boolean
+    quiet: true
+  when: goaccess_conf_config_dialog is defined and goaccess_conf_config_dialog is not none
+
+- name: test if goaccess_conf_hl_header is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_hl_header is boolean
+    quiet: true
+  when: goaccess_conf_hl_header is defined and goaccess_conf_hl_header is not none
+
+- name: test if goaccess_conf_html_custom_css is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_html_custom_css is string # path
+    quiet: true
+  when: goaccess_conf_html_custom_css is defined and goaccess_conf_html_custom_css is not none
+
+- name: test if goaccess_conf_html_custom_js is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_html_custom_js is string # path
+    quiet: true
+  when: goaccess_conf_html_custom_js is defined and goaccess_conf_html_custom_js is not none
+
+- name: test if goaccess_conf_html_prefs is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_html_prefs is string
+    quiet: true
+  when: goaccess_conf_html_prefs is defined and goaccess_conf_html_prefs is not none
+
+- name: test if goaccess_conf_html_report_title is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_html_report_title is string
+    quiet: true
+  when: goaccess_conf_html_report_title is defined and goaccess_conf_html_report_title is not none
+
+- name: test if goaccess_conf_json_pretty_print is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_json_pretty_print is boolean
+    quiet: true
+  when: goaccess_conf_json_pretty_print is defined and goaccess_conf_json_pretty_print is not none
+
+- name: test if goaccess_conf_no_color is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_color is boolean
+    quiet: true
+  when: goaccess_conf_no_color is defined and goaccess_conf_no_color is not none
+
+- name: test if goaccess_conf_no_column_names is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_column_names is boolean
+    quiet: true
+  when: goaccess_conf_no_column_names is defined and goaccess_conf_no_column_names is not none
+
+- name: test if goaccess_conf_no_csv_summary is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_csv_summary is boolean
+    quiet: true
+  when: goaccess_conf_no_csv_summary is defined and goaccess_conf_no_csv_summary is not none
+
+- name: test if goaccess_conf_no_progress is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_progress is boolean
+    quiet: true
+  when: goaccess_conf_no_progress is defined and goaccess_conf_no_progress is not none
+
+- name: test if goaccess_conf_no_tab_scroll is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_tab_scroll is boolean
+    quiet: true
+  when: goaccess_conf_no_tab_scroll is defined and goaccess_conf_no_tab_scroll is not none
+
+- name: test if goaccess_conf_no_parsing_spinner is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_parsing_spinner is boolean
+    quiet: true
+  when: goaccess_conf_no_parsing_spinner is defined and goaccess_conf_no_parsing_spinner is not none
+
+- name: test if goaccess_conf_no_html_last_updated is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_html_last_updated is boolean
+    quiet: true
+  when: goaccess_conf_no_html_last_updated is defined and goaccess_conf_no_html_last_updated is not none
+
+- name: test if goaccess_conf_with_mouse is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_with_mouse is boolean
+    quiet: true
+  when: goaccess_conf_with_mouse is defined and goaccess_conf_with_mouse is not none
+
+- name: test if goaccess_conf_max_items is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_max_items is number
+    quiet: true
+  when: goaccess_conf_max_items is defined and goaccess_conf_max_items is not none
+
+- block:
+    - name: test if goaccess_conf_colors is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_colors is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_colors are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_colors }}"
+  when: goaccess_conf_colors is defined and goaccess_conf_colors is not none
+
+## Server Options ##
+
+- name: test if goaccess_conf_daemonize is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_daemonize is boolean
+    quiet: true
+  when: goaccess_conf_daemonize is defined and goaccess_conf_daemonize is not none
+
+- name: test if goaccess_conf_pid_file is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_pid_file is string # path
+    quiet: true
+  when: goaccess_conf_pid_file is defined and goaccess_conf_pid_file is not none
+
+- name: test if goaccess_conf_real_time_html is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_real_time_html is boolean
+    quiet: true
+  when: goaccess_conf_real_time_html is defined and goaccess_conf_real_time_html is not none
+
+- name: test if goaccess_conf_ssl_cert is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_ssl_cert is string # path
+    quiet: true
+  when: goaccess_conf_ssl_cert is defined and goaccess_conf_ssl_cert is not none
+
+- name: test if goaccess_conf_ssl_key is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_ssl_key is string # path
+    quiet: true
+  when: goaccess_conf_ssl_key is defined and goaccess_conf_ssl_key is not none
+
+- name: test if goaccess_conf_fifo_in is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_fifo_in is string # path
+    quiet: true
+  when: goaccess_conf_fifo_in is defined and goaccess_conf_fifo_in is not none
+
+- name: test if goaccess_conf_fifo_out is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_fifo_out is string # path
+    quiet: true
+  when: goaccess_conf_fifo_out is defined and goaccess_conf_fifo_out is not none
+
+## File Options ##
+
+- name: test if goaccess_conf_log_file is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_log_file is string # path
+    quiet: true
+  when: goaccess_conf_log_file is defined and goaccess_conf_log_file is not none
+
+- name: test if goaccess_conf_log_dir_alter is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_log_dir_alter is boolean
+    quiet: true
+  when: goaccess_conf_log_dir_alter is defined and goaccess_conf_log_dir_alter is not none
+
+- name: test if goaccess_conf_config_file is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_config_file is string # path
+    quiet: true
+  when: goaccess_conf_config_file is defined and goaccess_conf_config_file is not none
+
+- name: test if goaccess_conf_invalid_requests is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_invalid_requests is string # path
+    quiet: true
+  when: goaccess_conf_invalid_requests is defined and goaccess_conf_invalid_requests is not none
+
+- name: test if goaccess_conf_no_global_config is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_global_config is boolean
+    quiet: true
+  when: goaccess_conf_no_global_config is defined and goaccess_conf_no_global_config is not none
+
+## Parser Options ##
+
+- name: test if goaccess_conf_agent_list is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_agent_list is boolean
+    quiet: true
+  when: goaccess_conf_agent_list is defined and goaccess_conf_agent_list is not none
+
+- name: test if goaccess_conf_with_output_resolver is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_with_output_resolver is boolean
+    quiet: true
+  when: goaccess_conf_with_output_resolver is defined and goaccess_conf_with_output_resolver is not none
+
+- block:
+    - name: test if goaccess_conf_exclude_ips is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_exclude_ips is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_exclude_ips are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_exclude_ips }}"
+  when: goaccess_conf_exclude_ips is defined and goaccess_conf_exclude_ips is not none
+
+- name: test if goaccess_conf_http_method is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_http_method is boolean
+    quiet: true
+  when: goaccess_conf_http_method is defined and goaccess_conf_http_method is not none
+
+- name: test if goaccess_conf_http_protocol is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_http_protocol is boolean
+    quiet: true
+  when: goaccess_conf_http_protocol is defined and goaccess_conf_http_protocol is not none
+
+- name: test if goaccess_conf_output is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_output is string # paths
+    quiet: true
+  when: goaccess_conf_output is defined and goaccess_conf_output is not none
+
+- name: test if goaccess_conf_no_query_string is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_query_string is boolean
+    quiet: true
+  when: goaccess_conf_no_query_string is defined and goaccess_conf_no_query_string is not none
+
+- name: test if goaccess_conf_no_term_resolver is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_term_resolver is boolean
+    quiet: true
+  when: goaccess_conf_no_term_resolver is defined and goaccess_conf_no_term_resolver is not none
+
+- name: test if goaccess_conf_444_as_404 is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_444_as_404 is boolean
+    quiet: true
+  when: goaccess_conf_444_as_404 is defined and goaccess_conf_444_as_404 is not none
+
+- name: test if goaccess_conf_4xx_to_unique_count is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_4xx_to_unique_count is boolean
+    quiet: true
+  when: goaccess_conf_4xx_to_unique_count is defined and goaccess_conf_4xx_to_unique_count is not none
+
+- name: test if goaccess_conf_anonymize_ip is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_anonymize_ip is boolean
+    quiet: true
+  when: goaccess_conf_anonymize_ip is defined and goaccess_conf_anonymize_ip is not none
+
+- name: test if goaccess_conf_all_static_files is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_all_static_files is boolean
+    quiet: true
+  when: goaccess_conf_all_static_files is defined and goaccess_conf_all_static_files is not none
+
+- name: test if goaccess_conf_date_spec is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_date_spec in ["date", "hr", "min"]
+    quiet: true
+  when: goaccess_conf_date_spec is defined and goaccess_conf_date_spec is not none
+
+- name: test if goaccess_conf_double_decode is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_double_decode is boolean
+    quiet: true
+  when: goaccess_conf_double_decode is defined and goaccess_conf_double_decode is not none
+
+- block:
+    - name: test if goaccess_conf_enable_panels is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_enable_panels is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_enable_panels are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_enable_panels }}"
+  when: goaccess_conf_enable_panels is defined and goaccess_conf_enable_panels is not none
+
+- block:
+    - name: test if goaccess_conf_hide_referers is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_hide_referers is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_hide_referers are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_hide_referers }}"
+  when: goaccess_conf_hide_referers is defined and goaccess_conf_hide_referers is not none
+
+- name: test if goaccess_conf_hour_spec is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_hour_spec in ["hr", "min"]
+    quiet: true
+  when: goaccess_conf_hour_spec is defined and goaccess_conf_hour_spec is not none
+
+- name: test if goaccess_conf_ignore_crawlers is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_ignore_crawlers is boolean
+    quiet: true
+  when: goaccess_conf_ignore_crawlers is defined and goaccess_conf_ignore_crawlers is not none
+
+- name: test if goaccess_conf_ignore_statics is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_ignore_statics in ["req", "panels"]
+    quiet: true
+  when: goaccess_conf_ignore_statics is defined and goaccess_conf_ignore_statics is not none
+
+- block:
+    - name: test if goaccess_conf_ignore_panels is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_ignore_panels is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_ignore_panels are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_ignore_panels }}"
+  when: goaccess_conf_ignore_panels is defined and goaccess_conf_ignore_panels is not none
+
+- block:
+    - name: test if goaccess_conf_ignore_referers is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_ignore_referers is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_ignore_referers are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_ignore_referers }}"
+  when: goaccess_conf_ignore_referers is defined and goaccess_conf_ignore_referers is not none
+
+- block:
+    - name: test if goaccess_conf_ignore_statuses is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_ignore_statuses is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_ignore_statuses are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is number
+        quiet: true
+      loop: "{{ goaccess_conf_ignore_statuses }}"
+  when: goaccess_conf_ignore_statuses is defined and goaccess_conf_ignore_statuses is not none
+
+- name: test if goaccess_conf_keep_last is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_keep_last is number
+    quiet: true
+  when: goaccess_conf_keep_last is defined and goaccess_conf_keep_last is not none
+
+- name: test if goaccess_conf_no_ip_validation is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_no_ip_validation is boolean
+    quiet: true
+  when: goaccess_conf_no_ip_validation is defined and goaccess_conf_no_ip_validation is not none
+
+- name: test if goaccess_conf_num_tests is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_num_tests is number
+    quiet: true
+  when: goaccess_conf_num_tests is defined and goaccess_conf_num_tests is not none
+
+- name: test if goaccess_conf_process_and_exit is set correctly
+  ansible.builtin.assert:
+    that:
+      - goaccess_conf_process_and_exit is boolean
+    quiet: true
+  when: goaccess_conf_process_and_exit is defined and goaccess_conf_process_and_exit is not none
+
+- block:
+    - name: test if goaccess_conf_sort_panels is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_sort_panels is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_sort_panels are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+          - item | regex_findall(",") | length == 2
+        quiet: true
+      loop: "{{ goaccess_conf_sort_panels }}"
+  when: goaccess_conf_sort_panels is defined and goaccess_conf_sort_panels is not none
+
+- block:
+    - name: test if goaccess_conf_static_file is set correctly
+      ansible.builtin.assert:
+        that:
+          - goaccess_conf_static_file is iterable
+        quiet: true
+
+    - name: test if items of goaccess_conf_static_file are set correctly
+      ansible.builtin.assert:
+        that:
+          - item is string
+        quiet: true
+      loop: "{{ goaccess_conf_static_file }}"
+  when: goaccess_conf_static_file is defined and goaccess_conf_static_file is not none

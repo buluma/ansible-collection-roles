@@ -1,0 +1,10 @@
+---
+# vars file for sqlite
+
+_sqlite_packages_requirements:
+  default:
+    - sqlite
+  Debian:
+    - sqlite3
+
+sqlite_packages_requirements: "{{ _sqlite_packages_requirements[ansible_os_family] | default(_sqlite_packages_requirements['default'] ) }}"

@@ -1,0 +1,30 @@
+---
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir.name }}"
+    owner: "{{ dir.owner | default('0') }}"
+    state: 'directory'
+  loop:
+    - {name: 'factorio_server_data', owner: '845'}
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy Factorio Server'
+  community.docker.docker_swarm_service:
+    name: 'factorio_server'
+    image: "factoriotools/factorio:{{ factorio_server_release }}"
+    mounts:
+      - source: '{{ docker_data_dir }}/factorio_server_data'
+        target: '/factorio'
+        type: 'bind'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    publish:
+      - published_port: 27015
+        target_port: 27015
+      - published_port: 34197
+        target_port: 34197
+        protocol: 'udp'
+    user: null

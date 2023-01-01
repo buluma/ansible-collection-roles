@@ -1,0 +1,6 @@
+---
+# defaults file for mariadb
+mariadb_server_params: []
+mariadb_root_passwd: null
+mariadb_databases: []
+mariadb_users: []

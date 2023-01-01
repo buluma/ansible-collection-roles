@@ -1,0 +1,146 @@
+---
+# Galaxy instance description
+galaxy_instance_description: "ELIXIR-IT"
+
+# User to launch the Galaxy portal
+galaxy_user: galaxy
+
+# Galaxy user UID
+GALAXY_UID: "4001"
+
+# Path to install the Galaxy software
+galaxy_FS_path: /home/galaxy
+
+# Galaxy directory (usually galaxy or galaxy-dist)
+galaxy_directory: galaxy
+
+# Galaxy install path
+galaxy_install_path: "{{galaxy_FS_path}}/{{galaxy_directory}}"
+
+# Galaxy config/galaxy.ini path
+galaxy_config_path: "{{galaxy_install_path}}/config"
+galaxy_config_file: "{{galaxy_config_path}}/galaxy.yml"
+
+# Galaxy version to install
+GALAXY_VERSION: "release_18.05"
+
+# Virtualenv directory
+galaxy_venv_path: "{{galaxy_install_path}}/.venv"
+
+# Galaxy custom configuration files and script path
+galaxy_custom_config_path: '/etc/galaxy'
+galaxy_custom_script_path: '/usr/local/bin'
+custom_utils_path: '{{ galaxy_FS_path }}/.laniakea_utils'
+
+# Log directory
+galaxy_log_path: "/var/log/galaxy"
+
+# Galaxy instance url
+galaxy_instance_url: "http://{{ansible_default_ipv4.address}}/galaxy/"
+
+# Galaxy instance ssh public key
+galaxy_instance_key_pub: ""
+
+# Galaxy virtual elastic cluster support: Currently supported local and slurm
+galaxy_lrms: local
+
+#______________________________________
+# Galaxy administrator
+
+# Enable Galaxy administrator user creation.
+create_galaxy_admin: true
+
+# Galaxy administrator username
+GALAXY_ADMIN_USERNAME: "galaxy_admin_username"
+
+# Galaxy administrator password.
+# It is hard coded. To be changed by the administrator.
+GALAXY_ADMIN_PASSWORD: "galaxy_admin_password"
+
+# Galaxy administrator API_KEY. https://wiki.galaxyproject.org/Admin/API
+# Please note that this key acts as an alternate means to access your account, and should be treated with the same care as your login password. To be changed by the administrator.
+GALAXY_ADMIN_API_KEY: "GALAXY_ADMIN_API_KEY"
+
+# Galaxy administrator e-mail address
+GALAXY_ADMIN_EMAIL: "admin@server.com"
+
+#______________________________________
+# Galaxy configuration
+
+# Galaxy userdata are stored here
+export_dir: "/export"
+
+# Tool dependency directory
+tool_deps_path: "{{ export_dir }}/tool_deps"
+
+# Conda configuration
+conda_prefix: "{{ tool_deps_path }}/_conda"
+conda_channels: "iuc,bioconda,r,defaults,conda-forge"
+
+# Update UCSC genome database
+update_ucsc: true
+fast_update: true # Force database update by copying cached files. Only for testing!
+
+# Enable pbkdf2
+use_pbkdf2: true
+
+# Galaxy login
+require_login: "True"
+allow_user_creation: "False"
+allow_user_impersonation: "True"
+new_user_dataset_access_role_default_private: "True"
+
+#______________________________________
+# Postgres database details
+postgresql_version: '9.6'
+galaxy_db_dir: "{{export_dir}}/galaxy/database"
+galaxy_db_port: 5432
+galaxy_db_passwd: 'galaxy'
+galaxy_database_connection: 'postgresql://{{ galaxy_user }}:{{ galaxy_db_passwd }}@localhost:{{ galaxy_db_port }}/{{ galaxy_user }}'
+galaxy_install_database_connection: 'postgresql://{{ galaxy_user }}:{{ galaxy_db_passwd }}@localhost:{{ galaxy_db_port }}/galaxy_tools'
+set_pgsql_random_password: true
+
+#______________________________________
+# NGINX
+nginx_upload_store_path: "{{galaxy_db_dir}}/tmp/nginx_upload_store"
+nginx_https: false
+ssl_cert: /etc/certs/cert.pem
+ssl_key: /etc/certs/key.pem
+ssl_dhparam: /etc/certs/dhparam.pem
+
+#______________________________________
+# PROFTPD
+proftpd_welcome: "galaxy ftp server"
+proftpd_conf_path: "/etc/proftpd.conf"
+proftpd_db_user: "galaxyftp"
+proftpd_db_passwd: 'galaxy'
+proftpd_files_path: "{{galaxy_db_dir}}/ftp"
+proftpd_ftp_port: 21
+proftpd_passive_port_low: 30000
+proftpd_passive_port_high: 30009
+set_proftpd_random_password: true
+
+#______________________________________
+# Init system
+# Supported: supervisord, init
+# supervisord ---> Current default, it is mandatory for docker container, since there's no systemd.
+# init ----------> CentOS 7 and Ubuntu 16.04 use systemd, Ubuntu 14.04 is using upstart.
+init_type: 'supervisord'
+
+supervisor_manage_postgres: "False"
+supervisor_manage_nginx: "False"
+supervisor_manage_proftpd: "False"
+
+#______________________________________
+# Enable advanced storage configuration
+# False by default!
+# If this option is true the configuration is entrusted to indigo-dc.galaxycloud.os
+# Facts needs to be gathered!
+
+enable_storage_advanced_options: false
+
+#______________________________________
+# Inform the role if galaxy tools and reference data will be installed
+# If yes, galaxy is not started
+galaxy_flavor: 'galaxy-no-tools'
+get_refdata: false

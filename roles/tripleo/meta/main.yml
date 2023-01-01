@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Steve Baker
+  description: Modify container images built for TripleO
+  company: Red Hat
+  license: Apache 2.0
+  min_ansible_version: 2.4
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+
+  galaxy_tags:
+    - buildah
+    - container
+    - openstack
+    - tripleo
+    - packaging
+    - system
+
+dependencies: []

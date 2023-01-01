@@ -1,0 +1,7 @@
+---
+- name: Test if buildah_conf_hostname is set correctly
+  ansible.builtin.assert:
+    that:
+      - buildah_conf_hostname is defined
+      - buildah_conf_hostname is string
+    quiet: yes

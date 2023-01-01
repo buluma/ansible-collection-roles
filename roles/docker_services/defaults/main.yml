@@ -1,0 +1,106 @@
+---
+enabled_services:
+  - 'janitor'
+  - 'gitea'
+  - 'drone'
+  - 'registry'
+
+docker_service_debug: false                     # Enable to see sensitive output when deploying services
+
+docker_edition: 'ce'
+
+docker_data_dir: '/data/docker/volumes'         # Where to store the volumes on the docker hosts
+docker_worker_group: 'docker_workers'           # Groups that contain this Swarm's workers
+
+restart_condition: 'any'
+
+traefik_domain: 'dckr.example.com'              # Subdomain to put all services under
+traefik_selfsign: true                          # Selfsign the used SSL certificate
+traefik_upstream_proxy: '10.0.0.80'             # Upstream proxy to this traefik
+
+portainer_app_name: 'portainer'                 # Service name for Portainer (portainer.dckr.example.com)
+
+registry_app_name: 'registry.example.com'
+registry_selfsign: true                          # Selfsign the used SSL certificate
+registry_username: 'docker'
+registry_password: 'ImagesForTheMasses'
+
+db_root_password: 'StoreAllTheData!'            # Database root password for all services
+db_backup_interval: '86400'                     # Interval in seconds when to run DB backups
+
+gitea_app_name: 'gitea'
+gitea_release: 'latest'
+
+gitea_db_password: 'GitRocksYourSocksOff'
+
+drone_app_name: 'drone'
+drone_server_release: 'latest'
+drone_agent_release: 'latest'
+drone_db_password: 'NotSoSecretPassword'
+drone_runner_cap: 2                                         # Amount of jobs that can simultaneously run
+drone_agent_rpc_secret: 'AllYourCompileJobsAreBelongToUs'   # RPC secret to connect Drone agents
+# drone_agent_constraints: 'node.role != manager'            # Optional placement constraints for the agents
+
+docker_janitor_delay: 3600                                # Interval for Janitor to run 'docker prune system -f'
+
+mediawiki_db_password: 'KnowledgeIsPower'
+mediawiki_app_name: 'wiki'
+mediawiki_image: 'mediawiki'
+
+drawio_app_name: 'graphs'
+drawio_image: 'jgraph/drawio'
+
+kanboard_db_password: 'DoAllTheThings'
+kanboard_app_name: 'kanboard'
+
+minecraft_server_type: 'VANILLA'
+
+factorio_server_release: 'stable'
+
+avorion_server_image: 'registry.example.com/avorion-server'   # Avorion doesn't make their own image,
+                                                              # set this to the URL you wish to use
+avorion_server_release: 'latest'
+avorion_galaxy_name: 'default_galaxy'                         # Foldername in which the game is saved
+avorion_server_name: 'Some Avorion server'                    # Servername as seen in the game browser
+avorion_admin: '123'                                          # SteamIDs of server admins
+
+rocketchat_app_name: 'rocketchat'
+
+peertube_fqdn: 'peertube.example.com'                     # NOTE: this can NOT be changed after initialization
+                                                          # Does not use 'normal' app_name setup for this exact reason
+peertube_image: 'chocobozzz/peertube'
+peertube_release: 'production-bullseye'
+peertube_postgres_release: '13-alpine'
+peertube_redis_release: '6-alpine'
+peertube_db_password: 'StreamTheWorld!'
+peertube_admin_email: 'streamerboss@example.com'
+peertube_smtp_server: 'mail.example.com'
+peertube_smtp_port: 25
+peertube_smtp_from: "peertube-noreply@{{ traefik_domain }}"
+peertube_smtp_user: ''      # Leave empty if the SMTP server requires
+peertube_smtp_password: ''  # no authentication
+
+vaultwarden_release: 'latest'
+vaultwarden_fqdn: 'vault.example.com'
+vaultwarden_signup_whitelist: 'example.com,example.net'     # Email domains that are allowed to create accounts
+vaultwarden_smtp_server: 'mail.example.com'
+vaultwarden_smtp_port: 25
+vaultwarden_smtp_from: "vault-noreply@{{ traefik_domain }}"
+vaultwarden_smtp_ssl: false
+vaultwarden_smtp_user: ''
+vaultwarden_smtp_password: ''
+
+matomo_db_password: 'TrackALLTheThings!'
+matomo_fqdn: 'analytics.example.com'  # NOTE: Matomo currently does not support configuring reverse proxies through Docker
+matomo_image_version: '4'
+
+joplin_release: 'latest'
+joplin_postgres_release: '14'
+joplin_db_password: 'SuperSecureNotesInSync!'
+joplin_fqdn: 'notes.example.com'
+joplin_smtp_server: 'mail.example.com'
+joplin_smtp_port: 25
+joplin_smtp_ssl: false
+joplin_smtp_user: ''
+joplin_smtp_password: ''
+joplin_smtp_from: "notes-noreply@{{ traefik_domain }}"

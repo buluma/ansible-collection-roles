@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  role_name: tailscale
+  author: buluma
+  description: Manage Tailscale on Linux.
+  # issue_tracker_url: https://github.com/jason-riddle/ansible-role-tailscale/issues
+  license: Apache-2.0
+  min_ansible_version: "2.4"
+  platforms:
+    - name: Debian
+      versions:
+        - buster # 10
+        - bullseye # 11
+    - name: Ubuntu
+      versions:
+        - bionic # 18.04
+        - focal # 20.04
+        - jammy # 22.04
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+  galaxy_tags:
+    - system
+    - tailscale
+
+dependencies: []

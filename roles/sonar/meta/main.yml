@@ -1,0 +1,60 @@
+galaxy_info:
+  role_name: sonar_scanner
+  author: diodonfrost
+  company: diodonfrost
+  description: Ansible role - sonar-scanner
+  license: license Apache
+
+  min_ansible_version: 2.5
+
+  platforms:
+    - name: EL
+      versions:
+        - 8
+        - 7
+        - 6
+    - name: Fedora
+      versions:
+        - 29
+        - 28
+        - 27
+        - 26
+    - name: Debian
+      versions:
+        - stretch
+        - jessie
+        - wheezy
+        - squeeze
+    - name: Ubuntu
+      versions:
+        - bionic
+        - xenial
+        - trusty
+        - precise
+    - name: Amazon
+      versions:
+        - 2017.12
+        - 2016.03
+        - 2013.09
+    - name: opensuse
+      versions:
+        - 13.2
+    - name: SLES
+      versions:
+        - 15
+    - name: ArchLinux
+      versions:
+        - any
+    - name: Gentoo
+      versions:
+        - any
+    - name: ClearLinux
+      versions:
+        - any
+
+  galaxy_tags:
+    - system
+    - packaging
+    - sonarqube
+
+dependencies: []

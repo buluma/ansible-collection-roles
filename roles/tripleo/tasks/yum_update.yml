@@ -1,0 +1,6 @@
+---
+- import_tasks: precheck.yml
+  tags:
+    - always
+
+- import_tasks: yum_update_buildah.yml

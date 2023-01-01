@@ -1,0 +1,26 @@
+---
+galaxy_info:
+  role_name: aws_inspector
+  author: buluma
+  description: AWS Inspector installation for Linux.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.10"
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - system
+    - aws
+    - security
+    - inspector
+    - awsagent
+    - cloud
+dependencies: []

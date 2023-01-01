@@ -1,0 +1,8 @@
+---
+# tasks file for ansible-role-terragrunt
+
+- name: include OS specific variables.
+  ansible.builtin.include_vars: "{{ ansible_system }}.yml"
+
+- name: install terragrunt.
+  include_tasks: "setup-{{ ansible_system }}.yml"

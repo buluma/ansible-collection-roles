@@ -1,0 +1,49 @@
+---
+- name: Ensure Apache is installed.
+  package:
+    name: "{{ apache_service }}"
+    state: present
+
+- name: Copy test config file.
+  copy:
+    src: files/test.conf
+    dest: "{{ apache_config_dir }}/test.conf"
+  notify: restart apache
+
+- name: Copy a web page.
+  copy:
+    content: |
+      <html>
+      <head><title>Hello World!</title></head>
+      <body>Hello there, this is an empty container for bugzilla</body>
+      </html>
+    dest: "/var/www/html/index.html"
+  notify: restart apache
+
+- name: Ensure apache is running and enabled at boot.
+  service:
+    name: "{{ apache_service }}"
+    state: started
+    enabled: true
+
+- name: Verify Apache is serving content.
+  uri:
+    url: http://localhost/
+    status_code: 200
+  register: apache_status
+  tags: verify
+
+- name: Verify Apache status.
+  debug:
+    var: apache_status.status
+  tags: verify
+
+- name: check apache status
+  command: |
+    service apache2 status
+  register: apache_sys_status
+
+- debug: var=apache_sys_status.stdout
+
+- name: install dependencies
+  package: "{{ bugzilla_packages }}"

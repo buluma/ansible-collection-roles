@@ -1,0 +1,14 @@
+---
+- name: Ensure image exists
+  shell: podman image exists {{ source_image }} || podman pull {{ source_image }}
+  become: true
+- name: Inspect image with Buildah
+  command: buildah inspect {{ source_image }}
+  register: source_image_facts
+  become: true
+- name: Set config with Buildah
+  set_fact:
+    buildah_config: "{{ source_image_facts.stdout_lines | join('') | from_json }}"
+- name: Set original_user with Buildah
+  set_fact:
+    original_user: "{{ buildah_config['Docker']['config']['User'] }}"

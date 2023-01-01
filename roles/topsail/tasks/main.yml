@@ -1,0 +1,20 @@
+---
+# tasks file for topsail
+- name: import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: yes
+  delegate_to: localhost
+
+# Sudo
+- name: import sudo.yml
+  ansible.builtin.import_tasks: sudo.yml
+  when:
+    - check_sudo is defined
+    - check_sudo | bool
+
+# Facts
+- name: import facts.yml
+  ansible.builtin.import_tasks: facts.yml
+  when:
+    - check_facts is defined
+    - check_facts | bool

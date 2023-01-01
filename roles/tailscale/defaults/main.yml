@@ -1,0 +1,34 @@
+---
+# Used only for Debian/Ubuntu.
+tailscale_apt_gpg_key: "https://pkgs.tailscale.com/stable/{{ ansible_distribution|lower }}/{{ ansible_distribution_release|lower }}.gpg"
+tailscale_apt_repository: "deb https://pkgs.tailscale.com/stable/{{ ansible_distribution|lower }} {{ ansible_distribution_release|lower }} main"
+
+# Used only for RedHat/CentOS.
+tailscale_yum_repository_url: "https://pkgs.tailscale.com/stable/{{ ansible_distribution|lower }}/{{ ansible_distribution_major_version }}/tailscale.repo"
+
+# Service options.
+tailscale_service_name: "tailscaled"
+tailscale_service_state: started
+tailscale_service_enabled: true
+
+# Register options.
+tailscale_register_node: false
+tailscale_register_authkey: ""
+tailscale_register_timeout: "30s"
+tailscale_register_extra_args: "--accept-routes"
+
+# Cert options.
+tailscale_cert_enabled: false
+tailscale_cert_domain: ""
+tailscale_cert_dir: "/usr/local/etc/ssl/certs"
+tailscale_cert_filename: "{{ tailscale_cert_domain }}.crt"
+tailscale_cert_private_key_dir: "/usr/local/etc/ssl/private"
+tailscale_cert_private_key_filename: "{{ tailscale_cert_domain }}.key"
+
+# Configure /etc/default/tailscaled options.
+tailscale_default_options_enabled: false
+tailscale_default_options_settings:
+  # Allow caddy user to fetch cert.
+  # See https://tailscale.com/kb/1190/caddy-certificates/#provide-non-root-users-with-access-to-fetch-certificate.
+  - regexp: "^#?TS_PERMIT_CERT_UID"
+    line: "TS_PERMIT_CERT_UID=\"caddy\""

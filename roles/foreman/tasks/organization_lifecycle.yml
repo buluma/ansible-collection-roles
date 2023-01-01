@@ -1,0 +1,58 @@
+---
+- name: 'Ensure organization'
+  theforeman.foreman.organization:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ foreman_organization }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    state: 'present'
+
+- name: 'Ensure Locations'
+  theforeman.foreman.location:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organizations:
+      - "{{ foreman_organization }}"
+    name: "{{ location }}"
+    state: 'present'
+  loop: "{{ foreman_locations }}"
+  loop_control:
+    loop_var: 'location'
+
+- name: 'Ensure Infrastructure Lifecycle environment'
+  theforeman.foreman.lifecycle_environment:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ infra_lifecycle }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    prior: "{{ foreman_infrastructure_lifecycle[index-1] }}"
+    state: 'present'
+  loop: "{{ foreman_infrastructure_lifecycle }}"
+  when: infra_lifecycle != 'Library'
+  loop_control:
+    index_var: 'index'
+    loop_var: 'infra_lifecycle'
+
+- name: 'Ensure Lifecycle environments'
+  theforeman.foreman.lifecycle_environment:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    organization: "{{ foreman_organization }}"
+    name: "{{ lifecycle }}"
+    description: 'Managed by Ansible, your changes will be lost'
+    prior: "{{ foreman_lifecycle[index-1] }}"
+    state: 'present'
+  loop: "{{ foreman_lifecycle }}"
+  when: lifecycle != 'Library'
+  loop_control:
+    index_var: 'index'
+    loop_var: 'lifecycle'

@@ -1,0 +1,44 @@
+---
+# tasks file for install sonar-scanner on Darwin system
+
+- name: Darwin | Get the latest published full release for the repository
+  uri:
+    url: https://api.github.com/repos/sonarsource/sonar-scanner-cli/tags
+    return_content: yes
+  register: sonar_scanner_index
+  when: sonar_scanner_version == "latest"
+  check_mode: no
+
+- name: Darwin | Filter the latest sonar-scanner version
+  set_fact:
+    sonar_scanner_version_to_install: "{{ (sonar_scanner_index.json | first).name }}"
+  when: sonar_scanner_version == 'latest'
+
+- name: Darwin | Use the specified sonar-scanner version when latest var is not define
+  set_fact:
+    sonar_scanner_version_to_install: "{{ sonar_scanner_version }}"
+  when: sonar_scanner_version != 'latest'
+
+  # This task avoids downloading sonar-scanner every time
+- name: Darwin | Check if sonar-scanner is present with the right version
+  command: "{{ sonar_scanner_directory }}/bin/sonar-scanner --version"
+  register: sonar_scanner_installed_version
+  ignore_errors: yes
+  changed_when: false
+  failed_when: false
+
+- name: Darwin | Install sonar-scanner
+  unarchive:
+    src: "{{ sonar_src }}"
+    dest: "{{ sonar_scanner_directory }}/"
+    remote_src: yes
+  when: sonar_scanner_version_to_install not in sonar_scanner_installed_version.stdout | default('')
+
+- name: Darwin | Add sonar-scanner to PATH
+  file:
+    src: "{{ sonar_scanner_directory }}/sonar-scanner-{{ sonar_scanner_version_to_install }}-{{ ansible_system }}/bin/{{ item }}"
+    dest: "{{ sonar_scanner_path }}/{{ item }}"
+    state: link
+  with_items:
+    - sonar-scanner
+    - sonar-scanner-debug

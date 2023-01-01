@@ -1,0 +1,58 @@
+---
+# vars file for bugzilla
+
+apache_service: apache2
+apache_package: apache2
+apache_config_dir: /etc/apache2/sites-enabled
+
+bugzilla_packages:
+  - build-essential
+  - libappconfig-perl
+  - libdate-calc-perl
+  - libtemplate-perl
+  - libmime-tools-perl
+  - build-essential
+  - libdatetime-timezone-perl
+  - libdatetime-perl
+  - libemail-sender-perl
+  - libemail-mime-perl
+  - libemail-mime-perl
+  - libdbi-perl
+  - libdbd-mysql-perl
+  - libcgi-pm-perl
+  - libmath-random-isaac-perl
+  - libmath-random-isaac-xs-perl
+  - libapache2-mod-perl2
+  - libapache2-mod-perl2-dev
+  - libchart-perl
+  - libxml-perl
+  - libxml-twig-perl
+  - perlmagick
+  - libgd-graph-perl
+  - libtemplate-plugin-gd-perl
+  - libsoap-lite-perl
+  - libhtml-scrubber-perl
+  - libjson-rpc-perl
+  - libdaemon-generic-perl
+  - libtheschwartz-perl
+  - libtest-taint-perl
+  - libauthen-radius-perl
+  - libfile-slurp-perl
+  - libencode-detect-perl
+  - libmodule-build-perl
+  - libnet-ldap-perl
+  - libfile-which-perl
+  - libauthen-sasl-perl
+  - libfile-mimeinfo-perl
+  - libhtml-formattext-withlinks-perl
+  - libgd-dev
+  - libmysqlclient-dev
+  - graphviz
+  - sphinx-common
+  - rst2pdf
+  - libemail-address-perl
+  - libemail-reply-perl
+
+mysql_packages: mariadb-server
+
+pymysql_pkg: python3-pymysql

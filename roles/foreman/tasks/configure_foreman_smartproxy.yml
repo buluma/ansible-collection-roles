@@ -1,0 +1,37 @@
+---
+- name: 'Configure Host Deployment and Discovery'
+  block:
+    - name: 'Configure Foreman for deployment'
+      ansible.builtin.include_tasks: 'configure_deployment.yml'
+
+    - name: 'Configure Foreman for iPXE'
+      ansible.builtin.include_tasks: 'configure_ipxe.yml'
+      when: foreman_deploy_ipxe
+
+    - name: 'Configure Host Discovery'
+      ansible.builtin.shell: |
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+        /usr/sbin/foreman-installer --enable-foreman-proxy-plugin-discovery \
+          --detailed-exitcodes
+      register: 'installer_output'
+      changed_when: installer_output['rc'] == 2
+      failed_when: installer_output['rc'] == 1 or installer_output['rc'] >= 4
+  when: foreman_configure_deployment
+
+- name: 'Update Foreman Smart Proxy Config'
+  theforeman.foreman.smart_proxy:
+    username: "{{ foreman_admin_user }}"
+    password: "{{ foreman_admin_password }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: "{{ foreman_validate_certs }}"
+    name: "{{ ansible_facts['fqdn'] }}"
+    url: "https://{{ ansible_facts['fqdn'] }}:9090"
+    download_policy: "{{ foreman_smartproxy_download_policy }}"
+    lifecycle_environments: "{{ foreman_smart_proxy_lifecycles }}"
+    organizations:
+      - "{{ foreman_organization }}"
+    locations:
+      - "{{ foreman_smart_proxy_location }}"
+    state: 'present'
+  delegate_to: "{{ groups['foreman'][0] }}"

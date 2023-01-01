@@ -1,0 +1,22 @@
+---
+# defaults file for pg_partman
+
+partman_postgresql_10_repo_url: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+partman_schema: partman
+
+partman_bgw_enabled: true
+
+# Required. The database(s) that run_maintenance() will run on. If more than one, use a comma separated list. If not set, BGW will do nothing.
+partman_bgw_dbname: postgres
+
+# Number of seconds between calls to run_maintenance(). Default is 3600 (1 hour).
+partman_bgw_interval: 3600
+
+# The role that run_maintenance() will run as. Default is "postgres". Only a single role name is allowed.
+partman_bgw_role: postgres
+
+# Same purpose as the p_analyze argument to run_maintenance(). Set to 'on' for TRUE. Set to 'off' for FALSE. Default is 'on'.
+partman_bgw_analyze: on
+
+# Same purpose as the p_jobmon argument to run_maintenance(). Set to 'on' for TRUE. Set to 'off' for FALSE. Default is 'on'.
+partman_bgw_jobmon: on

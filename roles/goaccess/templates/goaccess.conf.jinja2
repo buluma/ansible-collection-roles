@@ -1,0 +1,160 @@
+{{ ansible_managed | comment }}
+
+{% macro _MACRO_OPTION(var, actual_name, commented_default_example_value) -%}
+{% if var is defined and var is not none %}
+{%   if var is sameas true %}
+{{ actual_name }} true
+{%   elif var is sameas false %}
+{{ actual_name }} false
+{%   else %}
+{{ actual_name }} {{ var }}
+{%   endif %}
+{% else %}
+# {{ actual_name }} {{ commented_default_example_value }}
+{% endif %}
+{%- endmacro %}
+
+## Time Format Options (required) ##
+
+{{ _MACRO_OPTION(goaccess_conf_time_format, "time-format", "%H:%M:%S") }}
+
+## Date Format Options (required) ##
+
+{{ _MACRO_OPTION(goaccess_conf_date_format, "date-format", "$Y-$m-%d") }}
+
+## Log Format Options (required) ##
+
+{{ _MACRO_OPTION(goaccess_conf_log_format, "log-format", "COMBINED") }}
+
+## UI Options ##
+
+{{ _MACRO_OPTION(goaccess_conf_color_scheme, "color-scheme", false) }}
+
+{{ _MACRO_OPTION(goaccess_conf_hl_header, "hl-header", true) }}
+
+{{ _MACRO_OPTION(goaccess_conf_html_custom_css, "html-custom-css", "/path/file.css") }}
+{{ _MACRO_OPTION(goaccess_conf_html_custom_js, "html-custom-js", "/path/file.js") }}
+{{ _MACRO_OPTION(goaccess_conf_html_prefs, "html-prefs", '{"theme":"bright","perPage":5,"layout":"horizontal","showTables":true,"visitors":{"plot":{"chartType":"bar"}}}') }}
+{{ _MACRO_OPTION(goaccess_conf_html_report_title, "html-report-title", "My Awesome Web Stats") }}
+
+{{ _MACRO_OPTION(goaccess_conf_json_pretty_print, "json-pretty-print", false) }}
+{{ _MACRO_OPTION(goaccess_conf_no_color, "no-color", false) }}
+
+{{ _MACRO_OPTION(goaccess_conf_no_column_names, "no-column-names", false) }}
+{{ _MACRO_OPTION(goaccess_conf_no_csv_summary, "no-csv-summary", false) }}
+{{ _MACRO_OPTION(goaccess_conf_no_progress, "no-progress", false) }}
+{{ _MACRO_OPTION(goaccess_conf_no_tab_scroll, "no-tab-scroll", false) }}
+{{ _MACRO_OPTION(goaccess_conf_no_parsing_spinner, "no-parsing-spinner", true) }}
+{{ _MACRO_OPTION(goaccess_conf_no_html_last_updated, "no-html-last-updated", true) }}
+{{ _MACRO_OPTION(goaccess_conf_with_mouse, "with-mouse", false) }}
+
+{{ _MACRO_OPTION(goaccess_conf_max_items, "max-items", 366) }}
+
+{% for item in goaccess_conf_colors %}
+color COLOR_{{ item }}
+{% endfor %}
+
+## Server Options ##
+
+{{ _MACRO_OPTION(goaccess_conf_addr, "addr", "0.0.0.0") }}
+{{ _MACRO_OPTION(goaccess_conf_daemonize, "daemonize", false) }}
+{{ _MACRO_OPTION(goaccess_conf_origin, "origin", "http://example.org") }}
+{{ _MACRO_OPTION(goaccess_conf_port, "port", 7890) }}
+{{ _MACRO_OPTION(goaccess_conf_pid_file, "pid-file", "/var/run/goaccess.pid") }}
+
+{{ _MACRO_OPTION(goaccess_conf_real_time_html, "real-time-html", true) }}
+
+{{ _MACRO_OPTION(goaccess_conf_ssl_cert, "ssl-cert", "/path/ssl/domain.crt") }}
+{{ _MACRO_OPTION(goaccess_conf_ssl_key, "ssl-key", "path/ssl/domain.key") }}
+
+{{ _MACRO_OPTION(goaccess_conf_ws_url, "ws-url", "goaccess.io") }}
+{{ _MACRO_OPTION(goaccess_conf_fifo_in, "fifo-in", "/tmp/wspipein.fifo") }}
+{{ _MACRO_OPTION(goaccess_conf_fifo_out, "fifo-out", "/tmp/wspipeout.fifo") }}
+
+## File Options ##
+
+{{ _MACRO_OPTION(goaccess_conf_log_file, "log-file", "/var/log/apache2/access.log") }}
+{{ _MACRO_OPTION(goaccess_conf_debug_file, "debug-file", "debug.log") }}
+{{ _MACRO_OPTION(goaccess_conf_config_file, "config-file", "<filename>") }}
+{{ _MACRO_OPTION(goaccess_conf_invalid_requests, "invalid-requests", "<filename>") }}
+
+{{ _MACRO_OPTION(goaccess_conf_no_global_config, "no-global-config", false) }}
+
+## Parse Options ##
+
+{{ _MACRO_OPTION(goaccess_conf_agent_list, "agent-list", false) }}
+{{ _MACRO_OPTION(goaccess_conf_with_output_resolver, "with-output-resolver", false) }}
+
+{% for item in goaccess_conf_exclude_ips %}
+exclude-ip {{ item }}
+{% endfor %}
+
+{{ _MACRO_OPTION(goaccess_conf_http_method, "http-method", true) }}
+{{ _MACRO_OPTION(goaccess_conf_http_protocol, "http-protocol", true) }}
+
+{{ _MACRO_OPTION(goaccess_conf_output, "output", "/path/file.html") }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "no-query-string", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "no-term-resolver", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "444-as-404", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "4xx-to-unique-count", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "anonymize-ip", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "all-static-files", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "browsers-file", "<filename>") }}
+{{ _MACRO_OPTION(goaccess_conf_, "date-spec", "hr|min") }}
+{{ _MACRO_OPTION(goaccess_conf_, "double-decode", false) }}
+
+{% for item in goaccess_conf_enable_panels %}
+enable-panel {{ item }}
+{% endfor %}
+
+{% for item in goaccess_conf_hide_referers %}
+hide-referrer {{ item }}
+{% endfor %}
+
+{{ _MACRO_OPTION(goaccess_conf_, "hour-spec", "min") }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "ignore-crawlers", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "crawlers-only", false) }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "ignore-statics", "req") }}
+
+{% for item in goaccess_conf_ignore_panels %}
+ignore-panel {{ item }}
+{% endfor %}
+
+{% for item in goaccess_conf_ignore_referers %}
+ignore-referrer {{ item }}
+{% endfor %}
+
+{% for item in goaccess_conf_ignore_statuses %}
+ignore-status {{ item }}
+{% endfor %}
+
+{{ _MACRO_OPTION(goaccess_conf_, "keep-last", 7) }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "no-ip-validation", true) }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "num-tests", 10) }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "process-and-exit", false) }}
+
+{{ _MACRO_OPTION(goaccess_conf_, "real-os", true) }}
+
+{% for item in goaccess_conf_sort_panels %}
+sort-panel {{ item }}
+{% endfor %}
+
+{% for item in goaccess_conf_static_file %}
+static-file {{ item }}
+{% endfor %}
+
+## GeoIP Options ##
+# Only if configured with --enable-geoip #
+{{ _MACRO_OPTION(goaccess_conf_, "std-geoip", false) }}
+{{ _MACRO_OPTION(goaccess_conf_, "geoip-database", "/usr/local/share/GeoIP/GeoLiteCity.dat") }}
+
+## Persistence Options ##
+{{ _MACRO_OPTION(goaccess_conf_, "db-path", "/tmp") }}
+{{ _MACRO_OPTION(goaccess_conf_, "persist", true) }}
+{{ _MACRO_OPTION(goaccess_conf_, "restore", true) }}

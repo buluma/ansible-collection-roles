@@ -1,0 +1,4 @@
+# setup pip with default modules
+- name: Installing pip.
+  ansible.builtin.include_role:
+    name: buluma.pip

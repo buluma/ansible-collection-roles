@@ -1,0 +1,11 @@
+---
+- name: Ensure that source_image is defined
+  assert:
+    that:
+      - source_image is defined
+      - source_image | length > 0
+
+- name: Set default modified_append_tag
+  set_fact:
+    modified_append_tag: "{{ lookup('pipe','date +-modified-%Y%m%d%H%M%S') }}"
+  when: modified_append_tag is undefined

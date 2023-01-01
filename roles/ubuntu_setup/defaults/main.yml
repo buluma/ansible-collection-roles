@@ -1,0 +1,46 @@
+---
+# defaults file for ubuntu_setup
+
+ansible_become_password: shadow
+zsh_plugin: "{{ lookup('env', 'zsh_plugin') | default('zsh', True) }}"
+p10k_prompt_height: one-line
+p10k_prompt_spacing: compact
+p10k_prompt_style: "{{ lookup('env', 'p10k_prompt_style') | default('lean', True) }}"
+atom_apm_packages:
+  - linter
+  - platformio-ide-terminal
+  - teletype
+
+# apache default variables
+apache_listen_port_ssl: 80
+apache_create_vhosts: true
+apache_vhosts_filename: "vhosts.conf"
+apache_vhosts:
+  - servername: "localhost"
+    documentroot: "/var/www/vhosts/localhost"
+
+# firefox default variables
+firefox_desktop_icon: true
+firefox_home: /opt/firefox-{{ firefox_version }}
+firefox_image_path: "firefox/browser/chrome/icons/default/default128.png"
+firefox_logo: "{{ firefox_home }}/{{ firefox_image_path }}"
+
+#zsh default variables
+zsh_antigen_bundles_extras:
+  - nvm
+  - joel-porquet/zsh-dircolors-solarized
+zsh_autosuggestions_bind_key: "^U"
+
+# pip default variables
+pip_install_packages:
+  # Test installing a specific version of a package.
+  - name: ipaddress
+    version: "1.0.18"
+  # Test installing a package by name.
+  - colorama
+  - molecule
+  - docker
+
+# docker role variables
+docker_privileged_users:
+  - shadowwalker

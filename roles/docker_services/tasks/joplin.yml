@@ -1,0 +1,77 @@
+---
+- name: 'Create network'
+  community.docker.docker_network:
+    name: 'joplin_backend'
+    driver: 'overlay'
+
+- name: 'Get Traefik network info'
+  community.docker.docker_network_info:
+    name: 'traefik_backend'
+  register: 'traefik_network_info'
+
+
+- name: 'Create directory for container data'
+  file:
+    path: "{{ docker_data_dir }}/{{ dir }}"
+    state: 'directory'
+    mode: 0755
+  loop:
+    - 'joplin_db'
+  loop_control:
+    loop_var: 'dir'
+
+- name: 'Deploy PostgreSQL for Joplin'
+  community.docker.docker_swarm_service:
+    name: 'joplin_postgres'
+    image: "postgres:{{ joplin_postgres_release }}"
+    env:
+      - 'POSTGRES_DB=joplin'
+      - 'POSTGRES_USER=joplin'
+      - "POSTGRES_PASSWORD={{ joplin_db_password }}"
+    mounts:
+      - source: "{{ docker_data_dir }}/joplin_db"
+        target: '/var/lib/postgresql/data'
+        type: 'bind'
+    networks:
+      - 'joplin_backend'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"
+
+- name: 'Deploy Joplin'
+  community.docker.docker_swarm_service:
+    name: 'joplin'
+    image: "joplin/server:{{ joplin_release }}"
+    env:
+      - 'DB_CLIENT=pg'
+      - 'POSTGRES_HOST=tasks.joplin_postgres'
+      - 'POSTGRES_PORT=5432'
+      - 'POSTGRES_DATABASE=joplin'
+      - 'POSTGRES_USER=joplin'
+      - "POSTGRES_PASSWORD={{ joplin_db_password }}"
+      - 'APP_PORT=22300'
+      - "APP_BASE_URL=https://{{ joplin_fqdn }}"
+      - 'MAILER_ENABLED=1'
+      - "MAILER_HOST={{ joplin_smtp_server }}"
+      - "MAILER_PORT={{ joplin_smtp_port }}"
+      - "MAILER_SECURITY={{ joplin_smtp_ssl | ternary('tls', 'none') }}"
+      - "MAILER_AUTH_USER={{ joplin_smtp_user | default(omit, true) }}"
+      - "MAILER_AUTH_PASSWORD={{ joplin_smtp_password | default(omit, true) }}"
+      - "MAILER_NOREPLY_NAME=JoplinServer"
+      - "MAILER_NOREPLY_EMAIL={{ joplin_smtp_from }}"
+    networks:
+      - 'joplin_backend'
+      - 'traefik_backend'
+    labels:
+      traefik.http.routers.joplin.rule: "HostHeader(`{{ joplin_fqdn }}`)"
+      traefik.http.routers.joplin.tls: "true"
+      traefik.http.services.joplin.loadbalancer.server.port: '22300'
+    mode: 'replicated'
+    replicas: 1
+    restart_config:
+      condition: "{{ restart_condition }}"
+    user: null
+  no_log: "{{ not docker_service_debug }}"

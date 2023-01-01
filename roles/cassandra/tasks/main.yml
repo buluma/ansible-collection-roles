@@ -1,0 +1,16 @@
+---
+
+- include_tasks: assert.yml
+
+- include_tasks: variables.yml
+
+- include_tasks: "install/{{ ansible_os_family }}.yml"
+
+- include_tasks: hotfixes.yml
+
+- include_tasks: join_cluster.yml
+  when: cassandra_join_cluster | bool
+
+- include_tasks: configure.yml
+
+- include_tasks: service.yml

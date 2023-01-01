@@ -1,0 +1,12 @@
+---
+# vars file for payload_cms
+
+_payloadcms_packages:
+  default:
+    - nodejs
+  Alpine:
+    - nodejs
+  openSUSE Leap:
+    - nodejs
+
+payloadcms_packages: "{{ _payloadcms_packages[ansible_distribution] | default(_payloadcms_packages['default'] ) }}"
