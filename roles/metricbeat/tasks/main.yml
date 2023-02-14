@@ -13,7 +13,7 @@
 
 - name: Configure metricbeat
   ansible.builtin.template:
-    src: metricbeat.yml.j2
+    src: "{{ metricbeat_template }}"
     dest: /etc/metricbeat/metricbeat.yml
     owner: root
     group: root
