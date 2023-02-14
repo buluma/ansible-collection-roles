@@ -19,3 +19,4 @@ metricbeat_elasticsearch_password: ""
 
 # The URL for Kibana.
 metricbeat_kibana_host: "http://localhost:5601"
+metricbeat_template: "metricbeat.yml.j2"

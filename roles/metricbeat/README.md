@@ -64,6 +64,9 @@ metricbeat_elasticsearch_password: ""
 
 # The URL for Kibana.
 metricbeat_kibana_host: "http://localhost:5601"
+
+# You can either copy and modify the provided template, or you can, for example, point to a template file in your playbook directory that will be used instead of the managed template.
+filebeat_template: "{{ playbook_dir }}/templates/metricbeat.yml.j2"
 ```
 
 ## [Requirements](#requirements)
