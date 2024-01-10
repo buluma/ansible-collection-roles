@@ -1,6 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-collections:
-  - name: operator_sdk.util
-    version: ">=0.0.0,<1.0.0"

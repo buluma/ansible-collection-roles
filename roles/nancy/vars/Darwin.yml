@@ -1,4 +1,0 @@
----
-nancy_os: darwin
-nancy_parent_install_dir: /usr/local
-nancy_privilege_escalate: False

@@ -1,9 +1,0 @@
----
-roles:
-  - name: buluma.apt_autostart
-  - name: buluma.bootstrap
-  - name: buluma.epel
-  - name: buluma.sysctl
-  - name: robertdebock.grub
-collections:
-  - name: ansible.posix

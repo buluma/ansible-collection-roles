@@ -1,8 +1,0 @@
----
-# Copyright (C) 2018-2022 Robert Wimmer
-# SPDX-License-Identifier: GPL-3.0-or-later
-
-- name: (Archlinux) Install wireguard-tools package
-  ansible.builtin.pacman:
-    name: wireguard-tools
-    state: present

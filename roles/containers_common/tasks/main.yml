@@ -54,7 +54,7 @@
       skip: true
 
 - fail:
-- name: prepare directories
+- name: Prepare directories
   ansible.builtin.file:
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"
@@ -77,7 +77,7 @@
     - { dest: "/etc/containers/storage.conf" }
     - { dest: "/etc/containers/registries.conf.d/00-defaults.conf" }
 
-- name: prepare files
+- name: Prepare files
   ansible.builtin.file:
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"

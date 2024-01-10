@@ -1,7 +1,0 @@
----
-# tasks file for postman
-
-- name: install postman
-  package:
-    name: postman
-    state: present

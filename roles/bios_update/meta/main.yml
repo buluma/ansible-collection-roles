@@ -5,7 +5,7 @@ galaxy_info:
   description: Download, extract and write bootable USB image.
   company: ShadowNet
   license: Apache-2.0
-  min_ansible_version: "2.10"
+  min_ansible_version: "2.12"
   platforms:
     - name: Ubuntu
       versions:

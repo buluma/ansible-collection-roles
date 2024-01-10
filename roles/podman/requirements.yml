@@ -1,6 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-collections:
-  - name: containers.podman
-  - name: community.general

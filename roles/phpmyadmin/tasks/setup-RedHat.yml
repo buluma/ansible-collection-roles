@@ -1,7 +1,0 @@
----
-- name: Ensure phpMyAdmin is installed.
-  ansible.builtin.yum:
-    name: phpmyadmin
-    state: present
-    enablerepo: "{{ phpmyadmin_enablerepo }}"
-  notify: restart apache

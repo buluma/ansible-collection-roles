@@ -1,5 +1,0 @@
----
-protonvpn_defaults: []
-protonvpn_domain: "ch.{{ protonvpn_package | lower }}.mac"
-protonvpn_package: ProtonVPN
-...

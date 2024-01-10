@@ -1,7 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: bukuma.apache
-  - name: buluma.nginx
-collections:
-  - name: community.general

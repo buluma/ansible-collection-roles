@@ -1,3 +1,0 @@
----
-_zypper:
-  - { state: "latest", name: "fontconfig" }

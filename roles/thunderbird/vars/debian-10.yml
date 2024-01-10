@@ -1,4 +1,0 @@
----
-
-_apt:
-  - { state: "latest", name: "thunderbird" }

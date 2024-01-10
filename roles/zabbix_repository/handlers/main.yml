@@ -1,6 +1,0 @@
----
-# handlers file for zabbix_repository
-
-- name: Update cache
-  ansible.builtin.apt:
-    update_cache: yes

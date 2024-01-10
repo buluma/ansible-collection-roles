@@ -1,3 +1,0 @@
----
-# packer_rhel_libselinux_package: libselinux-python
-packer_rhel_libselinux_package: python3-libselinux

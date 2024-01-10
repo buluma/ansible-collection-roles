@@ -1,7 +1,0 @@
----
-# ©Copyright 2015-2016 Hewlett Packard Enterprise Development Company, LP
-
-monasca_conf_dir: /etc/monasca
-monasca_agent_check_plugin_dir: /usr/lib/monasca/agent/custom_checks.d
-monasca_agent_detection_plugin_dir: /usr/lib/monasca/agent/custom_detect.d
-monasca_agent_legacy_systemd_unit_filename: monasca-agent

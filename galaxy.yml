@@ -1,16 +1,16 @@
 ---
 namespace: buluma
 name: roles
-version: 2.0.3
+version: 2.0.4
 readme: README.md
 authors:
   - Michael Buluma <me@buluma.me.ke>
-description: A collection of all roles listed in [github](https://buluma.github.io/).
+description: A collection of all roles listed on (https://buluma.github.io/).
 license_file: 'LICENSE'
 tags:
   - buluma
   - roles
-  - linux
+  - ansible
 dependencies:
   ansible.posix: "*"
   community.crypto: "*"

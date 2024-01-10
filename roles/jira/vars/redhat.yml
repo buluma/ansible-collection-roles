@@ -1,3 +1,0 @@
----
-_yum:
-  - { state: "latest", name: "fontconfig" }

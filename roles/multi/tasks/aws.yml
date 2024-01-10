@@ -1,8 +1,0 @@
----
-- name: Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
-  community.aws.s3_lifecycle:
-    name: mybucket
-    expiration_days: 30
-    prefix: logs/
-    status: enabled
-    state: present

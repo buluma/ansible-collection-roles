@@ -1,8 +1,0 @@
----
-- name: Add Tailscale repository
-  get_url:
-    url: "{{ tailscale_yum_repository_url }}"
-    dest: /etc/yum.repos.d/tailscale.repo
-    owner: root
-    group: root
-    mode: 0644

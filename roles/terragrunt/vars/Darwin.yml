@@ -1,3 +1,0 @@
----
-# vars file for terragrunt in Mac osx system
-terragrunt_default_path: /usr/local/bin/

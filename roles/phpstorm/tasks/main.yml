@@ -1,4 +1,0 @@
----
-# tasks file for phpstorm
-- include: install.yml
-- include: test.yml

@@ -1,7 +1,0 @@
----
-_apt_key: []
-
-_apt_repository: []
-
-_apt:
-  - { state: "latest", name: "handbrake" }

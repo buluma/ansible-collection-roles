@@ -1,9 +1,0 @@
----
-roles:
-  - name: jonaspammer.bootstrap
-  - name: jonaspammer.apache2
-    __not_mandatory_to_role_itself: true # used by JonasPammer/ansible-roles
-
-# NOTE: list all collections used here (even if included in `ansible`)
-collections:
-  - name: community.general

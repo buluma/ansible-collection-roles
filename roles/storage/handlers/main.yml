@@ -1,9 +1,0 @@
----
-# handlers file for storage
-
-- name: Reload systemd
-  ansible.builtin.systemd:
-    daemon_reload: yes
-
-- name: Refresh facts
-  ansible.builtin.setup:

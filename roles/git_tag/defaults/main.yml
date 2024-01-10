@@ -1,5 +1,0 @@
----
-# defaults file for git_tag
-git_repo_location: .
-# git_remote: origin
-update_git_tag: false

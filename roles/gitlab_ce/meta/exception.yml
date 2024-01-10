@@ -1,5 +1,0 @@
----
-exceptions:
-  - variation: enterpriselinux:7
-    reason: "Failed to import the required Python library (setuptools) on gitlabce-enterpriselinux-7's Python /usr/bin/python."
-    # TODO: Come back to this later

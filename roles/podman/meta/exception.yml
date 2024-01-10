@@ -1,4 +1,0 @@
----
-exceptions:
-  - variation: Debian:bookworm
-    reason: "No package matching 'podman' is available"

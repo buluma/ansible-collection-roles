@@ -1,4 +1,0 @@
----
-# vars file for passenger
-# TODO: merge into one var file
-__nginx_user: "www-data"

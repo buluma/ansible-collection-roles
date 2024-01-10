@@ -1,8 +1,0 @@
----
-
-roles:
-  - name: sansible.users_and_groups
-    version: v2.0.0-latest
-  - name: buluma.bootstrap
-collections:
-  - name: amazon.aws

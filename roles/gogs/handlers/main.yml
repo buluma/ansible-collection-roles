@@ -1,6 +1,0 @@
----
-
-- name: restart_gogs
-  ansible.builtin.service:
-    name: gogs-server
-    state: restarted

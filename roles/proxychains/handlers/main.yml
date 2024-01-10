@@ -1,5 +1,0 @@
----
-- name: restart tor
-  ansible.builtin.service:
-    name: tor
-    state: restarted

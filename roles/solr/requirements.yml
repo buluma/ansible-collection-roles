@@ -1,5 +1,0 @@
----
-roles:
-  - name: buluma.java
-collections:
-  - name: ansible.posix

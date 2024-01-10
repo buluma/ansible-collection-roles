@@ -1,8 +1,0 @@
----
-roles:
-  - role: buluma.bootstrap
-  - role: buluma.buildtools
-  - name: buluma.docker
-  - name: buluma.docker_ce
-collections:
-  - name: community.general

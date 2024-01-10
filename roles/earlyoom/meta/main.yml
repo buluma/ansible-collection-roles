@@ -6,7 +6,7 @@ galaxy_info:
   description: Install and configure Early Out Of Memory Killer on your system.
   license: Apache-2.0
   company: none
-  min_ansible_version: "2.10"
+  min_ansible_version: "2.12"
 
   platforms:
     - name: EL
@@ -18,7 +18,7 @@ galaxy_info:
     - name: Fedora
       versions:
         - all
-    - name: OpenSUSE
+    - name: opensuse
       versions:
         - all
     - name: Ubuntu

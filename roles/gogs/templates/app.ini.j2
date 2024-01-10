@@ -1,8 +1,0 @@
-{% for section, options in gogs_config.iteritems() %}
-[{{ section }}]
-
-{% for key, value in options.iteritems() %}
-{{ key }} = {{ value }}
-{% endfor %}
-
-{% endfor %}

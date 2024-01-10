@@ -1,7 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: enix.postgresql
-  # - name: buluma.postgresql
-collections:
-  - name: ansible.posix

@@ -1,7 +1,0 @@
----
-- name: ensure NFS utilities are installed.
-  ansible.builtin.apt:
-    name:
-      - nfs-common
-      - nfs-kernel-server
-    state: present

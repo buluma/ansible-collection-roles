@@ -1,7 +1,0 @@
----
-# defaults file for umask
-
-umask: "0022"
-
-umask_users:
-  - root

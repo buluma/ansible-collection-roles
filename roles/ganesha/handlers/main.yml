@@ -1,9 +1,0 @@
----
-# handlers file for hswong3i.ganesha
-
-- name: restart ganesha
-  service: 
-    name: "{{ item.name }}"
-    state: "{{ item.state }}"
-  with_items:
-    - { name: "nfs-ganesha", state: "restarted" }

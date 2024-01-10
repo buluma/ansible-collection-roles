@@ -1,8 +1,0 @@
----
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.epel
-  - name: buluma.java
-  - name: buluma.service
-collections:
-  - name: ansible.posix

@@ -1,3 +1,0 @@
----
-influxdb_yum_url: https://repos.influxdata.com/rhel/$releasever/$basearch/stable
-influxdb_yum_key: https://repos.influxdata.com/influxdb.key

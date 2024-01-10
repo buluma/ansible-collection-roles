@@ -1,9 +1,0 @@
----
-- name: create influxdb configuration
-  ansible.builtin.template:
-    src: "influxdb.conf.j2"
-    dest: "{{ influxdb_config_dir }}/influxdb.conf"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-  notify: restart-influxdb

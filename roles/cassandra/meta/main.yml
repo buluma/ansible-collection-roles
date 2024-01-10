@@ -5,7 +5,7 @@ galaxy_info:
   company: ShadowNet
   role_name: cassandra
   license: Apache-2.0
-  min_ansible_version: "2.10"
+  min_ansible_version: "2.12"
   galaxy_tags:
     - apache
     - cassandra
