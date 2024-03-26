@@ -6,4 +6,4 @@
       - elastic_repo_license is defined
       - elastic_repo_license is string
       - elastic_repo_license in [ "elastic", "oss" ]
-    quiet: yes
+    quiet: true

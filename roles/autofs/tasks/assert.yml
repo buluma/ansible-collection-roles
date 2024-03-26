@@ -6,13 +6,13 @@
       - slash_replace_char is defined
       - slash_replace_char is string
       - slash_replace_char | length in [ 0, 1 ]
-    quiet: yes
+    quiet: true
 
 - name: Test if autofs_maps is set correctly
   ansible.builtin.assert:
     that:
       - autofs_maps is iterable
-    quiet: yes
+    quiet: true
   when:
     - autofs_maps is defined
 
@@ -23,7 +23,7 @@
       - item.mountpoint is string
       - item.directories is defined
       - item.directories is iterable
-    quiet: yes
+    quiet: true
   loop: "{{ autofs_maps }}"
   loop_control:
     label: "{{ item.mountpoint }}"
@@ -36,7 +36,7 @@
     that:
       - item.name is string
       - item.name is regex("^[A-Za-z0-9-_.^]+$")
-    quiet: yes
+    quiet: true
   loop: "{{ autofs_maps }}"
   loop_control:
     label: "{{ item.mountpoint }}"
@@ -49,7 +49,7 @@
     that:
       - item.mountpoint is defined
       - item.mountpoint is string
-    quiet: yes
+    quiet: true
   loop: "{{ autofs_maps }}"
   loop_control:
     label: "{{ item.mountpoint }}"
@@ -61,7 +61,7 @@
   ansible.builtin.assert:
     that:
       - item.options is iterable
-    quiet: yes
+    quiet: true
   loop: "{{ autofs_maps }}"
   loop_control:
     label: "{{ item.mountpoint }}"

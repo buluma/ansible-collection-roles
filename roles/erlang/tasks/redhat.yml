@@ -19,5 +19,5 @@
   ansible.builtin.yum:
     name: '{{ item }}'
     state: installed
-    update_cache: yes
+    update_cache: true
   with_items: '{{ erlang_packages }}'

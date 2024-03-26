@@ -6,7 +6,7 @@ cassandra_configuration_templ: "cassandra.yaml.j2"
 cassandra_configure_apache_repo: False
 cassandra_install_packages: True
 cassandra_package: cassandra
-cassandra_service_enabled: yes
+cassandra_service_enabled: true
 cassandra_regex_replacements: []
 cassandra_service_restart: True
 cassandra_service_state: started

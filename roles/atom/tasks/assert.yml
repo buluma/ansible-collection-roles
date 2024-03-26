@@ -4,6 +4,6 @@
   ansible.builtin.assert:
     that:
       - atom_apm_packages is iterable
-    quiet: yes
+    quiet: true
   when:
     - atom_apm_packages is defined

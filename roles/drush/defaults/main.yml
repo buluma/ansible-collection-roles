@@ -22,5 +22,5 @@ drush_source_install_version: "8.x"
 drush_keep_updated: false
 drush_force_update: false
 drush_force_composer_install: false
-drush_composer_cli_options: "--prefer-dist --no-interaction"
+drush_composer_cli_options: "--prefer-dist --false-interaction"
 drush_clone_depth: 1

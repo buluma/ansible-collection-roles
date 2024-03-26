@@ -5,14 +5,14 @@
     that:
       - etherpad_version is defined
       - etherpad_version is string
-    quiet: yes
+    quiet: true
 
 - name: Test if etherpad_installation_destination is set correctly
   ansible.builtin.assert:
     that:
       - etherpad_installation_destination is defined
       - etherpad_installation_destination is string
-    quiet: yes
+    quiet: true
 
 - name: Test if etherpad_port is set correctly
   ansible.builtin.assert:
@@ -21,4 +21,4 @@
       - etherpad_port is number
       - etherpad_port > 0
       - etherpad_port <= 65536
-    quiet: yes
+    quiet: true

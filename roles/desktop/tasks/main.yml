@@ -17,7 +17,7 @@
 - name: Install software manually using dnf
   ansible.builtin.command: "dnf groupinstall --allowerasing --assumeyes '{{ item.name }}'"
   args:
-    warn: no
+    warn: false
   loop: "{{ desktop_software }}"
   loop_control:
     label: "{{ item.name }}"

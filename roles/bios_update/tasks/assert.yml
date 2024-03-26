@@ -4,25 +4,25 @@
     that:
       - bios_update_temporary_directory is defined
       - bios_update_temporary_directory is string
-    quiet: yes
+    quiet: true
 
 - name: Test if bios_update_url is set correctly
   ansible.builtin.assert:
     that:
       - bios_update_url is defined
       - bios_update_url is string
-    quiet: yes
+    quiet: true
 
 - name: Test if bios_update_flash_drive is set correctly
   ansible.builtin.assert:
     that:
       - bios_update_flash_drive is defined
       - bios_update_flash_drive is string
-    quiet: yes
+    quiet: true
 
 - name: Test if bios_update_write is set correctly
   ansible.builtin.assert:
     that:
       - bios_update_write is defined
       - bios_update_write is boolean
-    quiet: yes
+    quiet: true

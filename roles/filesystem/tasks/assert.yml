@@ -6,21 +6,21 @@
       - filesytem_default_filesystem is defined
       - filesytem_default_filesystem is string
       - filesytem_default_filesystem in [ "btrfs", "ext2", "ext3", "ext4", "ext4dev", "f2fs", "lvm", "ocfs2", "reiserfs", "swap", "vfat", "xfs" ]
-    quiet: yes
+    quiet: true
 
 - name: Test if filesystem_list is set correctly
   ansible.builtin.assert:
     that:
       - filesystem_list is defined
       - filesystem_list is iterable
-    quiet: yes
+    quiet: true
 
 - name: Test if item.dev in filesystem_list is set correctly
   ansible.builtin.assert:
     that:
       - item.dev is defined
       - item.dev is string
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"
@@ -29,7 +29,7 @@
   ansible.builtin.assert:
     that:
       - item.force is boolean
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"
@@ -41,7 +41,7 @@
     that:
       - item.fstype is string
       - item.fstype in [ "btrfs", "ext2", "ext3", "ext4", "ext4dev", "f2fs", "lvm", "ocfs2", "reiserfs", "swap", "vfat", "xfs" ]
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"
@@ -53,7 +53,7 @@
     that:
       - item.state is string
       - item.state in [ "absent", "present" ]
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"
@@ -64,7 +64,7 @@
   ansible.builtin.assert:
     that:
       - item.opts is string
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label:
@@ -76,7 +76,7 @@
   ansible.builtin.assert:
     that:
       - item.resizefs is boolean
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"
@@ -87,7 +87,7 @@
   ansible.builtin.assert:
     that:
       - item.fstype in [ "ext2", "ext3", "ext4", "ext4dev", "f2fs", "lvm", "swap", "vfat", "xfs" ]
-    quiet: yes
+    quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"

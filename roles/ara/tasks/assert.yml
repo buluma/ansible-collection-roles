@@ -5,20 +5,20 @@
     that:
       - ara_configuration_file is defined
       - ara_configuration_file is string
-    quiet: yes
+    quiet: true
 
 - name: test if ara_user is set correctly
   ansible.builtin.assert:
     that:
       - ara_user is defined
       - ara_user is string
-    quiet: yes
+    quiet: true
 
 - name: test if ara_python_plugins_path is set correctly
   ansible.builtin.assert:
     that:
       - ara_python_plugins_path is iterable
-    quiet: yes
+    quiet: true
   when:
     - ara_python_plugins_path is defined
 
@@ -26,7 +26,7 @@
   ansible.builtin.assert:
     that:
       - ara_configuration is iterable
-    quiet: yes
+    quiet: true
   when:
     - ara_configuration is defined
 
@@ -36,7 +36,7 @@
       - item.option is defined
       - item.option is string
       - item.value is defined
-    quiet: yes
+    quiet: true
   loop: "{{ ara_configuration }}"
   loop_control:
     label: "{{ item.option }}"

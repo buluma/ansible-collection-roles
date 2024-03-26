@@ -3,7 +3,7 @@
 
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Install requirements (package)
@@ -52,15 +52,15 @@
       ansible.builtin.command:
         cmd: getsebool domain_can_mmap_files
       register: anaconda_getsebool_domain_can_mmap_files
-      check_mode: no
-      changed_when: no
-      failed_when: no
+      check_mode: false
+      changed_when: false
+      failed_when: false
 
     - name: Modify selinux settings
       ansible.posix.seboolean:
         name: domain_can_mmap_files
-        state: yes
-        persistent: yes
+        state: true
+        persistent: true
       when:
         - anaconda_getsebool_domain_can_mmap_files.rc == 0
   when:
@@ -71,4 +71,4 @@
   ansible.builtin.service:
     name: anaconda
     state: started
-    enabled: yes
+    enabled: true

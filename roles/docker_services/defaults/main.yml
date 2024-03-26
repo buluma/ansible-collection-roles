@@ -78,7 +78,7 @@ peertube_smtp_server: 'mail.example.com'
 peertube_smtp_port: 25
 peertube_smtp_from: "peertube-noreply@{{ traefik_domain }}"
 peertube_smtp_user: ''      # Leave empty if the SMTP server requires
-peertube_smtp_password: ''  # no authentication
+peertube_smtp_password: ''  # false authentication
 
 vaultwarden_release: 'latest'
 vaultwarden_fqdn: 'vault.example.com'

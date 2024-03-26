@@ -4,7 +4,7 @@
   ansible.builtin.assert:
     that:
       - alternatives_list is iterable
-    quiet: yes
+    quiet: true
   when:
     - alternatives_list is defined
 
@@ -17,7 +17,7 @@
       - item.link is string
       - item.path is defined
       - item.path is string
-    quiet: yes
+    quiet: true
   when:
     - alternatives_list is defined
   loop: "{{ alternatives_list }}"

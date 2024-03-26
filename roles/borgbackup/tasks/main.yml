@@ -2,7 +2,7 @@
 # tasks file for borgbackup
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 # - name: Include OS-specific variables
@@ -61,7 +61,7 @@
 - name: Ensure root has SSH key.
   ansible.builtin.user:
     name: "root"
-    generate_ssh_key: yes
+    generate_ssh_key: true
     ssh_key_file: "{{ ssh_key_file }}"
     ssh_key_type: ed25519
   register: root_user
@@ -125,7 +125,7 @@
     user: "root"
     cron_file: "{{ borgmatic_cron_name }}"
     name: PATH
-    env: yes
+    env: true
     value: /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 - name: Install yamllint for checking config file

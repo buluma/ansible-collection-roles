@@ -59,9 +59,9 @@ dnsmasq_etc_default:
     # /etc/dnsmasq.conf is not enough to override resolvconf if it is
     # installed: the line below must be uncommented.
     {% if dnsmasq_etc_default_ignore_resolvconf is defined %}
-    IGNORE_RESOLVCONF={{ dnsmasq_etc_default_ignore_resolvconf | bool | ternary('yes', 'no') }}
+    IGNORE_RESOLVCONF={{ dnsmasq_etc_default_ignore_resolvconf | bool | ternary('true', 'false') }}
     {% else %}
-    #IGNORE_RESOLVCONF=yes
+    #IGNORE_RESOLVCONF=true
     {% endif %}
 
     {% for line in dnsmasq_etc_default_options | default([]) %}

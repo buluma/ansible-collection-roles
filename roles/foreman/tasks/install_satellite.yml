@@ -90,7 +90,7 @@
       - "{{ (ansible_facts['packages']['foreman'][0]['version'] is version('3.0', 'le')) | ternary('--foreman-proxy-puppetca true', '') }}"
       - '--foreman-proxy-tftp true'
       - '--enable-foreman-plugin-discovery'
-      - '--no-lock-package-versions'
+      - '--false-lock-package-versions'
       - '--detailed-exitcodes'
 
 - name: 'Run Satellite installer default scenario (see /var/log/foreman-installer/satellite.log for details)'

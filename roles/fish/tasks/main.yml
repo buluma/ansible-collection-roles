@@ -12,7 +12,7 @@
   until: systemd_status.stdout is search('running|degraded')
   retries: 30
   when: ansible_facts.service_mgr == 'systemd'
-  changed_when: no
+  changed_when: false
   failed_when: systemd_status.rc > 1
 
 - name: Ensure fish version is valid

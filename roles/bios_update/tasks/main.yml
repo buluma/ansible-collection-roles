@@ -3,7 +3,7 @@
 
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Install requirements
@@ -17,7 +17,7 @@
       ansible.builtin.get_url:
         url: "{{ bios_update_url }}"
         dest: "{{ bios_update_temporary_directory }}/{{ bios_update_url | basename }}"
-        validate_certs: no
+        validate_certs: false
   rescue:
     - name: Show problem
       ansible.builtin.debug:

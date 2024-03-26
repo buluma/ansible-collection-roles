@@ -4,18 +4,18 @@
 # You can disable certain checks using these variables.
 
 # Check suspicous processes.
-cve_2021_44228_check_processes: yes
+cve_2021_44228_check_processes: true
 
 # Check suspicous packages.
-cve_2021_44228_check_packages: yes
+cve_2021_44228_check_packages: true
 
 # This check uses `find`, which may use the disk intensively.
 # Check suspicous files.
-cve_2021_44228_check_files: yes
+cve_2021_44228_check_files: true
 
 # This check uses `find`, which may use the disk intensively.
 # Check suspicous jars
-cve_2021_44228_check_archives: yes
+cve_2021_44228_check_archives: true
 
 # Add your own paths if you want to. The more paths you add, the more
 # the disk will be used, but not having enough paths poses a risk of

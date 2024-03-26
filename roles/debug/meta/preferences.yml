@@ -1,2 +1,2 @@
 ---
-tox_parallel: no
+tox_parallel: false

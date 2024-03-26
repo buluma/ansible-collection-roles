@@ -36,8 +36,8 @@
 
 - name: Update cache
   ansible.builtin.apt:
-    update_cache: yes
-  run_once: yes
+    update_cache: true
+  run_once: true
   when:
     - ansible_pkg_mgr == "apt"
 

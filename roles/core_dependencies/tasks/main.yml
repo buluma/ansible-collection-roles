@@ -5,7 +5,7 @@
   ansible.builtin.package:
     name: "{{ core_dependencies }}"
     state: present
-    update_cache: yes
+    update_cache: true
   notify:
     - Gather facts
 
@@ -16,7 +16,7 @@
   ansible.builtin.pip:
     name: "{{ core_dependencies_pip_packages }}"
     state: present
-  failed_when: no
+  failed_when: false
   notify:
     - Gather facts
 

@@ -27,7 +27,7 @@ beats_client_elastic_repo_url: "deb https://artifacts.elastic.co/packages/{{ bea
 
 # Whether to inject templates (should really only be run on the same system that
 # has direct elasticsearch access
-beats_client_inject_templates: no
+beats_client_inject_templates: false
 
 #### FILEBEAT ##################################################################
 

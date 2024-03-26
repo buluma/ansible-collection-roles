@@ -5,11 +5,11 @@
     that:
       - cargo_prefix is defined
       - cargo_prefix is string
-    quiet: yes
+    quiet: true
 
 - name: Test if cargo_tmp is set correctly
   ansible.builtin.assert:
     that:
       - cargo_tmp is defined
       - cargo_tmp is string
-    quiet: yes
+    quiet: true

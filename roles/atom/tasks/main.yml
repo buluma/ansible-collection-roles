@@ -3,7 +3,7 @@
 
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Install requirements
@@ -20,7 +20,7 @@
     dest: "/tmp/{{ atom_package }}"
     mode: 0644
     # checksum: "{{ atom_checksum }}"
-    validate_certs: no
+    validate_certs: false
   when:
     - ansible_pkg_mgr in [ "apt", "dnf", "yum", "zypper" ]
 
@@ -35,7 +35,7 @@
   ansible.builtin.dnf:
     name: "/tmp/{{ atom_package }}"
     state: present
-    disable_gpg_check: yes
+    disable_gpg_check: true
   when:
     - ansible_pkg_mgr == "dnf"
 
@@ -43,7 +43,7 @@
   ansible.builtin.yum:
     name: "/tmp/{{ atom_package }}"
     state: present
-    disable_gpg_check: yes
+    disable_gpg_check: true
   when:
     - ansible_pkg_mgr == "yum"
 
@@ -51,7 +51,7 @@
   community.general.zypper:
     name: "/tmp/{{ atom_package }}"
     state: present
-    disable_gpg_check: yes
+    disable_gpg_check: true
   when:
     - ansible_pkg_mgr == "zypper"
 

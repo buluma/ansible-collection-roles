@@ -13,7 +13,7 @@
       ansible.builtin.assert:
         that:
           - cve_2021_44228_files.matched == 0
-        quiet: yes
+        quiet: true
   rescue:
     - name: show matched files
       ansible.builtin.debug:

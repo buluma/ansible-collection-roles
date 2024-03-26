@@ -50,7 +50,7 @@
     regexp: '^dhcp::includes'
   register: 'set_dhcp_includes'
 
-- name: 'Run foreman-installer'  # noqa no-handler
+- name: 'Run foreman-installer'  # noqa false-handler
   ansible.builtin.shell: |
     export LANG="en_US.UTF-8"
     export LC_ALL="en_US.UTF-8"

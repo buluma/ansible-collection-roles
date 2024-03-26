@@ -4,9 +4,9 @@
 # default container variables
 state: started
 command: sleep 1d
-privileged: yes
-interactive: yes
-tty: yes
+privileged: true
+interactive: true
+tty: true
 volumes:
   - /sys/fs/cgroup:/sys/fs/cgroup:ro
 capabilities:

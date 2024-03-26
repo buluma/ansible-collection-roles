@@ -16,8 +16,8 @@
 # - name: Ensure httpd can talk to cobblerd
 #   seboolean:
 #     name: httpd_can_network_connect
-#     state: yes
-#     persistent: yes
+#     state: true
+#     persistent: true
 #   tags: cobbler
 
 - name: Provide main configuration file

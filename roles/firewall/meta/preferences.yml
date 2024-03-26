@@ -1,5 +1,5 @@
 ---
-tox_parallel: yes
+tox_parallel: true
 tox_ansible_versions:
   - 5
   - 6

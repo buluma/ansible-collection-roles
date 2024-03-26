@@ -17,4 +17,4 @@ bios_update_temporary_directory: /tmp
 bios_update_flash_drive: "/dev/sdCHANGEME"
 
 # By default this role should write to removable media. Can be disabled in CI.
-bios_update_write: yes
+bios_update_write: true

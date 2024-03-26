@@ -1,24 +1,24 @@
 ---
 - name: Restart filebeat
-  become: yes
+  become: true
   ansible.builtin.service:
     name: filebeat
     state: restarted
 
 - name: Restart packetbeat
-  become: yes
+  become: true
   ansible.builtin.service:
     name: topbeat
     state: restarted
 
 - name: Restart heartbeat
-  become: yes
+  become: true
   ansible.builtin.service:
     name: heartbeat
     state: restarted
 
 - name: Restart metricbeat
-  become: yes
+  become: true
   ansible.builtin.service:
     name: metricbeat
     state: restarted

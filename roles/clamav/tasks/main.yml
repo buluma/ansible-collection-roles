@@ -3,7 +3,7 @@
 
 - name: import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: install clamav software
@@ -20,14 +20,14 @@
     - name: allowing system virus scanning
       ansible.posix.seboolean:
         name: antivirus_can_scan_system
-        state: yes
-        persistent: yes
+        state: true
+        persistent: true
 
     - name: allowing jit
       ansible.posix.seboolean:
         name: clamd_use_jit
-        state: yes
-        persistent: yes
+        state: true
+        persistent: true
 
     - name: install required selinux software
       ansible.builtin.package:
@@ -66,7 +66,7 @@
   ansible.builtin.lineinfile:
     dest: "{{ clamav_config_dir }}/{{ clamav_config_file }}"
     line: "{{ item.line }}"
-    create: yes
+    create: true
     state: "{{ item.state | default('present') }}"
     mode: "0640"
   loop: "{{ clamav_configuration }}"
@@ -88,5 +88,5 @@
   ansible.builtin.service:
     name: "{{ item }}"
     state: started
-    enabled: yes
+    enabled: true
   loop: "{{ clamav_services }}"

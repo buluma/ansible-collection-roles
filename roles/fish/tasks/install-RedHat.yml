@@ -25,8 +25,8 @@
     description: Fish shell - {{ fish_release_version }}.x release series ({{ _fish_repo_version_string }})
     baseurl: http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/
     gpgkey: http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/repodata/repomd.xml.key
-    enabled: yes
-    gpgcheck: yes
+    enabled: true
+    gpgcheck: true
     file: fish
   tags:
     - fish

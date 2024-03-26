@@ -15,7 +15,7 @@
   ansible.builtin.systemd:
     name: cassandra
     enabled: "{{ cassandra_service_enabled }}"
-    daemon_reload: yes
+    daemon_reload: true
     state: "{{ cassandra_service_state }}"
   when:
     - not ansible_check_mode

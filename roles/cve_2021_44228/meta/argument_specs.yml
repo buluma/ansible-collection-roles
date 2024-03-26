@@ -10,19 +10,19 @@ argument_specs:
     options:
       cve_2021_44228_check_processes:
         type: "bool"
-        default: yes
+        default: true
         description: "Check suspicous processes."
       cve_2021_44228_check_packages:
         type: "bool"
-        default: yes
+        default: true
         description: "Check suspicous packages."
       cve_2021_44228_check_files:
         type: "bool"
-        default: yes
+        default: true
         description: "Check suspicous files."
       cve_2021_44228_check_archives:
         type: "bool"
-        default: yes
+        default: true
         description: "Check suspicous jars."
       cve_2021_44228_paths_to_check:
         type: "list"

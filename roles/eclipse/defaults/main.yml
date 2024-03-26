@@ -25,4 +25,4 @@ eclipse_plugins:
   - name: org.sonatype.m2e.egit.feature.feature.group
     repository: "https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST"
 
-eclipse_plugins_state: no
+eclipse_plugins_state: false

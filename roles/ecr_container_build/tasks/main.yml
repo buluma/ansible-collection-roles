@@ -1,7 +1,7 @@
 ---
 
 - name: Log into ECR if required.
-  ansible.builtin.shell: "$(aws ecr get-login --no-include-email --region {{ ecr_region }})"
+  ansible.builtin.shell: "$(aws ecr get-login --false-include-email --region {{ ecr_region }})"
   tags: ['skip_ansible_lint']
   when: ecr_push or ecr_login_required
 

@@ -48,7 +48,7 @@
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
     /usr/sbin/foreman-proxy-certs-generate \
-      --no-colors \
+      --false-colors \
       --foreman-proxy-fqdn "{{ ansible_facts['fqdn'] }}" \
       --certs-tar /root/{{ ansible_facts['fqdn'] }}.tar
   delegate_to: "{{ groups['foreman'][0] }}"
@@ -81,7 +81,7 @@
 
 - name: 'Compose foreman-installer command'
   ansible.builtin.set_fact:
-    foreman_installer_cmd: "{{ foreman_certs_gen['stdout_lines'][-11:] + ['--no-enable-puppet --foreman-proxy-puppet false --foreman-proxy-puppetca false --foreman-proxy-content-puppet false --detailed-exitcodes --no-lock-package-versions'] }}"  # noqa yaml
+    foreman_installer_cmd: "{{ foreman_certs_gen['stdout_lines'][-11:] + ['--false-enable-puppet --foreman-proxy-puppet false --foreman-proxy-puppetca false --foreman-proxy-content-puppet false --detailed-exitcodes --false-lock-package-versions'] }}"  # noqa yaml
   when: not foreman_puppet_enabled
 
 - name: 'Run foreman-installer on Proxy'

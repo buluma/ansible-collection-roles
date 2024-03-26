@@ -3,7 +3,7 @@
 
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Install requirements
@@ -41,4 +41,4 @@
   ansible.builtin.service:
     name: "{{ earlyoom_service }}"
     state: started
-    enabled: yes
+    enabled: true

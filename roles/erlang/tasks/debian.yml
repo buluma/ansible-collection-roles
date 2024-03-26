@@ -10,13 +10,13 @@
 - name: Debian | add repository to install Erlang from
   ansible.builtin.apt_repository:
     repo: '{{ erlang_ppa_repo }}'
-    update_cache: yes
+    update_cache: true
   when: erlang_ppa_repo != None
 
 - name: Debian | install packages
   ansible.builtin.apt:
     pkg: '{{ item }}'
     state: installed
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 3600
   with_items: '{{ erlang_packages }}'

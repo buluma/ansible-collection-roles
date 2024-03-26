@@ -22,7 +22,7 @@
   with_items: "{{ beats_client_beats_packages }}"
 
 - name: Copy beat configuration
-  become: yes
+  become: true
   ansible.builtin.copy:
     content: "{{ beats_clients_configs[item] | to_nice_yaml }}"
     dest: "/etc/{{ item }}/{{ item }}.yml"
@@ -33,11 +33,11 @@
   with_items: "{{ beats_client_beats_packages }}"
 
 - name: Enable beat service
-  become: yes
+  become: true
   ansible.builtin.service:
     name: "{{ item }}"
     state: started
-    enabled: yes
+    enabled: true
   with_items: "{{ beats_client_beats_packages }}"
 
 - name: Load default templates into elasticsearch

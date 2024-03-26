@@ -12,13 +12,13 @@
       ansible.builtin.command:
         cmd: ps -ef
       register: cve_2021_44228_processes
-      changed_when: no
+      changed_when: false
 
     - name: check for java processes
       ansible.builtin.assert:
         that:
           - '"java" not in cve_2021_44228_processes'
-        quiet: yes
+        quiet: true
   rescue:
     - name: show matched pids
       ansible.builtin.debug:

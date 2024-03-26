@@ -3,7 +3,7 @@
 
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Create etherpad_installation_destination
@@ -16,7 +16,7 @@
   ansible.builtin.unarchive:
     src: "{{ etherpad_url }}"
     dest: "{{ etherpad_installation_destination }}"
-    remote_src: yes
+    remote_src: true
     creates: "{{ etherpad_working_directory }}"
     mode: "0750"
 
@@ -42,4 +42,4 @@
   ansible.builtin.service:
     name: "{{ etherpad_service }}"
     state: started
-    enabled: yes
+    enabled: true

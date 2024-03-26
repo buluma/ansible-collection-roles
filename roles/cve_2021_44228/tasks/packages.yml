@@ -9,7 +9,7 @@
       ansible.builtin.assert:
         that:
           - item not in ansible_facts.packages
-        quiet: yes
+        quiet: true
       loop: "{{ cve_2021_44228_vulnerable_packages }}"
   rescue:
     - name: show potential vulnerable package

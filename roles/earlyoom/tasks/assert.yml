@@ -5,21 +5,21 @@
     that:
       - earlyoom_version is defined
       - earlyoom_version is string
-    quiet: yes
+    quiet: true
 
 - name: Test if earlyoom_clone_destination is set correctly
   ansible.builtin.assert:
     that:
       - earlyoom_clone_destination is defined
       - earlyoom_clone_destination is string
-    quiet: yes
+    quiet: true
 
 - name: Test if earlyoom_installation_destination is set correctly
   ansible.builtin.assert:
     that:
       - earlyoom_installation_destination is defined
       - earlyoom_installation_destination is string
-    quiet: yes
+    quiet: true
 
 - name: Test if earlyoom_minimum_memory_percent is set correctly
   ansible.builtin.assert:
@@ -28,7 +28,7 @@
       - earlyoom_minimum_memory_percent is number
       - earlyoom_minimum_memory_percent > 0
       - earlyoom_minimum_memory_percent <= 100
-    quiet: yes
+    quiet: true
 
 - name: Test if earlyoom_minimum_swap_percent is set correctly
   ansible.builtin.assert:
@@ -37,7 +37,7 @@
       - earlyoom_minimum_swap_percent is number
       - earlyoom_minimum_swap_percent > 0
       - earlyoom_minimum_swap_percent <= 100
-    quiet: yes
+    quiet: true
 
 - name: Test if earlyoom_memory_report_interval is set correctly
   ansible.builtin.assert:
@@ -45,4 +45,4 @@
       - earlyoom_memory_report_interval is defined
       - earlyoom_memory_report_interval is number
       - earlyoom_memory_report_interval >= 0
-    quiet: yes
+    quiet: true

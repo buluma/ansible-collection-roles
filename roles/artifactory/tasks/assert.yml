@@ -5,7 +5,7 @@
     that:
       - artifactory_file_store_dir is defined
       - artifactory_file_store_dir is string
-    quiet: yes
+    quiet: true
 
 - name: test if artifactory_flavour is set correctly
   ansible.builtin.assert:

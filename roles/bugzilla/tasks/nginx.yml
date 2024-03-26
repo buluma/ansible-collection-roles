@@ -2,7 +2,7 @@
 - name: Buzilla | Install nginx
   ansible.builtin.apt:
     pkg: nginx
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 86400
     state: present
   when: bz_webserver == "nginx"

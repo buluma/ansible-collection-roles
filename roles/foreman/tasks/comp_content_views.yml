@@ -17,7 +17,7 @@
     loop_var: 'comp_content_view'
     label: "{{ comp_content_view['name'] }}"
 
-- name: 'Promote content view version for newly created composite content views'  # noqa no-handler
+- name: 'Promote content view version for newly created composite content views'  # noqa false-handler
   theforeman.foreman.content_view_version:
     username: "{{ foreman_admin_user }}"
     password: "{{ foreman_admin_password }}"

@@ -4,4 +4,4 @@
     that:
       - firefox_desktop_icon is defined
       - firefox_desktop_icon is bool
-    quiet: yes
+    quiet: true

@@ -2,4 +2,4 @@
 #
 # Ansible managed
 #
-tox_parallel: yes
+tox_parallel: true

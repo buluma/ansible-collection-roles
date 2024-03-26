@@ -10,7 +10,7 @@
   apt:
     pkg: ['php-pear', 'php-fpm', 'php-dev', 'php-zip', 'php-curl',
           'php-xmlrpc', 'php-gd', 'php-mysql', 'php-mbstring', 'php-xml']
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 86400
     state: present
 
@@ -34,7 +34,7 @@
   ansible.builtin.unarchive:
     src: "https://ftp.mozilla.org/pub/mozilla.org/webtools/bugzilla-{{ bz_version }}.tar.gz"
     dest: "{{ bz_install_dir }}"
-    remote_src: yes
+    remote_src: true
 
 - name: verify extract
   command: |

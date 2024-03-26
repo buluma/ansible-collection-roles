@@ -4,6 +4,6 @@
   ansible.builtin.assert:
     that:
       - drush_launcher_path is string
-    quiet: yes
+    quiet: true
   when:
     - drush_launcher_path is defined

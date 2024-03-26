@@ -1,10 +1,10 @@
 ---
 
 # Do you want to wait for the host to be available?
-bootstrap_wait_for_host: no
+bootstrap_wait_for_host: false
 
 # The number of seconds you want to wait during connection test before failing.
 bootstrap_timeout: 3
 
 # Set role to use "become" or not.
-bootstrap_become: yes
+bootstrap_become: true

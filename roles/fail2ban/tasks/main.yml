@@ -3,7 +3,7 @@
 
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Install fail2ban
@@ -66,4 +66,4 @@
   ansible.builtin.service:
     name: "{{ fail2ban_service }}"
     state: started
-    enabled: yes
+    enabled: true

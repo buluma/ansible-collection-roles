@@ -4,4 +4,4 @@
     that:
       - buildah_conf_hostname is defined
       - buildah_conf_hostname is string
-    quiet: yes
+    quiet: true

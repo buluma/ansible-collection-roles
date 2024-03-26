@@ -87,7 +87,7 @@
   loop_control:
     loop_var: 'product'
 
-- name: 'Sync Red Hat Repositories, this may take long...'  # noqa no-handler ignore-errors
+- name: 'Sync Red Hat Repositories, this may take long...'  # noqa false-handler ignore-errors
   # Yes, we sync all Red Hat Products when a change has been made to one of them
   # This is because the repository_set module does not return the Product name.
   theforeman.foreman.repository_sync:

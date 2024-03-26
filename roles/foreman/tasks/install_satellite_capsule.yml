@@ -42,7 +42,7 @@
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
     /usr/sbin/foreman-proxy-certs-generate \
-      --no-colors \
+      --false-colors \
       --foreman-proxy-fqdn "{{ ansible_facts['fqdn'] | lower }}" \
       --certs-tar /root/{{ ansible_facts['fqdn'] | lower }}.tar
   delegate_to: "{{ groups['foreman'][0] }}"
@@ -94,7 +94,7 @@
         export LC_ALL=en_US.UTF-8
         /usr/sbin/foreman-installer \
         --enable-foreman-proxy-plugin-discovery \
-        --no-lock-package-versions \
+        --false-lock-package-versions \
         --detailed-exitcodes
       register: 'installer_output'
       changed_when: installer_output['rc'] == 2

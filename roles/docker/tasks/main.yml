@@ -20,7 +20,7 @@
   ansible.builtin.user:
     name: "{{ user }}"
     groups: docker
-    append: yes
+    append: true
   loop: "{{ docker_privileged_users }}"
   loop_control:
     loop_var: user
@@ -31,7 +31,7 @@
   ansible.builtin.service:
     name: "{{ docker_service }}"
     state: started
-    enabled: yes
+    enabled: true
   notify:
     - Change group for docker socket
   when:

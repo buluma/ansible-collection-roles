@@ -5,4 +5,4 @@
     that:
       - dryrun_defaults_variable is defined
       - dryrun_defaults_variable is string
-    quiet: yes
+    quiet: true

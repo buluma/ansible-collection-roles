@@ -297,7 +297,7 @@ foreman_operating_systems:
     # Source to use for the OS installer
     kickstart_repo: 'CentOS7-Base'  # Name of a repository which contains a kickstart tree, ususally this is the Base
     kickstart: true  # Enable this to disable creating Installation media (which are not required if using kickstart)
-    # Alternatively when no Kickstart repo is available
+    # Alternatively when false Kickstart repo is available
     # The URL below is the location of the CV 'CentOS7-Base' for the 'Example-Org' organization
     # path: 'http://foreman.example.com/pulp/repos/Example-Org/Library/custom/CentOS7/CentOS7-Base/'
 

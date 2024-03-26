@@ -9,4 +9,4 @@
 - name: Rndc reload
   ansible.builtin.command:
     cmd: rndc reload
-  failed_when: no
+  failed_when: false

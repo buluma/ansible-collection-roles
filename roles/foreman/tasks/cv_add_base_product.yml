@@ -24,7 +24,7 @@
     state: 'present'
   register: 'cv_created'
 
-- name: 'Publish content view version for newly created content views. This may take long...'  # noqa no-handler
+- name: 'Publish content view version for newly created content views. This may take long...'  # noqa false-handler
   theforeman.foreman.content_view_version:
     username: "{{ foreman_admin_user }}"
     password: "{{ foreman_admin_password }}"

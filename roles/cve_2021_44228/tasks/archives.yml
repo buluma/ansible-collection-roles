@@ -19,7 +19,7 @@
         - name: unzip found archives files
           ansible.builtin.command:
             cmd: unzip -l {{ item.path }}
-          changed_when: no
+          changed_when: false
           register: unzipped_archives
           loop: "{{ cve_2021_44228_archive_files.files }}"
           loop_control:
