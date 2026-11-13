@@ -1,0 +1,10 @@
+---
+# defaults file for kernel
+
+kernel_version: "6.12.96"
+
+kernel_build_location: /tmp
+
+kernel_parameters:
+  - name: CONFIG_SMP
+    value: "y"

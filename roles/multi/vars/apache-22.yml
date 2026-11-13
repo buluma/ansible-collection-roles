@@ -1,0 +1,8 @@
+---
+apache_default_vhost_filename: 000-default
+apache_ports_configuration_items:
+  - line: Listen {{ apache_listen_port }}
+    regexp: "^Listen "
+  - line: NameVirtualHost {{ apache_listen_ip }}:{{ apache_listen_port }}
+    regexp: "^#?NameVirtualHost "
+apache_vhosts_version: "2.2"

@@ -1,0 +1,8 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.python_pip
+collections:
+  - name: community.docker
+  - name: community.general

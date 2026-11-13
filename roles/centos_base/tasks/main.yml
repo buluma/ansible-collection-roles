@@ -1,6 +1,5 @@
 ---
-
-- name: import assert.yml
+- name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
   run_once: true
   delegate_to: localhost
@@ -11,43 +10,43 @@
 #     name: epel-release
 #   when: centos_base_enable_epel | bool
 
-- name: install requirements for centos_base
+- name: Install requirements for centos_base
   ansible.builtin.package:
     name: "{{ centos_requirements }}"
     state: present
   when: centos_base_development_packages | bool
 
-- name: install basic packages EL 6 and 7
-  ansible.builtin.yum:
+- name: Install basic packages EL 6 and 7
+  ansible.builtin.dnf:
     name:
       - python-virtualenv
       - yum-cron
       - yum-utils
   when:
     - centos_base_basic_packages | bool
-    - ansible_distribution_major_version == "6" or ansible_distribution_major_version == "7"
+    - ansible_facts['distribution_major_version'] == "6" or ansible_facts['distribution_major_version'] == "7"
 
-- name: install basic packages EL 8
-  ansible.builtin.yum:
+- name: Install basic packages EL 8
+  ansible.builtin.dnf:
     name:
       - python3-virtualenv
   when:
     - centos_base_basic_packages | bool
-    - ansible_distribution_major_version == "8"
+    - ansible_facts['distribution_major_version'] == "8"
 
-- name: install the 'Development tools' package group
-  ansible.builtin.yum:
+- name: Install the 'Development tools' package group
+  ansible.builtin.dnf:
     name: "@Development tools"
   when: centos_base_basic_packages | bool
 
 # install selinux_packages
-- name: install SELinux packages for CentOS 6 and CentOS 7
-  ansible.builtin.yum:
+- name: Install SELinux packages for CentOS 6 and CentOS 7
+  ansible.builtin.dnf:
     name: "{{ selinux_packages }}"
     state: present
   when:
     - centos_base_selinux_packages | bool
-    - ansible_distribution_major_version == "6" or ansible_distribution_major_version == "7"
+    - ansible_facts['distribution_major_version'] == "6" or ansible_facts['distribution_major_version'] == "7"
 
 # - name: install SELinux packages for CentOS 6 and CentOS 7
 #   ansible.builtin.yum:
@@ -65,20 +64,19 @@
 #       - setroubleshoot
 #   when:
 #     - centos_base_selinux_packages | bool
-#     - ansible_distribution_major_version == "6" or ansible_distribution_major_version == "7"
+#     - ansible_facts['distribution_major_version'] == "6" or ansible_facts['distribution_major_version'] == "7"
 
-- name: install SELinux packages for CentOS 8
-  ansible.builtin.yum:
+- name: Install SELinux packages for CentOS 8
+  ansible.builtin.dnf:
     name:
       - policycoreutils-python-utils
   when:
     - centos_base_selinux_packages | bool
-    - ansible_distribution_major_version == "8"
-
+    - ansible_facts['distribution_major_version'] == "8"
 
 # install utility_packages
-- name: install utility packages
-  ansible.builtin.yum:
+- name: Install utility packages
+  ansible.builtin.dnf:
     name: "{{ utility_packages }}"
     state: present
   when: centos_base_utility_packages | bool
@@ -94,8 +92,8 @@
 #       - wget
 #   when: centos_base_utility_packages | bool
 
-- name: install zlib packages from EPEL
-  ansible.builtin.yum:
+- name: Install zlib packages from EPEL
+  ansible.builtin.dnf:
     name:
       - zlib-static
       - zlib-ada-devel
@@ -103,11 +101,11 @@
   when:
     - centos_base_enable_epel | bool
     - centos_base_development_packages | bool
-    - ansible_distribution_major_version == "6" or ansible_distribution_major_version == "7"
+    - ansible_facts['distribution_major_version'] == "6" or ansible_facts['distribution_major_version'] == "7"
 
 # install debugging_packages
-- name: install debugging packages
-  ansible.builtin.yum:
+- name: Install debugging packages
+  ansible.builtin.dnf:
     name: "{{ debugging_packages }}"
     state: present
   when: centos_base_debug_packages | bool
@@ -125,46 +123,47 @@
 #       - net-tools
 #   when: centos_base_debug_packages | bool
 
-- name: install packages specific to CentOS 6
-  ansible.builtin.yum:
+- name: Install packages specific to CentOS 6
+  ansible.builtin.dnf:
     name:
       - fail2ban
   when:
-    - ansible_distribution == "CentOS"
-    - ansible_distribution_major_version == "6"
+    - ansible_facts['distribution'] == "CentOS"
+    - ansible_facts['distribution_major_version'] == "6"
     - centos_base_enable_epel | bool
 
-- name: install packages specific to CentOS 7
-  ansible.builtin.yum:
+- name: Install packages specific to CentOS 7
+  ansible.builtin.dnf:
     name:
       - fail2ban-all
       - python-inotify
   when:
-    - ansible_distribution == "CentOS"
-    - ansible_distribution_major_version == "7"
+    - ansible_facts['distribution'] == "CentOS"
+    - ansible_facts['distribution_major_version'] == "7"
     - centos_base_enable_epel | bool
     - centos_base_fail2ban_configuration | bool
 
-- name: install firewalld
-  ansible.builtin.yum:
+- name: Install firewalld
+  ansible.builtin.dnf:
     name: firewalld
   when:
-    - ansible_distribution == "CentOS"
-    - ansible_distribution_major_version == "7" or ansible_distribution_major_version == "8"
+    - ansible_facts['distribution'] == "CentOS"
+    - ansible_facts['distribution_major_version'] == "7" or ansible_facts['distribution_major_version'] == "8"
     - centos_base_security_packages | bool
     - centos_base_firewalld | bool
 
-- name: vim alias in .bashrc
+- name: Vim alias in .bashrc
   ansible.builtin.lineinfile:
     dest: /root/.bashrc
     line: "alias vi=vim"
     state: present
   when: centos_base_basic_vim_tweaks | bool
 
-- name: .vimrc file
+- name: Add .vimrc file
   ansible.builtin.template:
-    dest: /root/
+    dest: /root/.vimrc
     src: root/.vimrc
+    mode: "0600"
   when: centos_base_basic_vim_tweaks | bool
 
 - name: LOCKPRG to avoid locking of GNU screen sessions
@@ -174,19 +173,21 @@
     state: present
   when: centos_base_lockprg | bool
 
-- name: create htop direcotry
+- name: Create htop direcotry
   ansible.builtin.file:
     path: /root/.config/htop
     state: directory
+    mode: "0700"
   when: centos_base_htop_configuration | bool
 
-- name: configure htop
+- name: Configure htop
   ansible.builtin.template:
     src: root/.config/htop/htoprc
-    dest: /root/.config/htop
+    dest: /root/.config/htop/htoprc
+    mode: "0600"
   when: centos_base_htop_configuration | bool
 
-- name: ensure fail2ban service is enabled and started
+- name: Ensure fail2ban service is enabled and started
   ansible.builtin.service:
     name: fail2ban
     state: started
@@ -194,41 +195,43 @@
   when: centos_base_fail2ban_configuration | bool
 
 # Allow user to control /etc/fail2ban/jail.local
-- name: secure Fail2ban configuration
+- name: Secure Fail2ban configuration
   ansible.builtin.template:
     src: etc/fail2ban/jail.d/centos_base.conf
-    dest: /etc/fail2ban/jail.d
+    dest: /etc/fail2ban/jail.d/centos_base.conf
+    mode: "0644"
   when: centos_base_fail2ban_configuration | bool
 
-- name: secure SSH configuration
+- name: Secure SSH configuration
   ansible.builtin.template:
     src: etc/ssh/sshd_config
-    dest: /etc/ssh
-  notify: sshd restart
+    dest: /etc/ssh/sshd_config
+    mode: "0600"
+  notify: Sshd restart
   when: centos_base_secure_sshd | bool
 
-- name: ensure firewalld is started and enabled
+- name: Ensure firewalld is started and enabled
   ansible.builtin.systemd:
     name: firewalld
     state: started
     enabled: true
   when:
-    - ansible_distribution == "CentOS"
-    - ansible_distribution_major_version == "7" or ansible_distribution_major_version == "8"
+    - ansible_facts['distribution'] == "CentOS"
+    - ansible_facts['distribution_major_version'] == "7" or ansible_facts['distribution_major_version'] == "8"
     - centos_base_basic_packages | bool
     - centos_base_firewalld | bool
 
-- name: enable firewalld services
+- name: Enable firewalld services
   ansible.posix.firewalld:
     permanent: true
     service: "{{ item }}"
     state: enabled
     zone: public
-  loop: '{{ centos_base_firewalld_services }}'
+  loop: "{{ centos_base_firewalld_services }}"
   notify:
-    - firewalld restart
+    - Firewalld restart
   when:
-    - ansible_distribution == "CentOS"
-    - ansible_distribution_major_version == "7" or ansible_distribution_major_version == "8"
+    - ansible_facts['distribution'] == "CentOS"
+    - ansible_facts['distribution_major_version'] == "7" or ansible_facts['distribution_major_version'] == "8"
     - centos_base_firewalld_services | length > 0
     - centos_base_firewalld | bool

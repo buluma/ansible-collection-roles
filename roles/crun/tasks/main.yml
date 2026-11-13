@@ -1,5 +1,4 @@
 ---
-
 # - name: include default variables
 #   ansible.builtin.include_vars: "../vars/main.yml"
 #
@@ -11,12 +10,12 @@
 #   vars:
 #     _params:
 #       files:
-#         - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-#         - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-#         - "{{ ansible_distribution | lower }}.yml"
-#         - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version | lower }}.yml"
-#         - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-#         - "{{ ansible_os_family | lower }}.yml"
+#         - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+#         - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+#         - "{{ ansible_facts['distribution'] | lower }}.yml"
+#         - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+#         - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+#         - "{{ ansible_facts['os_family'] | lower }}.yml"
 #       paths:
 #         - "../vars"
 #       skip: true
@@ -29,24 +28,24 @@
 #   vars:
 #     _params:
 #       files:
-#         - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-#         - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-#         - "{{ ansible_distribution | lower }}.yml"
-#         - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version | lower }}.yml"
-#         - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-#         - "{{ ansible_os_family | lower }}.yml"
+#         - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+#         - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+#         - "{{ ansible_facts['distribution'] | lower }}.yml"
+#         - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+#         - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+#         - "{{ ansible_facts['os_family'] | lower }}.yml"
 #       paths:
 #         - "."
 #       skip: true
 
-# - ansible.builtin.debug: var=ansible_os_family
-# - ansible.builtin.debug: var=ansible_pkg_mgr
+# - ansible.builtin.debug: var=ansible_facts['os_family']
+# - ansible.builtin.debug: var=ansible_facts['pkg_mgr']
 
 # - fail:
 - name: Update cache
   ansible.builtin.apt:
     update_cache: true
-  when: ansible_pkg_mgr == "apt"
+  when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Install Crun
   ansible.builtin.package:

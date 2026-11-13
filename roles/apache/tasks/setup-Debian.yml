@@ -1,6 +1,10 @@
 ---
-- name: Update apt cache.
-  ansible.builtin.apt: update_cache=true cache_valid_time=3600
+- name: setup-Debian | Update apt cache.
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
 
-- name: Ensure Apache is installed on debian.
-  ansible.builtin.apt: "name={{ apache_packages }} state={{ apache_packages_state }}"
+- name: setup-Debian | Ensure Apache is installed on debian.
+  ansible.builtin.apt:
+    name: "{{ apache_packages }}"
+    state: "{{ apache_packages_state }}"

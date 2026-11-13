@@ -1,0 +1,63 @@
+---
+# tasks file for reboot
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ reboot_requirements }}"
+    state: present
+
+- name: Configure redhat
+  when:
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
+    - ansible_facts['os_family'] in [ "RedHat", "Rocky" ]
+  block:
+    - name: Check for needs-restarting executable (rhel)
+      ansible.builtin.stat:
+        path: /usr/bin/needs-restarting
+      register: reboot_rhel_needs_restarting_executable
+
+    - name: Check if a reboot is required (rhel)
+      ansible.builtin.command:
+        cmd: needs-restarting -r
+      check_mode: false
+      register: reboot_rhel_needsrestarting
+      changed_when:
+        - reboot_rhel_needsrestarting.rc == 1
+      failed_when:
+        - reboot_rhel_needsrestarting.rc not in [ 0, 1 ]
+      when:
+        - reboot_rhel_needs_restarting_executable.stat.exists
+
+- name: Configure debian
+  when:
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
+    - ansible_facts['os_family'] == "Debian"
+  block:
+    - name: Check for needrestart executable (debian)
+      ansible.builtin.stat:
+        path: /usr/sbin/needrestart
+      register: reboot_debian_needsrestart_executable
+
+    - name: Check if a reboot is required (debian)
+      ansible.builtin.command:
+        cmd: needrestart -b
+      check_mode: false
+      register: reboot_debian_needrestarting
+      changed_when:
+        - "'NEEDRESTART-KSTA: 3' in reboot_debian_needrestarting.stdout_lines"
+      when:
+        - reboot_debian_needsrestart_executable.stat.exists
+
+- name: Include reboot
+  ansible.builtin.include_tasks:
+    file: reboot.yml
+  when:
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
+    - (reboot_always | bool) or (reboot_rhel_needsrestarting.changed | default(false)) or (reboot_debian_needrestarting.changed | default(false))
+  tags:
+    - skip_ansible_later

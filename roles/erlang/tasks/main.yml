@@ -1,9 +1,5 @@
 ---
-# tasks file for erlang
-- include: debian.yml
-  when: ansible_os_family == 'Debian'
-  tags: package
-
-- include: redhat.yml
-  when: ansible_os_family == 'RedHat'
-  tags: package
+- name: Install erlang
+  ansible.builtin.package:
+    name: erlang
+    state: present

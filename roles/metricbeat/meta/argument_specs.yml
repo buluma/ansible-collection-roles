@@ -1,0 +1,32 @@
+---
+argument_specs:
+  main:
+    author: Michael Buluma
+    description: Install and configure Metric on your system.
+    options:
+      metricbeat_elasticsearch_hosts:
+        default:
+          - http://localhost:9200
+        description: A list of elasticsearch hosts.
+        type: list
+      metricbeat_elasticsearch_password:
+        default: ""
+        description: The password for elasticsearch.
+        type: str
+      metricbeat_elasticsearch_username:
+        default: elastic
+        description: The username for elasticsearch.
+        type: str
+      metricbeat_kibana_host:
+        default: http://localhost:5601
+        description: The URL for Kibana.
+        type: str
+      metricbeat_modules:
+        default: []
+        description: A list of modules to enable.
+        type: list
+      metricbeat_version:
+        default: 7.15.2
+        description: The version of metricbeat to install.
+        type: str
+    short_description: Install and configure Metricbeat on your system.

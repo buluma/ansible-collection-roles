@@ -1,22 +1,6 @@
 ---
-
-# (c) Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 - name: Include default variables
-  ansible.builtin.include_vars: "../vars/main.yml"
-
+  ansible.builtin.include_vars: ../vars/main.yml
 - name: Include release specific variables
   ansible.builtin.include_vars: "{{ _loop_var }}"
   loop: "{{ query('first_found', _params) }}"
@@ -25,16 +9,15 @@
   vars:
     _params:
       files:
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-        - "{{ ansible_distribution | lower }}.yml"
-        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version | lower }}.yml"
-        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-        - "{{ ansible_os_family | lower }}.yml"
+        - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+        - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+        - "{{ ansible_facts['distribution'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}.yml"
       paths:
-        - "../vars"
+        - ../vars
       skip: true
-
 - name: Include release specific tasks
   ansible.builtin.include_tasks: "{{ _loop_var }}"
   loop: "{{ query('first_found', _params) }}"
@@ -43,109 +26,152 @@
   vars:
     _params:
       files:
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-        - "{{ ansible_distribution | lower }}.yml"
-        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version | lower }}.yml"
-        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-        - "{{ ansible_os_family | lower }}.yml"
+        - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+        - "{{ ansible_facts['distribution'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+        - "{{ ansible_facts['distribution'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_version'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}.yml"
       paths:
-        - "."
+        - .
       skip: true
-
 - name: Groupadd
   ansible.builtin.group:
     name: "{{ bitbucket_group }}"
+    state: present
     system: true
-    state: "present"
-
 - name: Useradd
   ansible.builtin.user:
-    name: "{{ bitbucket_owner }}"
+    create_home: false
     group: "{{ bitbucket_group }}"
     home: "{{ bitbucket_home }}"
-    shell: "/usr/sbin/nologin"
+    name: "{{ bitbucket_owner }}"
+    shell: /bin/bash
+    state: present
     system: true
-    create_home: false
-    state: "present"
+- name: Prepare directories
+  ansible.builtin.file:
+    dest: "{{ item.dest }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    state: "{{ item.state | default('directory') }}"
+  loop:
+    - dest: /etc/systemd/system
+    - dest: "{{ bitbucket_catalina }}"
+      group: "{{ bitbucket_group }}"
+      mode: "0700"
+      owner: "{{ bitbucket_owner }}"
+    - dest: "{{ bitbucket_catalina }}/bin"
+      group: "{{ bitbucket_group }}"
+      owner: "{{ bitbucket_owner }}"
+    - dest: "{{ bitbucket_home }}"
+      group: "{{ bitbucket_group }}"
+      owner: "{{ bitbucket_owner }}"
+    - dest: "{{ bitbucket_home }}/shared"
+      group: "{{ bitbucket_group }}"
+      mode: "0750"
+      owner: "{{ bitbucket_owner }}"
+- name: Find the active java binary
+  ansible.builtin.command: readlink -f /etc/alternatives/java
+  changed_when: false
+  register: _bitbucket_java_binary
+
+# vendor's set-jre-home.sh falls back to `which java` when JAVA_HOME/
+# JRE_HOME aren't set, but `which` isn't installed on every image (e.g.
+# almalinux10's minimal base) -- exporting JAVA_HOME on the unit itself
+# avoids that fallback path entirely.
+- name: Set bitbucket_java_home fact
+  ansible.builtin.set_fact:
+    bitbucket_java_home: "{{ _bitbucket_java_binary.stdout | dirname | dirname }}"
 
 - name: Copy templates
   ansible.builtin.template:
     dest: "{{ item.dest }}"
-    src: "{{ item.src | default('./templates' + item.dest + '.j2') }}"
-    owner: "{{ item.owner | default('root') }}"
     group: "{{ item.group | default('root') }}"
     mode: "{{ item.mode | default('0644') }}"
+    owner: "{{ item.owner | default('root') }}"
+    src: "{{ item.src | default('./templates' + item.dest + '.j2') }}"
   loop:
+    - dest: /etc/systemd/system/bitbucket.service
     - dest: "{{ bitbucket_catalina }}/bin/_start-webapp.sh"
-      src: "./templates/opt/atlassian/bitbucket/bin/_start-webapp.sh.j2"
-      owner: "{{ bitbucket_owner }}"
       group: "{{ bitbucket_group }}"
       mode: "0755"
+      owner: "{{ bitbucket_owner }}"
+      src: ./templates/opt/atlassian/bitbucket/bin/_start-webapp.sh.j2
     - dest: "{{ bitbucket_catalina }}/bin/set-bitbucket-home.sh"
-      src: "./templates/opt/atlassian/bitbucket/bin/set-bitbucket-home.sh.j2"
-      owner: "{{ bitbucket_owner }}"
       group: "{{ bitbucket_group }}"
       mode: "0755"
+      owner: "{{ bitbucket_owner }}"
+      src: ./templates/opt/atlassian/bitbucket/bin/set-bitbucket-home.sh.j2
     - dest: "{{ bitbucket_catalina }}/bin/set-bitbucket-user.sh"
-      src: "./templates/opt/atlassian/bitbucket/bin/set-bitbucket-user.sh.j2"
-      owner: "{{ bitbucket_owner }}"
       group: "{{ bitbucket_group }}"
       mode: "0755"
-  notify:
-    - Bitbucket | systemctl restart bitbucket.service
-
+      owner: "{{ bitbucket_owner }}"
+      src: ./templates/opt/atlassian/bitbucket/bin/set-bitbucket-user.sh.j2
+  notify: [Systemctl daemon-reload, Systemctl restart bitbucket.service]
+  # Separator for the pre-commit handler parser.
 - name: Prepare files
   ansible.builtin.file:
     dest: "{{ item.dest }}"
-    owner: "{{ item.owner | default('root') }}"
     group: "{{ item.group | default('root') }}"
     mode: "{{ item.mode | default('0644') }}"
+    owner: "{{ item.owner | default('root') }}"
     state: "{{ item.state | default('file') }}"
   loop:
+    - dest: /etc/systemd/system/bitbucket.service
     - dest: "{{ bitbucket_catalina }}/bin/_start-webapp.sh"
-      owner: "{{ bitbucket_owner }}"
       group: "{{ bitbucket_group }}"
       mode: "0755"
+      owner: "{{ bitbucket_owner }}"
     - dest: "{{ bitbucket_catalina }}/bin/set-bitbucket-home.sh"
-      owner: "{{ bitbucket_owner }}"
       group: "{{ bitbucket_group }}"
       mode: "0755"
+      owner: "{{ bitbucket_owner }}"
     - dest: "{{ bitbucket_catalina }}/bin/set-bitbucket-user.sh"
-      owner: "{{ bitbucket_owner }}"
       group: "{{ bitbucket_group }}"
       mode: "0755"
-  notify:
-    - Bitbucket | systemctl restart bitbucket.service
-
-- name: Patch {{ bitbucket_home }}/shared/bitbucket.properties
-  ini_file:
-    path: "{{ bitbucket_home }}/shared/bitbucket.properties"
-    section: ""
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-    owner: "{{ bitbucket_owner }}"
+      owner: "{{ bitbucket_owner }}"
+  notify: [Systemctl daemon-reload, Systemctl restart bitbucket.service]
+  # Separator for the pre-commit handler parser.
+- name: Patch /var/atlassian/application-data/bitbucket/shared/bitbucket.properties
+  community.general.ini_file:
     group: "{{ bitbucket_group }}"
     mode: "0644"
     no_extra_spaces: true
-    state: "present"
+    option: "{{ item.option }}"
+    owner: "{{ bitbucket_owner }}"
+    path: "{{ bitbucket_home }}/shared/bitbucket.properties"
+    section: ""
+    state: "{{ item.value | ternary('present', 'absent') }}"
+    value: "{{ item.value }}"
   loop:
-    - { option: "server.scheme", value: "{{ bitbucket_catalina_connector_scheme }}" }
-    - { option: "server.secure", value: "{{ bitbucket_catalina_connector_secure }}" }
-    - { option: "server.proxy-name", value: "{{ bitbucket_catalina_connector_proxyname }}" }
-    - { option: "server.proxy-port", value: "{{ bitbucket_catalina_connector_proxyport }}" }
-    - { option: "server.context-path", value: "{{ bitbucket_catalina_context_path }}" }
-    - { option: "server.session.timeout", value: "{{ (bitbucket_session_timeout | int) * 60 }}" }
-  notify:
-    - Bitbucket | systemctl restart bitbucket.service
-
+    - option: server.port
+      value: "{{ bitbucket_catalina_connector_port }}"
+    - option: server.scheme
+      value: "{{ bitbucket_catalina_connector_scheme }}"
+    - option: server.secure
+      value: "{{ bitbucket_catalina_connector_secure }}"
+    - option: server.proxy-name
+      value: "{{ bitbucket_catalina_connector_proxyname }}"
+    - option: server.proxy-port
+      value: "{{ bitbucket_catalina_connector_proxyport }}"
+    - option: server.context-path
+      value: "{{ bitbucket_catalina_context_path }}"
+    - option: server.session.timeout
+      value: "{{ (bitbucket_session_timeout | int) * 60 }}"
+    - option: auth.remember-me.enabled
+      value: optional
+    - option: auth.remember-me.token.expiry
+      value: "{{ ((bitbucket_autologin_cookie_age | int) / 60 / 24) | int }}"
+  notify: Systemctl restart bitbucket.service
+  # Separator for the pre-commit handler parser.
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
-
-- name: systemctl start bitbucket.service
+- name: Systemctl start bitbucket.service
   ansible.builtin.service:
-    name: "bitbucket.service"
-    state: "started"
     enabled: true
+    name: bitbucket.service
+    state: started
   changed_when: false
   failed_when: false

@@ -1,0 +1,14 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Loop over tomcat_instances
+  ansible.builtin.include_tasks:
+    file: instance.yml
+  loop: "{{ tomcat_instances }}"
+  loop_control:
+    label: "{{ instance.name }}"
+    loop_var: instance
+  when:
+    - tomcat_instances is defined

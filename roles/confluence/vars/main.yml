@@ -1,8 +1,13 @@
 ---
 _postgresql_jdbc_version:
+  "42.7": "42.7.14"
   "42.3": "42.3.4"
 
 _postgresql_jdbc_download:
+  "42.7.14":
+    url: "https://jdbc.postgresql.org/download/postgresql-42.7.14.jar"
+    dest: "/var/cache/ansible/73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c/postgresql-42.7.14.jar"
+    checksum: "73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c"
   "42.3.4":
     url: "http://jdbc.postgresql.org/download/postgresql-42.3.4.jar"
     dest: "/var/cache/ansible/5d5ed5716645f19e895152a5dd181c7a1376f81e8dcaab4fff12b008122240ae/postgresql-42.3.4.jar"

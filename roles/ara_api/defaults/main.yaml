@@ -9,7 +9,7 @@
 ara_api_secure_logging: true
 
 # Root directory where every file for the ARA installation are located
-ara_api_root_dir: "{{ ansible_user_dir }}/.ara"
+ara_api_root_dir: "{{ ansible_facts['user_dir'] }}/.ara"
 
 # Directory where logs are written to
 ara_api_log_dir: "{{ ara_api_root_dir }}/logs"
@@ -23,10 +23,10 @@ ara_api_venv: true
 ara_api_venv_path: "{{ ara_api_root_dir }}/virtualenv"
 
 # How ARA will be installed
-# - source [default]: installs from a local or remote git repository
+# - source: installs from a local or remote git repository
 # - distribution: installs from distribution packages, if available
-# - pypi : installs from pypi
-ara_api_install_method: source
+# - pypi [default]: installs from pypi
+ara_api_install_method: pypi
 
 # When installing from source, the URL or filesystem path where the git source
 # repository can be cloned from.
@@ -40,21 +40,19 @@ ara_api_source_checkout: "{{ ara_api_root_dir }}/git/ara"
 # When installing from PyPi, it would be a version number that has been released.
 # When using "latest" as the source version, HEAD will be used
 # When using "latest" as the pypi version, the latest release will be used
-ara_api_version: master
+ara_api_version: latest
 
 # The frontend/web server for serving the ARA API
 # It is recommended to specify a web server when deploying a production environment.
 # - null [default]: No frontend server will be set up.
 # - nginx: Nginx will be configured in front of the WSGI application server.
 # - apache [planned]
-ara_api_frontend_server: null
-
+ara_api_frontend_server:
 # Path to a custom vhost configuration jinja template
 # The vhost configuration templates provided by the role are simple by design
 # and are not sufficient to cover every use cases.
 # Use this variable if you need to have your own custom nginx or apache configuration.
-ara_api_frontend_vhost: null
-
+ara_api_frontend_vhost:
 # Enable https on port 443 in addition to http on port 80
 # Enabling SSL requires specifying the path to your key and certificate via
 # ara_api_frontend_ssl_key and ara_api_frontend_ssl_cert
@@ -62,18 +60,15 @@ ara_api_frontend_ssl: false
 
 # Path to an existing SSL private key provisioned outside of this role
 # ex: /etc/letsencrypt/live/ara.example.org/privkey.pem
-ara_api_frontend_ssl_key: null
-
+ara_api_frontend_ssl_key:
 # Path to an existing SSL certificate provisioned outside of this role
 # ex: /etc/letsencrypt/live/ara.example.org/fullchain.pem
-ara_api_frontend_ssl_cert: null
-
+ara_api_frontend_ssl_cert:
 # The WSGI server for running ARA's API server
 # - null [default]: No persistent WSGI application server will be set up. Only the offline API client will work.
 # - gunicorn: gunicorn will be installed and set up to run the API as a systemd service.
 # - mod_wsgi [planned]
-ara_api_wsgi_server: null
-
+ara_api_wsgi_server:
 # Address and port on which the wsgi server will bind
 # Changing this value means you might need to adjust "ara_api_allowed_hosts" and
 # "ara_api_cors_origin_whitelist".
@@ -81,10 +76,10 @@ ara_api_wsgi_bind: "127.0.0.1:8000"
 
 # Amount of worker processes for the wsgi server
 # Recommended default formula by gunicorn: https://docs.gunicorn.org/en/stable/design.html#how-many-workers
-ara_api_wsgi_workers: "{{ ansible_facts['processor_count'] * ansible_facts['processor_cores'] * ansible_facts['processor_threads_per_core'] * 2 + 1 }}"
+ara_api_wsgi_workers: "{{ ansible_facts['processor_count'] * ansible_facts['processor_cores'] * ansible_processor_threads_per_core * 2 + 1 }}"
 
 # When using a frontend server, the domain or address it will be listening on
-ara_api_fqdn: "{{ ansible_facts['default_ipv4']['address'] | default(ansible_facts['default_ipv6']['address']) }}"
+ara_api_fqdn: "{{ ansible_facts['default_ipv4'].address | default(ansible_facts['default_ipv6'].address) }}"
 
 ####################################
 # ara API configuration settings
@@ -119,7 +114,6 @@ ara_api_external_auth_file: /etc/nginx/.htpasswd
 # They can be provided in clear text but it is recommended to use ansible-vault so ara doesn't record them.
 # https://docs.ansible.com/ansible/latest/user_guide/vault.html
 ara_api_external_auth_users: []
-
 # ARA_READ_LOGIN_REQUIRED - Whether authentication is required for reading data
 ara_api_read_login_required: false
 
@@ -137,14 +131,14 @@ ara_api_logging:
   disable_existing_loggers: false
   formatters:
     normal:
-      format: '%(asctime)s %(levelname)s %(name)s: %(message)s'
+      format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
   handlers:
     console:
       class: logging.handlers.TimedRotatingFileHandler
       formatter: normal
       level: "{{ ara_api_log_level }}"
       filename: "{{ ara_api_log_dir }}/server.log"
-      when: 'midnight'
+      when: "midnight"
       interval: 1
       backupCount: 30
   loggers:
@@ -169,7 +163,6 @@ ara_api_cors_origin_whitelist:
 
 # ARA_CORS_ORIGIN_REGEX_WHITELIST - django-cors-headers’s CORS_ORIGIN_REGEX_WHITELIST setting
 ara_api_cors_origin_regex_whitelist: []
-
 # ARA_SERVER_ALLOWED_HOSTS - Django’s ALLOWED_HOSTS setting
 ara_api_allowed_hosts:
   - "127.0.0.1"
@@ -183,8 +176,7 @@ ara_api_debug: false
 
 # ARA_SECRET_KEY - Django's SECRET_KEY setting
 # Note: If no key is provided, a random one will be generated once and persisted
-ara_api_secret_key: null
-
+ara_api_secret_key:
 # ARA_DISTRIBUTED_SQLITE - Whether to enable distributed sqlite backend
 ara_api_distributed_sqlite: false
 
@@ -201,23 +193,18 @@ ara_api_database_engine: "{{ ara_api_distributed_sqlite | ternary('ara.server.db
 ara_api_database_name: "{{ ara_api_base_dir }}/ansible.sqlite"
 
 # ARA_DATABASE_USER - Django’s USER database setting
-ara_api_database_user: null
-
+ara_api_database_user:
 # ARA_DATABASE_PASSWORD - Django’s PASSWORD database setting
-ara_api_database_password: null
-
+ara_api_database_password:
 # ARA_DATABASE_HOST - Django’s HOST database setting
-ara_api_database_host: null
-
+ara_api_database_host:
 # ARA_DATABASE_PORT - Django’s PORT database setting
-ara_api_database_port: null
-
+ara_api_database_port:
 # ARA_DATABASE_CONN_MAX_AGE - Django's CONN_MAX_AGE database setting
 ara_api_database_conn_max_age: 0
 
 # ARA_DATABASE_OPTIONS - Django's OPTIONS database setting
 ara_api_database_options: {}
-
 # ARA_TIME_ZONE - Time zone used when storing and returning results
 # Note: the default provided by ARA is dynamic and is set to the local system
 # timezone but Ansible doesn't provide, for example, an ansible_timezone fact
@@ -231,8 +218,8 @@ ara_api_configure_cron: false
 # When configuring cronjobs, only provide the arguments for the ara CLI utility
 ara_api_cleanup_crons:
   - name: ara_api expire running playbooks
-    arguments: 'expire --server http://localhost:8000 --client http --confirm --hours 24'
-    special_time: 'daily'  # you can also use other time arguments from the cron module
+    arguments: "expire --server http://localhost:8000 --client http --confirm --hours 24"
+    special_time: "daily" # you can also use other time arguments from the cron module
   - name: ara_api prune old reports
-    arguments: 'playbook prune --server http://localhost:8000 --client http --confirm --days 30'
-    special_time: 'daily'
+    arguments: "playbook prune --server http://localhost:8000 --client http --confirm --days 30"
+    special_time: "daily"

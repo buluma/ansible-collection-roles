@@ -51,8 +51,7 @@ _centos_requirements:
     - gzip
     - vim-enhanced
 
-centos_requirements: "{{ _centos_requirements[ansible_os_family] | default(_centos_requirements['default'] ) }}"
-
+centos_requirements: "{{ _centos_requirements[ansible_facts['os_family']] | default(_centos_requirements['default']) }}"
 
 selinux_packages:
   - policycoreutils

@@ -1,0 +1,24 @@
+---
+- name: assert | Test jenkins_port
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - jenkins_port is defined
+      - jenkins_port is number
+      - jenkins_port > 0
+      - jenkins_port < 65535
+- name: assert | Test jenkins_listen_address
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - jenkins_listen_address is defined
+      - jenkins_listen_address is string
+      - jenkins_listen_address is not none
+- name: assert | Test jenkins_version
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - jenkins_version is string
+      - jenkins_version is not none
+  when:
+    - jenkins_version is defined

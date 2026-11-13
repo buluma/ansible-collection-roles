@@ -1,16 +1,18 @@
 ---
-- name: ensure the database directory exists
-  become: "{{ (ansible_user_dir in ara_api_database_name) | ternary(false, true) }}"
-  file:
+- name: database_engine | django.db.backends.sqlite3 | Ensure the database directory exists
+  ansible.builtin.file:
     path: "{{ ara_api_database_name | dirname }}"
-    mode: 0750
     state: directory
+    mode: "0750"
 
-- name: run SQL migrations
-  become: "{{ (ansible_user_dir in ara_api_database_name) | ternary(false, true) }}"
+- name: database_engine | django.db.backends.sqlite3 | Run SQL migrations
   environment:
     ARA_SETTINGS: "{{ ara_api_settings }}"
     PATH: "{{ path_with_virtualenv }}"
-  command: ara-manage migrate
+  ansible.builtin.command: ara-manage migrate
+  run_once: true
   register: _ara_sql_migrations
-  changed_when: "'no migrations to apply' not in _ara_sql_migrations.stdout"
+  retries: 3
+  delay: 5
+  until: _ara_sql_migrations is succeeded
+  changed_when: '"No migrations to apply" not in _ara_sql_migrations.stdout'

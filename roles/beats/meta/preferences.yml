@@ -1,5 +1,13 @@
 ---
-#
-# Ansible managed
-#
-tox_parallel: true
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # EL and Fedora excluded: this role is Debian/Ubuntu-only by design
+  # (apt-specific tasks, apt-transport-https prereq, Debian log paths).
+  # There is no RedHat-family implementation to test.
+  - name: Debian
+    versions:
+      - all
+  - name: Ubuntu
+    versions:
+      - all

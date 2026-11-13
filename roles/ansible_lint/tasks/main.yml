@@ -1,0 +1,28 @@
+---
+# tasks file for ansible_lint
+
+- name: Ensure the packaging library is present for pip installs
+  ansible.builtin.package:
+    name: python3-packaging
+    state: present
+  when:
+    - ansible_lint_packages | selectattr('type', 'equalto', 'pip') | list | length > 0
+
+- name: Install ansible_lint using pip
+  ansible.builtin.pip:
+    name: "{{ item.name }}"
+    extra_args: "{{ item.extra_args | default(omit) }}"
+  when:
+    - item.type == "pip"
+  loop: "{{ ansible_lint_packages }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install ansible_lint using package
+  ansible.builtin.package:
+    name: "{{ item.name }}"
+  when:
+    - item.type == "package"
+  loop: "{{ ansible_lint_packages }}"
+  loop_control:
+    label: "{{ item.name }}"

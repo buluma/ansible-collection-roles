@@ -1,0 +1,7 @@
+---
+- name: setup_debian | Ensure required packages are installed
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: "present"
+  with_items:
+    - procps

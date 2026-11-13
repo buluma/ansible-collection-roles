@@ -1,0 +1,17 @@
+---
+- name: update | Updating Netdata from {{ netdata_updater ~ ' @ ' ~ netdata_source_dir }}
+  ansible.builtin.command: "{{ netdata_updater }}"
+  args:
+    chdir: "{{ netdata_source_dir }}"
+  become: true
+  notify: Restart netdata
+  when: not netdata_update_force | bool
+  changed_when: false
+
+- name: update | Force Updating Netdata from {{ netdata_updater ~ ' @ ' ~ netdata_source_dir }}
+  ansible.builtin.command: "{{ netdata_updater }} -f"
+  args:
+    chdir: "{{ netdata_source_dir }}"
+  become: true
+  when: netdata_update_force
+  changed_when: false

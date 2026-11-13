@@ -1,0 +1,181 @@
+---
+- name: assert | Test mysql_bind_address
+  ansible.builtin.assert:
+    that:
+      - mysql_bind_address is defined
+      - mysql_bind_address is string
+      - mysql_bind_address is not none
+    quiet: true
+
+- name: assert | Test mysql_port
+  ansible.builtin.assert:
+    that:
+      - mysql_port is defined
+      - mysql_port is number
+      - mysql_port > 1
+      - mysql_port < 65536
+    quiet: true
+
+- name: assert | Test mysql_root_password
+  ansible.builtin.assert:
+    that:
+      - mysql_root_password is defined
+      - mysql_root_password is string
+      - mysql_root_password is not none
+    quiet: true
+
+- name: assert | Test mysql_innodb_buffer_pool_size
+  ansible.builtin.assert:
+    that:
+      - mysql_innodb_buffer_pool_size is defined
+      - mysql_innodb_buffer_pool_size is string
+      - mysql_innodb_buffer_pool_size is not none
+    quiet: true
+
+- name: assert | Test mysql_innodb_io_capacity
+  ansible.builtin.assert:
+    that:
+      - mysql_innodb_io_capacity is defined
+      - mysql_innodb_io_capacity is number
+    quiet: true
+
+- name: assert | Test item.name item in mysql_databases
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ mysql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_databases is defined
+
+- name: assert | Test item.state in mysql_databases
+  ansible.builtin.assert:
+    that:
+      - item.state is string
+      - item.state in [ "absent", "dump", "import", "present" ]
+    quiet: true
+  loop: "{{ mysql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_databases is defined
+    - item.state is defined
+
+- name: assert | Test item.target in mysql_databases
+  ansible.builtin.assert:
+    that:
+      - item.target is string
+      - item.target is not none
+    quiet: true
+  loop: "{{ mysql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_databases is defined
+    - item.target is defined
+
+- name: assert | Test item.encoding in mysql_databases
+  ansible.builtin.assert:
+    that:
+      - item.encoding is string
+      - item.encoding is not none
+    quiet: true
+  loop: "{{ mysql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_databases is defined
+    - item.encoding is defined
+
+- name: assert | Test item.collation in mysql_databases
+  ansible.builtin.assert:
+    that:
+      - item.collation is string
+      - item.collation is not none
+    quiet: true
+  loop: "{{ mysql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_databases is defined
+    - item.collation is defined
+
+- name: assert | Test item.name in mysql_users
+  ansible.builtin.assert:
+    that:
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+
+- name: assert | Test item.password in mysql_users
+  ansible.builtin.assert:
+    that:
+      - item.password is string
+      - item.password is not none
+    quiet: true
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+    - item.password is defined
+
+- name: assert | Test item.priv in mysql_users
+  ansible.builtin.assert:
+    that:
+      - item.priv is string
+      - item.priv is not none
+    quiet: true
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+    - item.priv is defined
+
+- name: assert | Test item.host in mysql_users
+  ansible.builtin.assert:
+    that:
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+    - item.host is defined
+
+- name: assert | Test item.host_all in mysql_users
+  ansible.builtin.assert:
+    that:
+      - item.host_all is boolean
+    quiet: true
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+    - item.host_all is defined
+
+- name: assert | Test item.update_password in mysql_users
+  ansible.builtin.assert:
+    that:
+      - item.update_password is string
+      - item.update_password in [ "always", "on_create" ]
+    quiet: true
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+    - item.update_password is defined

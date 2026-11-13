@@ -1,0 +1,7 @@
+---
+restore_directory: backups
+restore_objects:
+  - destination: /var
+    name: varspool
+    type: directory
+restore_remote_directory: /tmp

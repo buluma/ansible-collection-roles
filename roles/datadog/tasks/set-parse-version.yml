@@ -1,0 +1,17 @@
+---
+- name: set-parse-version | Convert datadog_agent_major_version to string
+  ansible.builtin.set_fact:
+    agent_datadog_agent_major_version: "{{ datadog_agent_major_version | default('', true) | string }}"
+
+- name: set-parse-version | Initialize skip install flag to false
+  ansible.builtin.set_fact:
+    agent_datadog_skip_install: false
+
+- name: set-parse-version | Include parse version tasks
+  ansible.builtin.include_tasks: parse-version.yml
+  when: datadog_agent_version | default('', true) | length > 0
+
+- name: set-parse-version | Set Agent default major version
+  ansible.builtin.set_fact:
+    agent_datadog_agent_major_version: "7"
+  when: agent_datadog_agent_major_version | length == 0

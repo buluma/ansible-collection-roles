@@ -1,12 +1,16 @@
 ---
-
-- name: Bitbucket | systemctl restart bitbucket.service
-  ansible.builtin.service:
-    name: "bitbucket.service"
-    state: "restarted"
-    enabled: true
-  loop: "{{ ansible_play_hosts }}"
-  delegate_to: "{{ item }}"
-  run_once: true
+- name: Systemctl daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
   changed_when: false
   failed_when: false
+- name: Systemctl restart bitbucket.service
+  ansible.builtin.service:
+    enabled: true
+    name: bitbucket.service
+    state: restarted
+  changed_when: false
+  delegate_to: "{{ item }}"
+  failed_when: false
+  loop: "{{ ansible_play_hosts }}"
+  run_once: true

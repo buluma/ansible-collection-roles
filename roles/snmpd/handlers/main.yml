@@ -1,0 +1,7 @@
+---
+# handlers file for snmpd
+
+- name: Restart snmpd
+  ansible.builtin.service:
+    name: "{{ snmpd_service }}"
+    state: restarted

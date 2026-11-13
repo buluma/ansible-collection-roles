@@ -1,0 +1,11 @@
+---
+- name: iptables | Set_fact default_policy=ACCEPT
+  ansible.builtin.set_fact:
+    default_policy: ACCEPT
+  tags: iptables
+  when: default_accept is defined and default_accept.lower() in ["1", "true"]
+- name: iptables | Set_fact default_policy=DROP
+  ansible.builtin.set_fact:
+    default_policy: DROP
+  tags: iptables
+  when: default_policy is not defined

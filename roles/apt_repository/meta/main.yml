@@ -2,18 +2,11 @@
 galaxy_info:
   author: buluma
   role_name: apt_repository
-  description: Manage apt repositor(y|ies).
+  description: "Manage apt repositor(y|ies)."
   license: Apache-2.0
   company: ShadowNet
   min_ansible_version: "2.12"
-
-  platforms:
-    - name: Ubuntu
-      versions:
-        - all
-
   galaxy_tags:
     - apt
     - repository
-
 dependencies: []

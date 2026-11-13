@@ -1,0 +1,45 @@
+---
+# tasks file for rpmfusion
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install free and nonfree
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+  block:
+    - name: Configure free
+      when:
+        - rpmfusion_free
+      block:
+        - name: Install free gpg key
+          ansible.builtin.rpm_key:
+            key: "{{ rpmfusion_free_gpgp_key }}"
+            state: present
+
+        - name: Install free repositories
+          ansible.builtin.dnf:
+            name: "{{ rpmfusion_free_repository }}"
+            state: present
+            validate_certs: false
+          notify:
+            - Yum update cache
+
+    - name: Configure non-free
+      when:
+        - rpmfusion_nonfree
+      block:
+        - name: Install nonfree gpg key
+          ansible.builtin.rpm_key:
+            key: "{{ rpmfusion_nonfree_gpgp_key }}"
+            state: present
+
+        - name: Install nonfree repositories
+          ansible.builtin.dnf:
+            name: "{{ rpmfusion_nonfree_repository }}"
+            state: present
+            validate_certs: false
+          notify:
+            - Yum update cache

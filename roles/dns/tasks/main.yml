@@ -1,124 +1,111 @@
 ---
-# tasks file for dns
-
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: true
   delegate_to: localhost
-
+  run_once: true
 - name: Install dns
   ansible.builtin.package:
     name: "{{ dns_packages }}"
     state: present
-
 - name: Create directories
   ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: directory
+    group: "{{ item.group }}"
     mode: "{{ item.mode }}"
     owner: "{{ item.owner }}"
-    group: "{{ item.group }}"
+    path: "{{ item.path }}"
+    state: directory
   loop:
-    - path: "{{ dns_datadir }}"
+    - group: "{{ dns_group }}"
       mode: "1770"
       owner: "{{ dns_owner }}"
-      group: "{{ dns_group }}"
-    - path: "{{ dns_confdir }}"
+      path: "{{ dns_datadir }}"
+    - group: root
       mode: "0755"
       owner: root
-      group: root
+      path: "{{ dns_confdir }}"
   loop_control:
     label: "{{ item.path }}"
-
 - name: Create group
   ansible.builtin.group:
     name: "{{ dns_group }}"
     state: present
-
 - name: Create user
   ansible.builtin.user:
     name: "{{ dns_owner }}"
     state: present
     system: true
-
 - name: Generate rndc key
   ansible.builtin.command:
     cmd: rndc-confgen -a -c "{{ dns_confdir }}/rndc.key"
     creates: "{{ dns_confdir }}/rndc.key"
-
 - name: Set permissions on rndc key file
   ansible.builtin.file:
-    path: "{{ dns_confdir }}/rndc.key"
-    owner: "{{ dns_owner }}"
     group: "{{ dns_group }}"
     mode: "0640"
-
+    owner: "{{ dns_owner }}"
+    path: "{{ dns_confdir }}/rndc.key"
 - name: Get the hints/root file
   ansible.builtin.get_url:
-    url: https://www.internic.net/domain/named.root
     dest: "{{ dns_datadir }}/named.root"
-    validate_certs: "{{ dns_validate_certs }}"
+    group: "{{ dns_group }}"
     mode: "0640"
     owner: "{{ dns_owner }}"
-    group: "{{ dns_group }}"
-  when:
-    - dns_caching_dns | bool
+    url: https://www.internic.net/domain/named.root
+    validate_certs: "{{ dns_validate_certs }}"
   notify:
     - Rndc reload
-
+  # Separator for the pre-commit handler parser.
+  when:
+    - dns_caching_dns
 - name: Create zone files
   ansible.builtin.template:
-    src: zone.j2
     dest: "{{ dns_datadir }}/{{ item.name }}.conf"
+    group: "{{ dns_group }}"
     mode: "0640"
     owner: "{{ dns_owner }}"
-    group: "{{ dns_group }}"
+    src: zone.j2
   loop: "{{ dns_zones }}"
   loop_control:
     label: "{{ item.name }}"
-  when:
-    - item.type is undefined or
-      item.type == "master"
   notify:
     - Rndc reload
-
+  # Separator for the pre-commit handler parser.
+  when:
+    - item.type is undefined or item.type == "master"
 - name: Add zones to configuration
   ansible.builtin.template:
-    src: named.conf.j2
+    backup: true
     dest: "{{ dns_confdir }}/named.conf"
-    validate: named-checkconf -zj %s
+    group: "{{ dns_group }}"
     mode: "0640"
     owner: "{{ dns_owner }}"
-    group: "{{ dns_group }}"
-    backup: true
+    src: named.conf.j2
+    validate: named-checkconf -zj %s
   notify:
     - Restart dns
-
+# Separator for the pre-commit handler parser.
 - name: Place systemd override
+  when:
+    - ansible_facts['service_mgr'] == "systemd"
   block:
-    - name: Create /etc/systemd/system/{{ dns_service }}.service.d
+    - name: Create service.d {{ dns_service }}
       ansible.builtin.file:
+        mode: "0755"
         path: /etc/systemd/system/{{ dns_service }}.service.d
         state: directory
-        mode: "0755"
-
     - name: Place override.conf
       ansible.builtin.copy:
-        src: override.conf
         dest: /etc/systemd/system/{{ dns_service }}.service.d/override.conf
-        owner: root
         group: root
         mode: "0644"
-
+        owner: root
+        src: override.conf
     - name: Systemctl daemon-reload
       ansible.builtin.systemd:
         daemon_reload: true
       changed_when: false
-  when:
-    - ansible_service_mgr == "systemd"
-
 - name: Start and enable dns
   ansible.builtin.service:
+    enabled: true
     name: "{{ dns_service }}"
     state: started
-    enabled: true

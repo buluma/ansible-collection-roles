@@ -1,0 +1,9 @@
+---
+consul_client_addr: "0.0.0.0"
+consul_data_dir: /opt/consul
+consul_datacenter: my-dc-1
+consul_install_package: true
+consul_license: ""
+consul_server: true
+consul_ui: true
+consule_service_started_and_enabled: true

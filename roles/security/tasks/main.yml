@@ -1,0 +1,53 @@
+---
+- name: Update apt cache.
+  ansible.builtin.package:
+    cache_valid_time: 600
+    update_cache: true
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Ensure build dependencies are installed (RedHat).
+  ansible.builtin.package:
+    name:
+      - openssh-server
+      - openssh-clients
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: Ensure build dependencies are installed (Fedora).
+  ansible.builtin.package:
+    name: procps
+    state: present
+  when: ansible_facts['distribution'] == 'Fedora'
+- name: Ensure build dependencies are installed (Debian).
+  ansible.builtin.package:
+    name:
+      - openssh-server
+      - openssh-client
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Ensure auth.log file is present.
+  ansible.builtin.copy:
+    content: ""
+    dest: /var/log/auth.log
+    force: false
+    mode: "0644"
+  when: ansible_facts['distribution'] == 'Debian'
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+- name: Run Fail2Ban
+  ansible.builtin.import_tasks:
+    file: fail2ban.yml
+  when: security_fail2ban_enabled | bool
+- name: Run SSH
+  ansible.builtin.import_tasks:
+    file: ssh.yml
+- name: Run Autoupdate
+  ansible.builtin.import_tasks:
+    file: autoupdate-RedHat.yml
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - security_autoupdate_enabled | bool
+- name: Autoupdate Debian
+  ansible.builtin.import_tasks:
+    file: autoupdate-Debian.yml
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - security_autoupdate_enabled | bool

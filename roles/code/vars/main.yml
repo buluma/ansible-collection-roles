@@ -1,0 +1,10 @@
+---
+# vars file for code
+
+_required_packages:
+  default: []
+  Debian:
+    - "{{ 'libasound2t64' if ((ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 24) or (ansible_facts['distribution']
+      == 'Debian' and ansible_facts['distribution_major_version'] | int >= 13)) else 'libasound2' }}"
+
+required_packages: "{{ _required_packages[ansible_facts['os_family']] | default(_required_packages['default']) }}"

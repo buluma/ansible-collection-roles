@@ -1,0 +1,42 @@
+---
+# https://github.com/michaelrigart/ansible-role-capistrano-setup
+
+- name: users | Create groups for users
+  ansible.builtin.group:
+    name: "{{ item.username }}"
+    gid: "{{ item.uid }}"
+  with_items: "{{ capistrano_setup_users }}"
+
+- name: users | Create users
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    group: "{{ item.username }}"
+    # groups: '{{ item.groups|join(",") }}'
+    shell: "{{ item.shell }}"
+    comment: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    home: "{{ item.home }}"
+    createhome: "{{ item.createhomedir }}"
+    password: "{{ item.password }}"
+    update_password: "{{ item.update_password }}"
+  with_items: "{{ capistrano_setup_users | default([]) }}"
+
+- name: users | Create .ssh directory
+  ansible.builtin.file:
+    path: "~{{ item.username }}/.ssh"
+    state: directory
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
+    mode: "0750"
+  with_items: "{{ capistrano_setup_users | default([]) }}"
+  when: item.createhomedir and item.upload_key
+
+- name: users | Upload ssh keys
+  ansible.builtin.copy:
+    src: "{{ item.pub_key }}"
+    dest: "~{{ item.username }}/.ssh/authorized_keys"
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
+    mode: "0640"
+  with_items: "{{ capistrano_setup_users | default([]) }}"
+  when: item.createhomedir and item.upload_key

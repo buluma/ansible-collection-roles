@@ -1,0 +1,116 @@
+---
+# tasks file for httpd
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install apache httpd
+  ansible.builtin.package:
+    name: "{{ httpd_packages }}"
+    state: present
+
+- name: Ensure apache lock directory exists
+  ansible.builtin.file:
+    path: /run/lock/apache2
+    state: directory
+    mode: "0755"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+
+- name: Configure selinux
+  when:
+    - ansible_facts['selinux'].status is defined
+    - ansible_facts['selinux'].status == "enabled"
+  block:
+    - name: Modify selinux settings
+      ansible.posix.seboolean:
+        name: "{{ item }}"
+        state: true
+        persistent: true
+      when:
+        - ansible_facts['selinux'].status is defined
+        - ansible_facts['selinux'].status == "enabled"
+      loop: "{{ httpd_sebooleans }}"
+
+    - name: Allow connections to custom port
+      community.general.seport:
+        ports: "{{ item }}"
+        proto: tcp
+        setype: http_port_t
+        state: present
+      loop:
+        - "{{ httpd_port }}"
+        - "{{ httpd_ssl_port | default(omit) }}"
+
+- name: Configure httpd
+  ansible.builtin.template:
+    src: "{{ httpd_config_src }}"
+    dest: "{{ httpd_config_dest }}"
+    mode: "0644"
+  notify:
+    - Test httpd configuration validity
+    - Restart httpd
+
+- name: Activate httpd module | Debian
+  ansible.builtin.command:
+    cmd: "a2enmod {{ item }}"
+  changed_when: false
+  loop: "{{ httpd_modules_to_activate_with_command }}"
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+  notify:
+    - Test httpd configuration validity
+
+- name: Import ssl.yml
+  ansible.builtin.import_tasks:
+    file: ssl.yml
+  when:
+    - https_ssl_enable
+
+- name: Import locations.yml
+  ansible.builtin.import_tasks:
+    file: locations.yml
+  when:
+    - httpd_locations is defined
+
+- name: Import vhosts.yml
+  ansible.builtin.import_tasks:
+    file: vhosts.yml
+  when:
+    - httpd_vhosts is defined
+
+- name: Configure ports
+  ansible.builtin.template:
+    src: "{{ httpd_ports_conf }}.j2"
+    dest: "{{ httpd_server_root }}/{{ httpd_ports_conf }}"
+    mode: "0644"
+  notify:
+    - Test httpd configuration validity
+    - Restart httpd
+  when:
+    - ansible_facts['os_family'] in [ "Debian", "Suse" ]
+
+- name: Import directories.yml
+  ansible.builtin.import_tasks:
+    file: directories.yml
+  when:
+    - httpd_directories is defined
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Removing default html
+  ansible.builtin.file:
+    path: "{{ httpd_data_directory }}/index.html"
+    state: absent
+  when:
+    - httpd_remove_example
+
+- name: Start and enable httpd
+  ansible.builtin.service:
+    name: "{{ httpd_service }}"
+    state: started
+    enabled: true

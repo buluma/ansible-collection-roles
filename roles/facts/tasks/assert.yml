@@ -1,0 +1,21 @@
+---
+- name: assert | Test if facts is set correctly
+  ansible.builtin.assert:
+    that:
+      - facts is iterable
+    quiet: true
+  when:
+    - facts is defined
+
+- name: assert | Test if item in facts is set correctly
+  ansible.builtin.assert:
+    that:
+      - item.key is defined
+      - item.key is string
+      - item.value is defined
+    quiet: true
+  loop: "{{ facts }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when:
+    - facts is defined

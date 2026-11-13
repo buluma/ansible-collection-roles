@@ -1,0 +1,44 @@
+---
+- name: configure-Debian | Print the gateway for each host when defined
+  ansible.builtin.debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_facts['default_ipv4'].gateway }}
+  when: ansible_facts['default_ipv4'].gateway is defined
+- name: configure-Debian | Display all variables/facts known for a host
+  ansible.builtin.debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
+- name: configure-Debian | Show configured default become user
+  ansible.builtin.debug:
+    msg: "{{ lookup('config', 'DEFAULT_BECOME_USER') }}"
+- name: configure-Debian | Print out role paths
+  ansible.builtin.debug:
+    msg: "These are the configured role paths: {{ lookup('config', 'DEFAULT_ROLES_PATH') }}"
+- name: configure-Debian | Find retry files, skip if missing that key
+  ansible.builtin.find:
+    paths: "{{ lookup('config', 'RETRY_FILES_SAVE_PATH') | default(playbook_dir, True) }}"
+    patterns: "*.retry"
+- name: configure-Debian | See the colors
+  ansible.builtin.debug:
+    msg: "{{ item }}"
+  loop: "{{ lookup('config', 'COLOR_OK', 'COLOR_CHANGED', 'COLOR_SKIP', wantlist=True) }}"
+- name: configure-Debian | Show remote_tmp setting for shell (sh) plugin
+  ansible.builtin.debug:
+    msg: "{{ q('config', 'remote_tmp', plugin_type='shell', plugin_name='sh') }}"
+- name: configure-Debian | Install iptables packages (Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - iptables
+      - iptables-persistent
+    state: present
+    update_cache: true
+  tags: iptables
+- name: configure-Debian | Collect only selected facts
+  ansible.builtin.setup:
+    filter:
+      - ansible_facts['distribution']
+      - ansible_facts['machine_id']
+      - ansible_*_mb
+- name: configure-Debian | Install required software
+  ansible.builtin.package:
+    name: "{{ users_requirements }}"
+    state: present

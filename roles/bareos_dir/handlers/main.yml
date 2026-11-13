@@ -1,0 +1,24 @@
+---
+# handlers file for bareos_dir
+
+- name: Write results of database setup to file
+  ansible.builtin.copy:
+    content: "{{ item.stdout }}"
+    dest: "/var/log/bareos/{{ item.cmd[0] | basename }}.log"
+    mode: "0640"
+  loop: "{{ bareos_setup_database.results }}"
+  loop_control:
+    label: "{{ item.cmd[0] | basename | default('Command was skipped') }}"
+  when:
+    - item.stdout is defined
+
+- name: Check configuration
+  ansible.builtin.command: "bareos-dir --test-config"
+  changed_when: false
+  become_user: bareos
+  become: true
+
+- name: Reload bareos-dir
+  ansible.builtin.service:
+    name: bareos-dir
+    state: reloaded

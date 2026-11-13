@@ -1,0 +1,27 @@
+---
+# Debian 13's bind9 package dropped both bind.keys and
+# named.conf.default-zones -- the DNSSEC root key now lives in the
+# separate dns-root-data package, and there's no default-zones
+# equivalent to include.
+auth_file: auth_transfer.conf
+bind_auth_file: "{{ bind_conf_dir }}/{{ auth_file }}"
+bind_bindkeys_file: /usr/share/dns/root.key
+bind_dnssec_validation: auto
+bind_conf_dir: /etc/bind
+bind_config: /etc/bind/named.conf
+bind_default_python_version: "3"
+bind_default_zone_files: []
+bind_dir: /var/cache/bind
+bind_group: bind
+bind_owner: root
+bind_packages:
+  - "{{ (bind_python_version == '3') | ternary('python3-netaddr', 'python-netaddr') }}"
+  - "{{ (bind_python_version == '3') | ternary('python3-dnspython', 'python-dnspython') }}"
+  - bind9
+  - bind9utils
+  - dns-root-data
+bind_pid_file: /run/named/named.pid
+bind_secondary_dir: "{{ bind_dir }}/secondary"
+bind_service: bind9
+bind_session_keyfile: /run/named/session.key
+bind_zone_dir: "{{ bind_dir }}"

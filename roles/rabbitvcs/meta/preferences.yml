@@ -1,0 +1,12 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # No EL/Fedora: RabbitVCS was never packaged for RHEL-family distros -
+  # it's a GNOME/Nautilus desktop plugin, Debian/Ubuntu only.
+  - name: Debian
+    versions:
+      - "13"
+  - name: Ubuntu
+    versions:
+      - all

@@ -1,0 +1,30 @@
+---
+# defaults file for openvpn
+
+# You can setup both a client and a server using this role.
+# Use `server` or `client` for `openvpn_role`.
+
+openvpn_role: server
+
+# If you are configuring a client, setup these variables:
+# openvpn_role: client
+# openvpn_client_server: vpn.example.com
+
+# Server configuration
+openvpn_port: 1194
+openvpn_proto: udp
+openvpn_dev: tun
+openvpn_server_network: "10.8.0.0"
+openvpn_server_netmask: "255.255.255.0"
+openvpn_topology: subnet
+openvpn_cipher: AES-256-CBC
+openvpn_verb: 3
+openvpn_push_options:
+  - "redirect-gateway def1 bypass-dhcp"
+  - "dhcp-option DNS 1.1.1.1"
+  - "dhcp-option DNS 1.0.0.1"
+
+# Extra configuration lines for the server
+openvpn_server_custom_options: []
+# Template to use for the server configuration
+openvpn_server_conf_template: server.conf.j2

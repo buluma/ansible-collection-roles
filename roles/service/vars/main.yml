@@ -1,0 +1,19 @@
+---
+# vars file for service
+
+_service_required_packages:
+  default: []
+  Amazon-2:
+    - procps-ng
+  Amazon-2018:
+    - procps
+  Debian:
+    - psmisc
+  RedHat: &redhat_package
+    - psmisc
+  Rocky: *redhat_package
+  Suse:
+    - psmisc
+
+service_required_packages: "{{ _service_required_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_service_required_packages[ansible_facts['os_family']]
+  | default(_service_required_packages['default'])) }}"

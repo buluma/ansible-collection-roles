@@ -1,66 +1,47 @@
 ---
-
-# (c) Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-- name: Rpm --import
+- name: redhat | Rpm --import
   ansible.builtin.rpm_key:
-    key: "{{ item.key }}"
     fingerprint: "{{ item.fingerprint }}"
+    key: "{{ item.key }}"
     state: "{{ item.state }}"
   loop: "{{ _rpm_key }}"
   register: result
   until: result is succeeded
-
-- name: Yum-config-manager --add-repo
+- name: redhat | Yum-config-manager --add-repo
   ansible.builtin.yum_repository:
-    file: "{{ item.file }}"
-    name: "{{ item.name }}"
-    description: "{{ item.description }}"
     baseurl: "{{ item.baseurl }}"
+    description: "{{ item.description }}"
     enabled: "{{ item.enabled }}"
-    priority: "{{ item.priority }}"
-    module_hotfixes: "{{ item.module_hotfixes }}"
+    file: "{{ item.file }}"
     gpgcheck: "{{ item.gpgcheck }}"
     gpgkey: "{{ item.gpgkey }}"
+    module_hotfixes: "{{ item.module_hotfixes }}"
+    name: "{{ item.name }}"
+    priority: "{{ item.priority }}"
     state: "{{ item.state }}"
   loop: "{{ _yum_repository }}"
-
-- name: Yum versionlock delete
+- name: redhat | Yum versionlock delete
+  changed_when: false
   community.general.yum_versionlock:
     name: "{{ item.name | regex_replace('^(.*)-[0-9]*:*[0-9]+\\..*$', '\\1-*') }}"
-    state: "absent"
+    state: absent
+  failed_when: false
   loop: "{{ _yum }}"
   when: item.state == "present"
-  changed_when: false
-  failed_when: false
-
-- name: Yum install
-  ansible.builtin.yum:
+- name: redhat | DNF install
+  ansible.builtin.dnf:
     name: "{{ item.name }}"
     state: "{{ item.state }}"
   loop: "{{ _yum }}"
+  notify:
+    - Systemctl restart bitbucket.service
   register: result
   until: result is succeeded
-  notify:
-    - Bitbucket | systemctl restart bitbucket.service
-
-- name: Yum versionlock add
+- name: redhat | Yum versionlock add
+  changed_when: false
   community.general.yum_versionlock:
     name: "{{ item.name | regex_replace('^(.*)-[0-9]*:*[0-9]+\\..*$', '\\1-*') }}"
-    state: "present"
+    state: present
+  failed_when: false
   loop: "{{ _yum }}"
   when: item.state == "present"
-  changed_when: false
-  failed_when: false

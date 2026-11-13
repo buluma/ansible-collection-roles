@@ -1,0 +1,12 @@
+---
+- name: integration | windows | Set Agent binary path
+  ansible.builtin.set_fact:
+    datadog_agent_binary_path: "{{ datadog_agent_binary_path_windows }}"
+
+- name: integration | windows | Set Agent user for integration commmand
+  ansible.builtin.set_fact:
+    integration_command_user: "{{ integration_command_user_windows }}"
+
+- name: integration | windows | Include integration installation and removal tasks
+  ansible.builtin.include_tasks: integration/_windows-integration-update.yml
+  loop: "{{ datadog_integration | dict2items }}"

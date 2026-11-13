@@ -1,5 +1,5 @@
 ---
-- name: Copy Topbeat config file.
+- name: topbeat | Copy Topbeat config file.
   become: true
   ansible.builtin.template:
     src: topbeat.yml.j2
@@ -10,9 +10,9 @@
     validate: "/usr/bin/topbeat -configtest -c %s"
   notify: Restart topbeat
 
-- name: Start Topbeat service.
+- name: topbeat | Start Topbeat service.
   become: true
   ansible.builtin.service:
     name: topbeat
-    state: running
+    state: started
     enabled: true

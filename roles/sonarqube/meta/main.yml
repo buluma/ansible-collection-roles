@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: sonarqube
+  description: An Ansible Role that install SonarQube.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - centos
+    - development
+    - monitoring
+    - sonarqube
+dependencies: []

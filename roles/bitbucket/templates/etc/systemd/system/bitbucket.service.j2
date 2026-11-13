@@ -9,6 +9,7 @@ Wants=multi-user.target
 Type=forking
 User={{ bitbucket_owner }}
 Group={{ bitbucket_group }}
+Environment=JAVA_HOME={{ bitbucket_java_home }}
 ExecStart={{ bitbucket_catalina }}/bin/start-bitbucket.sh
 ExecStop={{ bitbucket_catalina }}/bin/stop-bitbucket.sh
 PIDFile={{ bitbucket_home }}/log/bitbucket.pid

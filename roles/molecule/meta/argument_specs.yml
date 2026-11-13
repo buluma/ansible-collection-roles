@@ -1,0 +1,17 @@
+---
+argument_specs:
+  main:
+    short_description: "Install and configure molecule on your system."
+    description: >
+      Install and configure molecule on your system.
+    author: Shadow Walker
+    options:
+      molecule_extra_args:
+        type: "str"
+        default: ""
+        description: "If you need to give extra options to pip."
+      molecule_plugins:
+        type: "list"
+        default:
+          - molecule-plugins[docker]
+        description: "A list of plugins to install."

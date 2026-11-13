@@ -1,0 +1,35 @@
+---
+- name: configure-RedHat | Print the gateway for each host when defined
+  ansible.builtin.debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_facts['default_ipv4'].gateway }}
+  when: ansible_facts['default_ipv4'].gateway is defined
+- name: configure-RedHat | Display all variables/facts known for a host
+  ansible.builtin.debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
+- name: configure-RedHat | Show configured default become user
+  ansible.builtin.debug:
+    msg: "{{ lookup('config', 'DEFAULT_BECOME_USER') }}"
+- name: configure-RedHat | Print out role paths
+  ansible.builtin.debug:
+    msg: "These are the configured role paths: {{ lookup('config', 'DEFAULT_ROLES_PATH') }}"
+- name: configure-RedHat | Find retry files, skip if missing that key
+  ansible.builtin.find:
+    paths: "{{ lookup('config', 'RETRY_FILES_SAVE_PATH') | default(playbook_dir, True) }}"
+    patterns: "*.retry"
+- name: configure-RedHat | See the colors
+  ansible.builtin.debug:
+    msg: "{{ item }}"
+  loop: "{{ lookup('config', 'COLOR_OK', 'COLOR_CHANGED', 'COLOR_SKIP', wantlist=True) }}"
+- name: configure-RedHat | Show remote_tmp setting for shell (sh) plugin
+  ansible.builtin.debug:
+    msg: "{{ q('config', 'remote_tmp', plugin_type='shell', plugin_name='sh') }}"
+- name: configure-RedHat | Install iptables package (CentOS)
+  ansible.builtin.package:
+    name: iptables
+    state: present
+  tags: iptables
+- name: configure-RedHat | Set_fact destfile=/etc/sysconfig/iptables
+  ansible.builtin.set_fact:
+    destfile: /etc/sysconfig/iptables
+  tags: iptables

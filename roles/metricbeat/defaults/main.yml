@@ -1,0 +1,8 @@
+---
+metricbeat_elasticsearch_hosts:
+  - http://localhost:9200
+metricbeat_elasticsearch_password: ""
+metricbeat_elasticsearch_username: elastic
+metricbeat_kibana_host: "http://localhost:5601"
+metricbeat_modules: []
+metricbeat_version: "7.17.29"

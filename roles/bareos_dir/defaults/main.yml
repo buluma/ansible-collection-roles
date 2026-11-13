@@ -1,0 +1,54 @@
+---
+# defaults file for bareos_dir
+
+# The director has these configuration parameters.
+
+# Backup the configuration files.
+bareos_dir_backup_configurations: false
+
+# Install debug packages. This requires the debug repositories to be enabled.
+bareos_dir_install_debug_packages: false
+
+# The hostname of the Director.
+bareos_dir_hostname: "{{ inventory_hostname }}"
+
+# The password for the Director.
+bareos_dir_password: "secretpassword"
+
+# The query file.
+bareos_dir_queryfile: "/usr/lib/bareos/scripts/query.sql"
+
+# The maximum number of concurrent jobs.
+bareos_dir_max_concurrent_jobs: 100
+
+# The messages configuration to use.
+bareos_dir_message: Daemon
+
+# Enable TLS.
+bareos_dir_tls_enable: true
+
+# Verify the peer.
+bareos_dir_tls_verify_peer: false
+
+# A list of catalogs to configure.
+bareos_dir_catalogs: []
+# A list of consoled to configure.
+bareos_dir_consoles: []
+# A list of clients to configure.
+bareos_dir_clients: []
+# A list of filesets to configure.
+bareos_dir_filesets: []
+# A list of jobdefs to configure
+bareos_dir_jobdefs: []
+# A list of jobs to configure.
+bareos_dir_jobs: []
+# A list of messages to configure.
+bareos_dir_messages: []
+# A list of pools to configure.
+bareos_dir_pools: []
+# A list of profiles to configure.
+bareos_dir_profiles: []
+# A list of schedules to configure.
+bareos_dir_schedules: []
+# A list of storages to configure.
+bareos_dir_storages: []

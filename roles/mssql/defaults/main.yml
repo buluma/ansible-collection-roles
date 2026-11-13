@@ -1,0 +1,6 @@
+---
+mssql_add_repositories: true
+mssql_fts: false
+mssql_pid: Evaluation
+mssql_sa_password: StR0nGp4ss.
+mssql_version: "2022"

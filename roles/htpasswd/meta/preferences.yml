@@ -1,0 +1,26 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      # rockylinux10 is excluded directly in the workflow matrix (this
+      # schema can't express per-distro, not just per-version,
+      # exclusions): its test image ships both python3.9 and python3.12,
+      # ansible auto-discovers 3.12, but the RPM python3-passlib only
+      # installs for 3.9, so community.general.htpasswd can't import it.
+      # almalinux10 doesn't hit this.
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

@@ -1,0 +1,5 @@
+---
+_yum:
+  - { state: "latest", name: "fontconfig" }
+  - { state: "present", name: "curl" }
+  - { state: "present", name: "python3-lxml" }

@@ -1,0 +1,52 @@
+---
+# tasks file for zabbix_agent
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install zabbix-agent software (Not Debian)
+  ansible.builtin.package:
+    name: zabbix-agent
+    disable_gpg_check: true
+    state: present
+  when:
+    - ansible_facts['os_family'] != "Debian"
+
+- name: Install zabbix-agent software (Debian)
+  ansible.builtin.package:
+    name: zabbix-agent
+    state: present
+  when:
+    - ansible_facts['os_family'] == "Debian"
+
+- name: Configuring zabbix agent
+  ansible.builtin.template:
+    src: zabbix_agentd.conf.j2
+    dest: "{{ zabbix_agent_conf_dest }}"
+    owner: zabbix
+    group: zabbix
+    mode: "0640"
+  notify:
+    - Restart zabbix-agent
+
+- name: Place selinux type enforcement
+  ansible.builtin.copy:
+    src: my-zabbixagent.te
+    dest: /etc/zabbix/my-zabbixagent.te
+    mode: "0644"
+  notify:
+    - Create selinux mod for zabbix_agent
+    - Create selinux pp for zabbix_agent
+    - Load selinux pp for zabbix_agent
+  when:
+    - ansible_facts['selinux'].status is defined
+    - ansible_facts['selinux'].status == "enabled"
+
+- name: Start and enable zabbix agent
+  ansible.builtin.service:
+    name: "{{ zabbix_agent_service }}"
+    state: started
+    enabled: true

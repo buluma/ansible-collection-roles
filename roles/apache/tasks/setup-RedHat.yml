@@ -1,5 +1,5 @@
 ---
-- name: Ensure apache is installed on RHEL.
+- name: setup-RedHat | Ensure apache is installed on RHEL.
   ansible.builtin.package:
     name: "{{ apache_packages }}"
     state: "{{ apache_packages_state }}"

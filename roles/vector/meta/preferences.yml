@@ -1,0 +1,13 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # EL and Fedora are excluded: tasks/install.yml only ever used
+  # ansible.builtin.apt, with no RPM/yum path ever implemented (checked
+  # git history) - this role has only ever supported the Debian family.
+  - name: Debian
+    versions:
+      - all
+  - name: Ubuntu
+    versions:
+      - all

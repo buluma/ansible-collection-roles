@@ -1,0 +1,37 @@
+---
+- name: setup-RedHat | Ensure Varnish dependency is installed.
+  ansible.builtin.dnf:
+    name: yum-utils
+    state: present
+- name: setup-RedHat | Ensure extra Varnish dependency on older RHEL versions is installed.
+  ansible.builtin.dnf:
+    name: pygpgme
+    state: present
+  when: ansible_facts['distribution_major_version'] | int < 8
+- name: setup-RedHat | Add Varnish packagecloud.io yum repo.
+  ansible.builtin.yum_repository:
+    baseurl: "{{ varnish_yum_repo_baseurl }}"
+    description: Varnish Cache packagecloud.io repository.
+    enabled: true
+    gpgcheck: false
+    gpgkey: "{{ varnish_repository_key_url }}"
+    module_hotfixes: true
+    name: varnishcache_{{ varnish_packagecloud_repo }}
+    priority: "{{ varnish_packagecloud_repo_yum_repository_priority }}"
+    repo_gpgcheck: "{{ varnish_version is version('9.0', '>=') }}"
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    sslverify: 1
+  register: varnish_packagecloud_repo_addition
+  notify: Refresh varnish yum metadata cache
+# Separator for the pre-commit handler parser.
+- name: setup-RedHat | Flush handlers so the yum cache is fresh before install.
+  ansible.builtin.meta: flush_handlers
+- name: setup-RedHat | Ensure Varnish is installed.
+  ansible.builtin.dnf:
+    name: "{{ varnish_package_name }}"
+    state: present
+- name: setup-RedHat | Ensure Varnish VMODs are installed.
+  ansible.builtin.dnf:
+    name: "{{ varnish_modules_package_name }}"
+    state: present
+  when: varnish_modules_package_name | length > 0

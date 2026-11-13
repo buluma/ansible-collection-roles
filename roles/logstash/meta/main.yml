@@ -1,0 +1,17 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: Logstash for Linux.
+  galaxy_tags:
+    - web
+    - system
+    - monitoring
+    - logging
+    - logs
+    - elk
+    - logstash
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  role_name: logstash

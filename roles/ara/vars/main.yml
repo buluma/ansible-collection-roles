@@ -6,7 +6,7 @@ _ara_binary_location:
   Debian: /usr/local/bin
   RedHat: /usr/local/bin
 
-ara_binary_location: "{{ _ara_binary_location[ansible_os_family] | default(_ara_binary_location['default'] ) }}"
+ara_binary_location: "{{ _ara_binary_location[ansible_facts['os_family']] | default(_ara_binary_location['default']) }}"
 
 ara_setup_command_python2: python -m ara.setup.callback_plugins
 ara_setup_command_python3: python3 -m ara.setup.callback_plugins

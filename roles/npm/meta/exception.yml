@@ -1,0 +1,6 @@
+---
+exceptions:
+  - variation: debian:testing
+    reason: "The repository 'https://deb.nodesource.com/node_10.x bullseye Release' does not have a Release file."
+  - variation: amazonlinux:latest
+    reason: "Package: 1:nodejs-16.13.2-7.el7.x86_64 (epel). Requires: libuv >= 1:1.42.0"

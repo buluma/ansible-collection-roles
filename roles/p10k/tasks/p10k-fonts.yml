@@ -1,0 +1,19 @@
+---
+- name: p10k-fonts | Create fonts directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ fonts_path }}"
+    mode: "0755"
+    state: directory
+
+- name: p10k-fonts | Copy powerlevel10k recommanded fonts
+  become: true
+  ansible.builtin.copy:
+    src: "fonts/{{ item }}"
+    dest: "{{ fonts_path }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - MesloLGS NF Bold Italic.ttf
+    - MesloLGS NF Bold.ttf
+    - MesloLGS NF Italic.ttf
+    - MesloLGS NF Regular.ttf

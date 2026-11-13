@@ -1,0 +1,67 @@
+---
+- name: hardening | Disable swap
+  when:
+    - vault_hardening_disable_swap
+  block:
+    - name: hardening | Disable swap now
+      ansible.builtin.command:
+        cmd: swapoff -a
+      changed_when: true
+      when:
+        - ansible_facts['swaptotal_mb'] > 0
+    - name: hardening | Disable swap permanently
+      ansible.posix.mount:
+        name: swap
+        state: absent
+- name: hardening | Disable core dumps
+  community.general.pam_limits:
+    domain: "{{ item.domain }}"
+    limit_item: "{{ item.limit_item }}"
+    limit_type: "{{ item.limit_type }}"
+    value: "{{ item.value }}"
+  loop:
+    - domain: "*"
+      limit_item: core
+      limit_type: hard
+      value: 0
+    - domain: "*"
+      limit_item: core
+      limit_type: soft
+      value: 0
+  loop_control:
+    label: "{{ item.limit_item }}"
+  when:
+    - vault_hardening_disable_core_dumps
+- name: hardening | Disable Shell Command History
+  ansible.builtin.copy:
+    content: 'export HISTIGNORE="&:vault*"
+
+      '
+    dest: /etc/profile.d/vault.sh
+    group: root
+    mode: "0644"
+    owner: root
+  when:
+    - vault_hardening_disable_shell_command_history
+- name: hardening | Configure SELinux / AppArmor
+  when:
+    - vault_hardening_configure_selinux_apparmor
+  block:
+    - name: hardening | Enable SELinux
+      when:
+        - ansible_facts['selinux'].status == "enabled"
+      block:
+        - name: hardening | Install selinux-policy
+          ansible.builtin.package:
+            name: selinux-policy
+            state: present
+        - name: hardening | Set SELinux policy
+          ansible.posix.selinux:
+            policy: targeted
+            state: enforcing
+    - name: hardening | Enable AppArmor (enforcing)
+      ansible.builtin.command:
+        cmd: aa-enforce /etc/apparmor.d/usr.bin.vault
+      changed_when: true
+      when:
+        - ansible_facts['apparmor']['status'] == "enabled"

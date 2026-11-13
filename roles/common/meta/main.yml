@@ -2,39 +2,14 @@
 galaxy_info:
   author: buluma
   role_name: common
-  description: The purpose of this role is to configure common things on your system.
+  description: "The purpose of this role is to configure common things on your system."
   license: Apache-2.0
   company: ShadowNet
   min_ansible_version: "2.12"
-
-  platforms:
-    - name: Alpine
-      versions:
-        - all
-    - name: Amazon
-      versions:
-        - Candidate
-    - name: EL
-      versions:
-        - "8"
-    - name: Debian
-      versions:
-        - all
-    - name: Fedora
-      versions:
-        - all
-    - name: opensuse
-      versions:
-        - all
-    - name: Ubuntu
-      versions:
-        - all
-
   galaxy_tags:
     - common
     - hosts
     - hostname
     - server
     - system
-
 dependencies: []

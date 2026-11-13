@@ -1,0 +1,94 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Create rundeck directories
+  ansible.builtin.file:
+    mode: "0755"
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ rundeck_rdeckbase }}"
+    - "{{ rundeck_rdeckbase }}/etc"
+    - "{{ rundeck_rdeckbase }}"
+- name: Download rundeck
+  ansible.builtin.get_url:
+    dest: "{{ rundeck_rdeckbase }}/rundeck-{{ rundeck_version }}-{{ rundeck_release_date }}.war"
+    mode: "0644"
+    url: "{{ rundeck_download_url }}"
+- name: Unpack rundeck
+  ansible.builtin.command:
+    chdir: "{{ rundeck_rdeckbase }}"
+    cmd: java -jar {{ rundeck_war }} --installonly
+    creates: "{{ rundeck_rdeckbase }}/server"
+- name: Create rundeck service
+  ansible.builtin.import_role:
+    name: buluma.roles.service
+  vars:
+    service_list:
+      - description: Rundeck
+        name: rundeck
+        start_command: /usr/bin/java -Xmx{{ rundeck_xmx }}m -jar rundeck-{{ rundeck_version }}-{{ rundeck_release_date }}.war
+        working_directory: "{{ rundeck_rdeckbase }}"
+- name: Configure rundeck properties
+  ansible.builtin.lineinfile:
+    create: true
+    dest: "{{ rundeck_rdeckbase }}/server/config/rundeck-config.properties"
+    line: "{{ item.parameter }} = {{ item.value }}"
+    mode: "0644"
+    regexp: ^{{ item.parameter }}
+  loop: "{{ rundeck_config }}"
+  loop_control:
+    label: "{{ item.parameter }}"
+  notify:
+    - Restart rundeck
+# Separator for the pre-commit handler parser.
+- name: Configure rundeck framework
+  ansible.builtin.lineinfile:
+    create: true
+    dest: "{{ rundeck_rdeckbase }}/etc/framework.properties"
+    line: "{{ item.parameter }} = {{ item.value }}"
+    mode: "0644"
+    regexp: ^{{ item.parameter }}
+  loop: "{{ rundeck_framework }}"
+  loop_control:
+    label: "{{ item.parameter }}"
+  notify:
+    - Restart rundeck
+# Separator for the pre-commit handler parser.
+- name: Configure rundeck policy
+  ansible.builtin.template:
+    dest: "{{ rundeck_rdeckbase }}/etc/admin.aclpolicy"
+    mode: "0644"
+    src: admin.aclpolicy.j2
+  notify:
+    - Restart rundeck
+# Separator for the pre-commit handler parser.
+- name: Configure rundeck default users
+  ansible.builtin.template:
+    dest: "{{ rundeck_rdeckbase }}/server/config/realm.properties"
+    mode: "0644"
+    src: realm.properties.j2
+  notify:
+    - Restart rundeck
+# Separator for the pre-commit handler parser.
+- name: Create /opt/rundeck/libext
+  ansible.builtin.file:
+    mode: "0755"
+    path: /opt/rundeck/libext
+    state: directory
+- name: Install plugins
+  ansible.builtin.get_url:
+    dest: /opt/rundeck/libext
+    mode: "0644"
+    url: "{{ item }}"
+  loop: "{{ rundeck_plugins }}"
+  when:
+    - rundeck_plugins is defined
+- name: Start rundeck
+  ansible.builtin.service:
+    enabled: true
+    name: rundeck
+    state: started

@@ -1,0 +1,5 @@
+---
+# defaults file for aliases
+aliases_list:
+  - user: postmaster
+    alias: root

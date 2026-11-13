@@ -49,7 +49,8 @@ ca_client_cert_params: >
   -out {{ ca_certs_path }}/{{ request.name | default(request) }}.crt
   -policy policy_anything
   -notext -create_serial
-  -extfile {{ ca_extfiles_path }}/{{ request.name | default(request) }}.cnf -extensions x509_extensions
+  -extfile {{ ca_extfiles_path }}/{{ request.name | default(request) }}.cnf -extensions
+  x509_extensions
   -batch -infiles {{ ca_requests_path }}/{{ request.name | default(request) }}.csr
 
 ca_client_cert_revoke_params: >

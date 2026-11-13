@@ -1,0 +1,21 @@
+---
+- name: assert | Test if crowd_home is set correctly
+  ansible.builtin.assert:
+    that:
+      - crowd_home is defined
+      - crowd_home is string
+    quiet: true
+
+- name: assert | Test if crowd_version is set correctly
+  ansible.builtin.assert:
+    that:
+      - crowd_version is defined
+      - crowd_version is string
+    quiet: true
+
+- name: assert | Test if crowd_release is set correctly
+  ansible.builtin.assert:
+    that:
+      - crowd_release is defined
+      - crowd_release is string
+    quiet: true

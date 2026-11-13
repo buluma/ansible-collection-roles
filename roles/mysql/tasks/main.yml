@@ -1,0 +1,98 @@
+---
+# tasks file for mysql
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install mysql
+  ansible.builtin.package:
+    name: "{{ mysql_packages }}"
+    state: present
+  notify:
+    - Set root password
+    - Systemctl daemon-reexec
+
+- name: Configure mysql server
+  community.general.ini_file:
+    dest: "{{ mysql_configuration_destination }}/{{ mysql_name }}-server.cnf"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ mysql_configuration_options }}"
+  loop_control:
+    label: "{{ item.option }}"
+  notify:
+    - Restart mysql server
+
+- name: Configure mysql client
+  community.general.ini_file:
+    dest: "{{ mysql_configuration_destination }}/{{ mysql_name }}-client.cnf"
+    section: client
+    option: socket
+    value: "{{ mysql_socket }}"
+    mode: "0644"
+
+- name: Initialize mysql
+  ansible.builtin.command:
+    cmd: "{{ mysql_initialize_command }}"
+    creates: /var/lib/mysql/mysql
+  when:
+    - ansible_facts['distribution'] in [ "Alpine", "Archlinux" ]
+
+- name: Start and enable mysql
+  ansible.builtin.service:
+    name: "{{ mysql_service }}"
+    state: started
+    enabled: true
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Place my.cnf
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf
+    mode: "0640"
+
+- name: Create databases
+  ansible.mysql.mysql_db:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    target: "{{ item.target | default(omit) }}"
+    encoding: "{{ item.encoding | default(omit) }}"
+    collation: "{{ item.collation | default(omit) }}"
+    login_unix_socket: "{{ mysql_socket }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  loop: "{{ mysql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_databases is defined
+  no_log: true
+
+- name: Create users
+  ansible.mysql.mysql_user:
+    name: "{{ item.name }}"
+    state: present
+    password: "{{ item.password | default(omit) }}"
+    priv: "{{ item.priv | default(omit) }}"
+    host: "{{ item.host | default(omit) }}"
+    host_all: "{{ item.host_all | default(omit) }}"
+    update_password: "{{ item.update_password | default(omit) }}"
+    login_unix_socket: "{{ mysql_socket }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - mysql_users is defined
+  no_log: true
+
+- name: Flush handlers again
+  ansible.builtin.meta: flush_handlers

@@ -1,0 +1,29 @@
+---
+- name: setup-Debian | Ensure dependencies are present.
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - gnupg2
+      - debian-archive-keyring
+      - curl
+    state: present
+- name: setup-Debian | Add packagecloud.io varnish apt key.
+  ansible.builtin.get_url:
+    url: "{{ varnish_repository_key_url }}"
+    dest: /etc/apt/trusted.gpg.d/varnish.asc
+    mode: "0644"
+  when: varnish_apt_use_packagecloud
+- name: setup-Debian | Add packagecloud.io varnish apt repository.
+  ansible.builtin.apt_repository:
+    repo: "{{ varnish_apt_repo }}"
+    state: present
+  when: varnish_apt_use_packagecloud
+- name: setup-Debian | Ensure varnish is installed.
+  ansible.builtin.apt:
+    name: "{{ varnish_package_name }}"
+    state: present
+- name: setup-Debian | Ensure old role-managed varnish systemd unit file is removed.
+  ansible.builtin.file:
+    path: /etc/systemd/system/varnish.service
+    state: absent
+  when: varnish_systemd_config_path != '/etc/systemd/system'

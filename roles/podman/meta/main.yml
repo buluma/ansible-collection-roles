@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: podman
+  description: Install and configure Podman on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - podman
+dependencies:
+  - role: buluma.roles.bootstrap

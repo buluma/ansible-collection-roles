@@ -1,6 +1,5 @@
 ---
 # tasks file for autofs
-
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
   run_once: true
@@ -25,7 +24,7 @@
 - name: Enable /etc/auto.master.d/*.autofs inclusions
   ansible.builtin.lineinfile:
     path: /etc/auto.master
-    line: '+dir:/etc/auto.master.d'
+    line: "+dir:/etc/auto.master.d"
   notify:
     - Restart autofs
 
@@ -33,13 +32,14 @@
   ansible.builtin.lineinfile:
     path: /etc/auto.master
     line: "+{{ nis_master_map }}"
-    regexp: '^#\s*[+]{{ nis_master_map }}'
+    regexp: "^#\\s*[+]{{ nis_master_map }}"
   notify:
     - Restart autofs
-  when:
-    nis_master_map is defined
+  when: nis_master_map is defined
 
 - name: Configure autofs_maps
+  when:
+    - autofs_maps is defined
   block:
     - name: Place autofs in /etc/auto.master.d/
       ansible.builtin.template:
@@ -62,6 +62,8 @@
       loop: "{{ autofs_maps }}"
       loop_control:
         label: "{{ item.mountpoint }}"
+      notify:
+        - Reload autofs
       when:
         - item.state is not defined or (item.state is defined and item.state == "present")
 
@@ -102,8 +104,6 @@
       when:
         - item.state is not defined or (item.state is defined and item.state == "present")
         - item.mountpoint != "/-"
-  when:
-    - autofs_maps is defined
 
 - name: Start autofs
   ansible.builtin.service:

@@ -1,0 +1,115 @@
+---
+# tasks file for systemd
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ systemd_requirements }}"
+    state: present
+
+- name: Set default target
+  ansible.builtin.file:
+    src: "{{ system_path }}/{{ systemd_default_target }}"
+    dest: /etc/systemd/system/default.target
+    state: link
+    mode: "0644"
+  when:
+    - systemd_default_target is defined
+
+- name: Configure coredump.conf
+  community.general.ini_file:
+    path: /etc/systemd/coredump.conf
+    section: Coredump
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ systemd_coredump }}"
+  loop_control:
+    label: "{{ item.option }}"
+  when:
+    - systemd_coredump is defined
+
+- name: Configure journald.conf
+  community.general.ini_file:
+    path: /etc/systemd/journald.conf
+    section: Journal
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ systemd_journald }}"
+  loop_control:
+    label: "{{ item.option }}"
+  when:
+    - systemd_journald is defined
+  notify:
+    - Restart systemd-journald
+
+- name: Configure logind.conf
+  community.general.ini_file:
+    path: /etc/systemd/logind.conf
+    section: Login
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ systemd_logind }}"
+  loop_control:
+    label: "{{ item.option }}"
+  when:
+    - systemd_logind is defined
+  notify:
+    - Unmask systemd-logind
+    - Restart systemd-logind
+
+- name: Configure resolved.conf
+  community.general.ini_file:
+    path: /etc/systemd/resolved.conf
+    section: Resolve
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ systemd_resolved }}"
+  loop_control:
+    label: "{{ item.option }}"
+  when:
+    - systemd_resolved is defined
+  notify:
+    - Restart systemd-resolved
+
+- name: Configure system.conf
+  community.general.ini_file:
+    path: /etc/systemd/system.conf
+    section: Manager
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ systemd_system }}"
+  loop_control:
+    label: "{{ item.option }}"
+  when:
+    - systemd_system is defined
+
+- name: Configure user.conf
+  community.general.ini_file:
+    path: /etc/systemd/user.conf
+    section: Manager
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ systemd_user }}"
+  loop_control:
+    label: "{{ item.option }}"
+  when:
+    - systemd_user is defined
+
+- name: Start dbus-broker
+  ansible.builtin.service:
+    name: dbus-broker
+    state: started
+    enabled: true
+  when:
+    - ansible_facts['distribution'] == "Fedora"

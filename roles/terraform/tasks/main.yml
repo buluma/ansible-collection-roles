@@ -1,0 +1,13 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Download and install software
+  ansible.builtin.unarchive:
+    dest: "{{ terraform_destination }}"
+    group: root
+    mode: "0755"
+    owner: root
+    remote_src: true
+    src: "{{ terraform_unarchive_src }}"

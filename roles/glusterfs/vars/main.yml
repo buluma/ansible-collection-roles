@@ -1,0 +1,30 @@
+---
+# vars file for glusterfs
+
+_glusterfs_requirements:
+  default: []
+  CentOS-7:
+    - centos-release-gluster
+  Suse:
+    - xfsprogs
+    - rpcbind
+
+glusterfs_requirements: "{{ _glusterfs_requirements[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_glusterfs_requirements[ansible_facts['os_family']]
+  | default(_glusterfs_requirements['default'] )) }}"
+
+_glusterfs_packages:
+  default:
+    - glusterfs
+  Debian:
+    - glusterfs-server
+  Fedora:
+    - glusterfs-server
+  RedHat:
+    - glusterfs
+
+glusterfs_packages: "{{ _glusterfs_packages[ansible_facts['distribution']] | default(_glusterfs_packages[ansible_facts['os_family']] | default(_glusterfs_packages['default']))
+  }}"
+
+glusterfs_selinux_local_policies:
+  - my-glusterfsd
+  - my-glusterepoll0

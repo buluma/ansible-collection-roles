@@ -1,0 +1,114 @@
+---
+# tasks file for java
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install requirements
+  ansible.builtin.package:
+    name: bash
+    state: present
+
+- name: Install openjdk java (package)
+  ansible.builtin.package:
+    name: "{{ java_openjdk_package }}"
+    state: present
+  when: java_vendor == "openjdk"
+  environment:
+    USE: "X -cups -alsa -fontconfig"
+
+- name: Install RPM
+  when:
+    - java_source == "local"
+    - java_format == "rpm"
+  block:
+    - name: Copy oracle java (rpm)
+      ansible.builtin.copy:
+        src: "{{ java_package }}"
+        dest: "/tmp/{{ java_package }}"
+        mode: "0640"
+
+    - name: Install oracle java (rpm) (local)
+      ansible.builtin.package:
+        name: "/tmp/{{ java_package }}"
+        state: present
+
+- name: Install DEB
+  when:
+    - java_source == "local"
+    - java_format == "deb"
+  block:
+    - name: Copy oracle java (deb)
+      ansible.builtin.copy:
+        src: "{{ java_package }}"
+        dest: "/tmp/{{ java_package }}"
+        mode: "0640"
+
+    - name: Install oracle java (deb) (local)
+      ansible.builtin.apt:
+        deb: "/tmp/{{ java_package }}"
+        state: present
+
+- name: Install oracle java (rpm) (repository)
+  ansible.builtin.package:
+    name: "{{ java_oracle_package }}"
+    state: present
+  when:
+    - java_source == "repository"
+    - java_format == "rpm"
+
+- name: Configure oracle targz
+  when:
+    - java_format == "targz"
+    - java_vendor == "oracle"
+  block:
+    - name: Ensure java_install_directory exists
+      ansible.builtin.file:
+        path: "{{ java_install_directory }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install oracle java (targz)
+      ansible.builtin.unarchive:
+        src: "{{ java_oracle_package }}"
+        dest: "{{ java_install_directory }}"
+        mode: "0755"
+
+- name: Install oracle java policy software (targz)
+  ansible.builtin.unarchive:
+    src: jce_policy-8.zip
+    dest: "{{ java_install_directory }}"
+    mode: "0755"
+  when:
+    - java_jce
+    - java_version == 8
+    - java_vendor == "oracle"
+
+- name: Set alternative (targz)
+  community.general.alternatives:
+    name: java
+    link: /usr/bin/java
+    path: "{{ java_install_directory }}/{{ java_oracle_directory }}/bin/java"
+  when:
+    - java_format == "targz"
+    - ansible_facts['distribution'] != "Alpine"
+    - java_vendor == "oracle"
+
+- name: Find JAVA_HOME
+  ansible.builtin.shell:
+    cmd: set -o pipefail && readlink -f /usr/bin/java | sed 's%/bin/java%%'
+    executable: /bin/bash
+  changed_when: false
+  check_mode: false
+  register: java_home
+
+- name: Set JAVA_HOME in /etc/environment
+  ansible.builtin.lineinfile:
+    path: /etc/profile.d/java_home.sh
+    regexp: "^export JAVA_HOME="
+    line: 'export JAVA_HOME="{{ java_home.stdout }}"'
+    create: true
+    mode: "0644"

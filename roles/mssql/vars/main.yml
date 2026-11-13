@@ -1,0 +1,30 @@
+---
+# mssql-server-agent hasn't been a separate package since SQL Server
+# 2019 - the agent is built into mssql-server itself now. Also no
+# longer pinning exact build numbers here (14.0.3294.2-27 doesn't exist
+# for 2022 and would just go stale again) - let the repo serve whatever
+# current build it has for the selected mssql_version.
+_mssql_server_agent_package:
+  Amazon: mssql-server-agent
+  Debian: mssql-server-agent
+  RedHat: mssql-server-agent
+  Suse: mssql-server-agent
+_mssql_server_package:
+  Amazon: mssql-server
+  Debian: mssql-server
+  RedHat: mssql-server
+  Suse: mssql-server
+mssql_fts_package: mssql-server-fts
+mssql_gpgkey: "https://packages.microsoft.com/keys/microsoft.asc"
+mssql_rhel_repositories:
+  - baseurl: https://packages.microsoft.com/rhel/{{ ansible_facts['distribution_major_version'] }}/mssql-server-{{ mssql_version }}/
+    description: Microsoft MSSQL server
+    name: packages-microsoft-com-mssql-server-{{ mssql_version }}
+  - baseurl: https://packages.microsoft.com/rhel/{{ ansible_facts['distribution_major_version'] }}/prod/
+    description: Microsoft tools
+    name: packages-microsoft-com-prod
+mssql_server_agent_package: "{{ _mssql_server_agent_package[ansible_facts['os_family']] }}"
+mssql_server_package: "{{ _mssql_server_package[ansible_facts['os_family']] }}"
+mssql_ubuntu_repositories:
+  - repo: https://packages.microsoft.com/ubuntu/{{ ansible_facts['distribution_version'] }}/prod
+  - repo: https://packages.microsoft.com/ubuntu/{{ ansible_facts['distribution_version'] }}/mssql-server-{{ mssql_version }}

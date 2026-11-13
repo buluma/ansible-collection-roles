@@ -1,37 +1,39 @@
 ---
-# tasks file for docker
-
 - name: Install docker
   ansible.builtin.package:
     name: "{{ docker_packages }}"
     state: present
-
+- name: Ensure the packaging library is present for pip installs
+  ansible.builtin.package:
+    name: python3-packaging
+    state: present
+  when:
+    - docker_pip_packages | length > 0
 - name: Install docker pip packages
   ansible.builtin.pip:
     name: "{{ docker_pip_packages }}"
     state: present
-
+  when:
+    - docker_pip_packages | length > 0
 - name: Create privileged docker user group
   ansible.builtin.group:
     name: docker
     state: present
-
 - name: Add privileged users to the docker user group
   ansible.builtin.user:
-    name: "{{ user }}"
-    groups: docker
     append: true
+    groups: docker
+    name: "{{ user }}"
   loop: "{{ docker_privileged_users }}"
   loop_control:
     loop_var: user
   when:
     - docker_privileged_users is defined
-
 - name: Start and enable docker
   ansible.builtin.service:
+    enabled: true
     name: "{{ docker_service }}"
     state: started
-    enabled: true
   notify:
     - Change group for docker socket
   when:

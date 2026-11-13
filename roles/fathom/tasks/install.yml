@@ -1,0 +1,27 @@
+---
+- name: install | Check if fathom is already installed.
+  ansible.builtin.stat:
+    path: /usr/local/bin/fathom
+  register: fathom_bin
+- name: install | Ensure temporary directory for fathom exists.
+  ansible.builtin.file:
+    mode: "0755"
+    path: /tmp/fathom
+    state: directory
+  when: "not fathom_bin.stat.exists or fathom_force_update\n"
+- name: install | Download fathom.
+  ansible.builtin.unarchive:
+    dest: /tmp/fathom
+    mode: "0755"
+    remote_src: true
+    src: "{{ fathom_binary_url }}"
+  register: archive_contents
+  when: "not fathom_bin.stat.exists or fathom_force_update\n"
+- name: install | Copy fathom binary into place.
+  ansible.builtin.copy:
+    dest: /usr/local/bin/fathom
+    mode: "0755"
+    remote_src: true
+    src: /tmp/fathom/fathom
+  notify: Restart fathom
+  when: "not fathom_bin.stat.exists or fathom_force_update\n"

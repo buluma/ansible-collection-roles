@@ -1,3 +1,4 @@
 ---
 firefox_dependencies:
   - bzip2
+  - xz-utils

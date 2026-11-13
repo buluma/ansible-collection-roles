@@ -1,0 +1,46 @@
+---
+# tasks file for galen
+
+- name: Install dependencies
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ galen_packages }}"
+
+- name: Download
+  ansible.builtin.get_url:
+    url: "{{ galen_url }}"
+    dest: "{{ galen_tmp }}"
+    mode: "0644"
+
+- name: Ensure home directory exists
+  ansible.builtin.file:
+    path: "{{ galen_home_path }}"
+    # owner: "{{ galen_owner }}"
+    # group: "{{ galen_group }}"
+    state: directory
+    mode: "0755"
+
+# - name: Create a directory if it does not exist
+#   ansible.builtin.file:
+#     path: "{{ galen_home_path }}"
+#     state: directory
+#     mode: '0755'
+
+- name: Unpack
+  ansible.builtin.unarchive:
+    src: "{{ galen_tmp }}"
+    dest: "{{ galen_home_path }}"
+    # owner: "{{ galen_owner }}"
+    # group: "{{ galen_group }}"
+    mode: "u=rwx,g=rx,o=rx"
+    copy: false
+
+- name: Link
+  ansible.builtin.file:
+    src: "{{ galen_home_path }}/galen-bin-{{ galen_version }}/galen"
+    dest: "{{ galen_path }}"
+    # owner: "{{ galen_owner }}"
+    # group: "{{ galen_group }}"
+    state: link
+    force: true

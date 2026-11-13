@@ -1,0 +1,17 @@
+---
+- name: setup-Debian | Update apt cache.
+  ansible.builtin.apt:
+    update_cache: "yes"
+    cache_valid_time: "86400"
+- name: setup-Debian | Set rubygems package name for Ubuntu 14.04.
+  ansible.builtin.set_fact:
+    ruby_rubygems_package_name: rubygems-integration
+  when: ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_release'] == 'trusty'
+- name: setup-Debian | Install ruby and other required dependencies.
+  ansible.builtin.apt:
+    name: "{{ ruby_packages }}"
+    state: present
+- name: setup-Debian | Install rubygems.
+  ansible.builtin.apt:
+    name: "{{ ruby_rubygems_package_name }}"
+    state: present

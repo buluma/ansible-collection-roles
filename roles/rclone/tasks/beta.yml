@@ -1,0 +1,9 @@
+---
+- name: beta | Get rclone beta version
+  ansible.builtin.unarchive:
+    creates: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}"
+    dest: "{{ rclone_setup_tmp_dir }}"
+    list_files: true
+    mode: "0744"
+    remote_src: true
+    src: "{{ beta_version_url | default('https://beta.rclone.org/v' + rclone_version + '/rclone-v' + rclone_version + '-linux-' + rclone_arch + '.zip') }}"

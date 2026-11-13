@@ -1,0 +1,9 @@
+---
+- name: Metricbeat setup
+  ansible.builtin.command:
+    cmd: metricbeat setup
+  changed_when: true
+- name: Restart metricbeat
+  ansible.builtin.service:
+    name: metricbeat
+    state: restarted

@@ -1,0 +1,7 @@
+---
+# handlers file for virtualbox
+
+- name: Run vboxconfig
+  ansible.builtin.command:
+    cmd: /sbin/vboxconfig
+  changed_when: false

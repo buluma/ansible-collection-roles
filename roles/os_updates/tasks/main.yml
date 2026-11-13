@@ -1,0 +1,17 @@
+---
+- name: SmokeTests
+  ansible.builtin.debug:
+    msg:
+      - "ansible_version => {{ ansible_version }}"
+      - "ansible_facts['distribution'] => {{ ansible_facts['distribution'] }}"
+      - "ansible_facts['distribution_major_version'] => {{ ansible_facts['distribution_major_version'] }}"
+      - "ansible_facts['os_family']  => {{ ansible_facts['os_family'] }}"
+      - "ansible_facts['system']  => {{ ansible_facts['system'] }}"
+
+- name: Import RedHat.yml
+  ansible.builtin.import_tasks: RedHat.yml
+  when: ansible_facts['os_family'] == "RedHat" or ansible_facts['os_family'] == "Rocky"
+
+- name: Import Debian.yml
+  ansible.builtin.import_tasks: Debian.yml
+  when: ansible_facts['os_family'] == "Debian" or ansible_facts['os_family'] == "Ubuntu"

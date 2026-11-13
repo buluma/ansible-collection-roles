@@ -1,0 +1,31 @@
+---
+# handlers file for ansible-role-sonarqube/
+- name: "Restart SonarQube service"
+  ansible.builtin.service:
+    name: sonar
+    state: restarted
+
+- name: "Wait for SonarQube service to become active after restart"
+  ansible.builtin.systemd_service:
+    name: sonar
+  register: __sonar_active
+  until: __sonar_active.status.ActiveState == "active"
+  retries: 30
+  delay: 2
+  # sonar.sh runs as Type=simple with no readiness notification, so
+  # "restarted" above returns as soon as systemctl issues the command --
+  # long before Elasticsearch and the web server finish coming back up.
+  # Without this wait, a molecule idempotence re-check (or any later
+  # ansible run) can catch the service still mid-restart and report
+  # changed even though nothing actually changed.
+  listen: "Restart SonarQube service"
+
+- name: "Fail if expected sonar version not confirmed"
+  ansible.builtin.fail:
+    msg: Please check if 'Version' field of http://{{ inventory_hostname }}{{ sonar_web_context }} match to {{ sonar_version }}
+
+- name: "Warn about post-upgrade steps"
+  ansible.builtin.debug:
+    msg:
+      - "SonarQube version changed to {{ sonar_version }} but additional actions required from your side"
+      - "Visit http://{{ inventory_hostname }}{{ sonar_web_context }}/setup to follow the post-upgrade procedure"

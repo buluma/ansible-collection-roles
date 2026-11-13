@@ -1,0 +1,17 @@
+---
+haproxy_backend_default_balance: roundrobin
+haproxy_backends: []
+haproxy_frontends: []
+haproxy_listen_default_balance: roundrobin
+haproxy_listens: []
+haproxy_maxconn: 3000
+haproxy_retries: 3
+haproxy_stats: true
+haproxy_stats_bind_addr: "0.0.0.0"
+haproxy_stats_port: 1936
+haproxy_timeout_check: 10s
+haproxy_timeout_client: 1m
+haproxy_timeout_connect: 10s
+haproxy_timeout_http_keep_alive: 10s
+haproxy_timeout_http_request: 10s
+haproxy_timeout_server: 1m

@@ -18,7 +18,7 @@ _buildtools_packages:
     - gcc
     - make
     - perl-Digest-SHA
-    - python2-devel
+    - python3-devel
     - libffi-devel
   Debian:
     - bison
@@ -54,4 +54,5 @@ _buildtools_packages:
     - make
     - perl-Digest-SHA1
 
-buildtools_packages: "{{ _buildtools_packages[ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_buildtools_packages[ansible_distribution] | default(_buildtools_packages[ansible_os_family] | default (_buildtools_packages['default'] ))) }}"
+buildtools_packages: "{{ _buildtools_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_buildtools_packages[ansible_facts['distribution']]
+  | default(_buildtools_packages[ansible_facts['os_family']] | default (_buildtools_packages['default'] ))) }}"

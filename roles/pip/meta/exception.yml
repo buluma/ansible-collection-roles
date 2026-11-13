@@ -1,0 +1,6 @@
+---
+exceptions:
+  - variation: enterpriselinux:7
+    reason: "No package matching 'python-pip' found available, installed or updated"
+  - variation: debian:bookworm
+    reason: "No module named 'pkg_resources"

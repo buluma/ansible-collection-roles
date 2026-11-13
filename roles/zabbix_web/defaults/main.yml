@@ -1,0 +1,10 @@
+---
+zabbix_web_database_name: zabbix
+zabbix_web_database_pass: zabbix
+zabbix_web_database_user: zabbix
+zabbix_web_mysql_connection: socket
+zabbix_web_password: zabbix
+zabbix_web_server: "{{ ansible_facts['fqdn'] }}"
+zabbix_web_server_name: zabbix
+zabbix_web_server_port: 10051
+zabbix_web_username: Admin

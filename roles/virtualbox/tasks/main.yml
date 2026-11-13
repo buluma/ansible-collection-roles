@@ -1,0 +1,83 @@
+---
+# tasks file for virtualbox
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Import rpm key
+  ansible.builtin.rpm_key:
+    state: present
+    key: "{{ item }}"
+  loop: "{{ virtualbox_keys }}"
+  loop_control:
+    label: "{{ item | basename }}"
+  when:
+    - ansible_pkg_mgr in [ "yum", "dnf", "dnf5", "zypper" ]
+
+- name: Place yum repository
+  ansible.builtin.yum_repository:
+    name: virtualbox
+    description: Fedora $releasever - $basearch - VirtualBox
+    baseurl: "{{ virtualbox_yum_baseurl }}"
+    gpgcheck: true
+  when:
+    - ansible_pkg_mgr in [ "yum", "dnf", "dnf5" ]
+
+- name: Place zypper repository
+  community.general.zypper_repository:
+    name: virtualbox
+    repo: "{{ virtualbox_yum_baseurl }}"
+    state: present
+  when:
+    - ansible_pkg_mgr in [ "zypper" ]
+
+- name: Configure apt repository
+  when:
+    - ansible_pkg_mgr in [ "apt" ]
+  block:
+    - name: Ensure gnupg is installed for key management.
+      ansible.builtin.package:
+        name: gnupg
+        state: present
+
+    - name: Download apt keys.
+      ansible.builtin.get_url:
+        url: "{{ item }}"
+        dest: "/tmp/{{ item | basename }}"
+        mode: "0644"
+      loop: "{{ virtualbox_keys }}"
+      loop_control:
+        label: "{{ item | basename }}"
+
+    # apt-key is gone from Debian 13/Ubuntu 26.04+, so dearmor each key
+    # straight into trusted.gpg.d instead of shelling out to it.
+    - name: Import apt key
+      ansible.builtin.command:
+        cmd: >-
+          gpg --dearmor
+          -o /etc/apt/trusted.gpg.d/virtualbox-{{ item | basename | regex_replace('\.asc$', '') }}.gpg
+          /tmp/{{ item | basename }}
+        creates: "/etc/apt/trusted.gpg.d/virtualbox-{{ item | basename | regex_replace('\\.asc$', '') }}.gpg"
+      loop: "{{ virtualbox_keys }}"
+      loop_control:
+        label: "{{ item | basename }}"
+
+    - name: Place apt repository
+      ansible.builtin.apt_repository:
+        repo: deb [ arch=amd64 ] {{ virtualbox_apt_repository }} {{ ansible_distribution_release | lower }} contrib
+        state: present
+
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ virtualbox_requirements }}"
+    state: present
+
+- name: Install virtualbox
+  ansible.builtin.package:
+    name: "{{ virtualbox_package }}"
+    state: present
+  notify:
+    - Run vboxconfig

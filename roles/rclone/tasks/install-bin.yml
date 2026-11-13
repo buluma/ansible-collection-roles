@@ -1,0 +1,68 @@
+---
+- name: install-bin | Update repositories cache on Ubuntu
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  when: ansible_facts['distribution'] == 'Ubuntu'
+- name: install-bin | Install required packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items: "{{ rclone_packages }}"
+- name: install-bin | Remove temporary working directory
+  ansible.builtin.file:
+    path: "{{ rclone_setup_tmp_dir }}"
+    state: absent
+  tags:
+    - molecule-idempotence-notest
+- name: install-bin | Create temporary working directory
+  ansible.builtin.file:
+    mode: "0775"
+    path: "{{ rclone_setup_tmp_dir }}"
+    state: directory
+- name: install-bin | Do beta install
+  ansible.builtin.import_tasks: beta.yml
+  when: rclone_release == 'beta'
+- name: install-bin | Do stable install
+  ansible.builtin.import_tasks: stable.yml
+  when: rclone_release == 'stable'
+- name: install-bin | Get list of files extracted from the rclone archive
+  ansible.builtin.find:
+    depth: 2
+    file_type: directory
+    path: "{{ rclone_setup_tmp_dir }}"
+  register: rclone_archive
+- name: install-bin | Copy rclone binary
+  ansible.builtin.copy:
+    dest: /usr/local/bin/rclone
+    group: root
+    mode: "0755"
+    owner: root
+    remote_src: true
+    src: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}/rclone"
+  become: true
+- name: install-bin | Make dir for local manpages
+  ansible.builtin.file:
+    group: "{{ rclone_man_pages.GROUP }}"
+    mode: "0775"
+    owner: "{{ rclone_man_pages.OWNER }}"
+    path: "{{ rclone_man_pages.PATH }}"
+    state: directory
+  become: true
+  when: install_manpages
+- name: install-bin | Copy rclone manpage
+  ansible.builtin.copy:
+    dest: "{{ rclone_man_pages.PATH }}/rclone.1"
+    group: root
+    mode: "0644"
+    owner: root
+    remote_src: true
+    src: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}/rclone.1"
+  become: true
+  when: install_manpages
+- name: install-bin | Update mandb
+  ansible.builtin.command: mandb
+  become: true
+  changed_when: false
+  when: install_manpages

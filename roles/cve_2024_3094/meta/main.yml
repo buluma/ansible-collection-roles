@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: cve_2024_3094
+  description: Check xz vulnerability (cve_2024_3094) on your system.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - cve20243094
+    - linux
+    - security
+    - system
+dependencies: []

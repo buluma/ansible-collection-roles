@@ -1,0 +1,3 @@
+---
+_zypper:
+  - { state: "latest", name: "MozillaThunderbird" }

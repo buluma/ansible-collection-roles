@@ -1,0 +1,13 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: Install Hashicorp Vault, either a package or a binary.
+  galaxy_tags:
+    - vault
+    - hashicorp
+    - security
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  role_name: vault

@@ -1,0 +1,11 @@
+---
+influxdb_signing_key: "https://repos.influxdata.com/influxdata-archive.key"
+
+# InfluxData now publishes one universal repo for every Debian-family
+# distro/release (their own docs use this same path regardless of
+# distro/codename) - the old per-codename path (.../ubuntu noble, etc.)
+# stopped being published and has no Release file anymore.
+influxdb_repositories:
+  - "deb [signed-by=/etc/apt/trusted.gpg.d/influxdb.asc] https://repos.influxdata.com/debian stable main"
+
+influxdb_service_name: influxdb

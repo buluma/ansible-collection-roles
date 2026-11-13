@@ -1,0 +1,5 @@
+---
+users_create_home: true
+users_cron_allow: true
+users_shell: /bin/bash
+users_ssh_key_directory: ssh_keys

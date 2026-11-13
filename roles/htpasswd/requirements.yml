@@ -1,0 +1,10 @@
+---
+collections:
+  - name: community.general
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.apache
+  - name: buluma.nginx
+  - name: geerlingguy.apache
+  - name: geerlingguy.nginx

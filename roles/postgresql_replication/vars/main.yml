@@ -1,0 +1,4 @@
+---
+postgresql__user: postgres
+postgresql_replication__master_node_address: "{{ hostvars[groups[postgresql_replication__group_master][0]].ansible_facts['default_ipv4'].address }}"
+postgresql_replication__other_nodes: "{{ groups[postgresql_replication__group] | difference([inventory_hostname]) }}"

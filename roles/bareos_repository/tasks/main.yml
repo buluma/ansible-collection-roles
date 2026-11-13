@@ -1,0 +1,156 @@
+---
+# tasks file for bareos_repository
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Add repository (rpm)
+  ansible.builtin.yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: true
+    gpgkey: "{{ item.gpgkey }}"
+    username: "{{ item.username | default(omit) }}"
+    password: "{{ item.password | default(omit) }}"
+  no_log: true
+  loop: "{{ bareos_repository_list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - ansible_facts['pkg_mgr'] in [ "dnf", "dnf5", "yum" ]
+
+- name: Run tasks on apt based distributions
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+  block:
+    - name: Install CA certificates (apt)
+      ansible.builtin.package:
+        name: ca-certificates
+
+    - name: Download gpg key (apt)
+      ansible.builtin.get_url:
+        url: "{{ bareos_repository_gpg_key }}"
+        dest: /etc/apt/bareos.gpg
+        username: "{{ bareos_repository_username }}"
+        password: "{{ bareos_repository_password }}"
+        owner: root
+        group: root
+        mode: "0644"
+      no_log: true
+
+    - name: Place credentials file (apt)
+      ansible.builtin.copy:
+        content: |
+          machine download.bareos.com
+          login {{ bareos_repository_username }}
+          password {{ bareos_repository_password }}
+        dest: /etc/apt/auth.conf.d/download_bareos_com.conf
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      when:
+        - bareos_repository_type == "subscription"
+
+    - name: Add repository (apt)
+      ansible.builtin.apt_repository:
+        repo: "{{ item.deb_repo }}"
+        state: present
+        filename: "{{ item.name }}"
+        update_cache: true
+      no_log: true
+      loop: "{{ bareos_repository_list }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+- name: Run tasks on zypper based distributions
+  when:
+    - ansible_facts['pkg_mgr'] in [ "zypper" ]
+  block:
+    - name: Download gpg key (zypper)
+      ansible.builtin.get_url:
+        url: "{{ bareos_repository_gpg_key }}"
+        dest: /etc/gnupg/bareos.gpg
+        username: "{{ bareos_repository_username }}"
+        password: "{{ bareos_repository_password }}"
+        owner: root
+        group: root
+        mode: "0644"
+      no_log: true
+
+    - name: Import gpg key (zypper)
+      ansible.builtin.rpm_key:
+        key: /etc/gnupg/bareos.gpg
+
+    - name: Place credentials file (zypper)
+      ansible.builtin.copy:
+        content: |
+          username={{ bareos_repository_username }}
+          password={{ bareos_repository_password }}
+        dest: /etc/zypp/credentials.d/bareos
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      when:
+        - bareos_repository_type == "subscription"
+
+    - name: Add repository (zypper)
+      community.general.zypper_repository:
+        name: "{{ item.name }}"
+        repo: "{{ item.repo }}"
+        state: present
+      loop: "{{ bareos_repository_list }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+- name: Enable tracebacks
+  when:
+    - bareos_repository_enable_tracebacks
+  block:
+    - name: Add debuginfo repository (rpm)
+      ansible.builtin.yum_repository:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        baseurl: "{{ item.baseurl }}"
+        gpgcheck: true
+        gpgkey: "{{ item.gpgkey }}"
+        username: "{{ item.username | default(omit) }}"
+        password: "{{ item.password | default(omit) }}"
+      no_log: true
+      loop: "{{ bareos_repository_debug_list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when:
+        - ansible_facts['pkg_mgr'] in [ "dnf", "dnf5", "yum" ]
+
+    - name: Add repository (zypper)
+      community.general.zypper_repository:
+        name: "{{ item.name }}"
+        repo: "{{ item.repo }}"
+        state: present
+      loop: "{{ bareos_repository_debug_list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when:
+        - ansible_facts['pkg_mgr'] in [ "zypper" ]
+
+    - name: Install required packages
+      ansible.builtin.package:
+        name: "{{ bareos_repository_debug_required_packages }}"
+
+    - name: Check if ptrace_scope sysctl is available
+      ansible.builtin.stat:
+        path: /proc/sys/kernel/yama/ptrace_scope
+      register: bareos_repository_ptrace_scope_stat
+
+    - name: Disable ptrace_scope
+      ansible.posix.sysctl:
+        name: kernel.yama.ptrace_scope
+        value: "0"
+        sysctl_set: true
+      when: bareos_repository_ptrace_scope_stat.stat.exists

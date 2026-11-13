@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: upgrade
+  description: Upgrade a package only if it is installed otherwise do nothing.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - upgrade
+    - security
+dependencies: []

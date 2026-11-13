@@ -3,14 +3,33 @@
 name: Build and Deploy Collection
 
 on:
-  push:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
-    runs-on: "Ubuntu-20.04"
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Deploy Ansible Galaxy Collection
-        uses: artis3n/ansible_galaxy_collection@v2.6.2
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: setup python
+        uses: actions/setup-python@v7
         with:
-          api_key: '${{ secrets.GALAXY_API_KEY }}'
+          python-version: "3.x"
+      - name: install ansible-core
+        run: pip install "ansible-core>=2.19"
+      # Refuse to publish when the release tag and galaxy.yml disagree.
+      - name: check release tag matches galaxy.yml version
+        run: |
+          version=$(python -c 'import yaml; print(yaml.safe_load(open("galaxy.yml"))["version"])')
+          test "${GITHUB_REF_NAME#v}" = "${version}" || { echo "Tag ${GITHUB_REF_NAME} does not match galaxy.yml version ${version}"; exit 1; }
+      - name: build collection
+        run: ansible-galaxy collection build
+      - name: publish collection
+        run: ansible-galaxy collection publish buluma-roles-*.tar.gz --api-key "${GALAXY_API_KEY}"
+        env:
+          GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}

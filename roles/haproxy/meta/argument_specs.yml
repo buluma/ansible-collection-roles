@@ -1,0 +1,71 @@
+---
+argument_specs:
+  main:
+    author: Shadow Walker
+    description: "Install and configure haproxy on your system.\n"
+    options:
+      haproxy_backend_default_balance:
+        default: roundrobin
+        description: The default balance for backends.
+        type: str
+      haproxy_backends:
+        default: []
+        description: A list of backends.
+        type: list
+      haproxy_frontends:
+        default: []
+        description: A list of frontends.
+        type: list
+      haproxy_listen_default_balance:
+        default: roundrobin
+        description: The default balance for listens.
+        type: str
+      haproxy_listens:
+        default: []
+        description: A list of listens.
+        type: list
+      haproxy_maxconn:
+        default: 3000
+        description: The maximum number of connections.
+        type: int
+      haproxy_retries:
+        default: 3
+        description: The number of retries.
+        type: int
+      haproxy_stats:
+        default: true
+        description: Configure stats in HAProxy?
+        type: bool
+      haproxy_stats_bind_addr:
+        default: 0.0.0.0
+        description: The address to bind HAProxy stats to.
+        type: str
+      haproxy_stats_port:
+        default: 1936
+        description: The port for HAProxy stats.
+        type: int
+      haproxy_timeout_check:
+        default: 10s
+        description: The timeout for checks.
+        type: str
+      haproxy_timeout_client:
+        default: 1m
+        description: The timeout for clients.
+        type: str
+      haproxy_timeout_connect:
+        default: 10s
+        description: The timeout for connecting.
+        type: str
+      haproxy_timeout_http_keep_alive:
+        default: 10s
+        description: The interval for HTTP keep-alive.
+        type: str
+      haproxy_timeout_http_request:
+        default: 10s
+        description: The timeout for HTTP requests.
+        type: str
+      haproxy_timeout_server:
+        default: 1m
+        description: The timeout for servers.
+        type: str
+    short_description: Install and configure haproxy on your system.

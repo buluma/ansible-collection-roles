@@ -1,0 +1,7 @@
+---
+_nfs_requirements:
+  Debian:
+    - nfs-kernel-server
+  default:
+    - nfs-server
+nfs_requirements: "{{ _nfs_requirements[ansible_facts['os_family']] | default(_nfs_requirements['default']) }}"

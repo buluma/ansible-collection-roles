@@ -1,0 +1,54 @@
+---
+- name: object | Archive directory object
+  community.general.archive:
+    path: "{{ object.source }}"
+    dest: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.{{ object.format | default(backup_format) }}"
+    exclude_path: "{{ object.exclude_path | default(omit) }}"
+    format: "{{ object.format | default(backup_format) }}"
+    mode: "0640"
+  when:
+    - object.type == "directory"
+
+- name: object | Dump mysql object
+  ansible.mysql.mysql_db:
+    name: "{{ object.name }}"
+    state: dump
+    target: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.sql"
+  when:
+    - object.type == "mysql"
+
+- name: object | Dump postgres object
+  community.postgresql.postgresql_db:
+    name: "{{ object.name }}"
+    state: dump
+    target: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.sql"
+  become_user: postgres
+  become: true
+  when:
+    - object.type == "postgres"
+
+- name: object | Compress object
+  community.general.archive:
+    path: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.sql"
+    dest: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.{{ object.format | default(backup_format) }}"
+    format: "{{ object.format | default(backup_format) }}"
+    mode: "0640"
+  when:
+    - object.type in [ "mysql", "postgres" ]
+
+- name: object | Fetch object
+  ansible.builtin.fetch:
+    src: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.{{ object.format | default(backup_format) }}"
+    dest: "{{ backup_directory }}/{{ inventory_hostname }}/"
+    flat: true
+  become: false
+  when:
+    - object.type in [ "mysql", "postgres" ]
+
+- name: object | Cleanup object
+  ansible.builtin.file:
+    path: "{{ backup_remote_directory }}/{{ object.type }}-{{ object.name }}-{{ backup_timestamp }}.{{ object.format | default(backup_format) }}"
+    state: absent
+  when:
+    - backup_cleanup | bool
+    - object.type in [ "mysql", "postgres" ]

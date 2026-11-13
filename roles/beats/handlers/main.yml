@@ -4,21 +4,25 @@
   ansible.builtin.service:
     name: filebeat
     state: restarted
+  failed_when: false
 
 - name: Restart packetbeat
   become: true
   ansible.builtin.service:
     name: topbeat
     state: restarted
+  failed_when: false
 
 - name: Restart heartbeat
   become: true
   ansible.builtin.service:
     name: heartbeat
     state: restarted
+  failed_when: false
 
 - name: Restart metricbeat
   become: true
   ansible.builtin.service:
     name: metricbeat
     state: restarted
+  failed_when: false

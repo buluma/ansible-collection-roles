@@ -1,0 +1,17 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  # Fedora is excluded: buluma.elastic_repo (a dependency) deliberately
+  # skips adding the yum repo on Fedora (Elastic's 7.x yum repo doesn't
+  # support it), so metricbeat could never install there anyway.
+  - name: Ubuntu
+    versions:
+      - all

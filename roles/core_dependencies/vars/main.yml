@@ -1,6 +1,9 @@
 ---
 # vars file for core_dependencies
 
+core_dependencies_conflicting_packages:
+  - busybox-xz
+
 core_dependencies_shared_packages:
   - acl
   - at
@@ -11,7 +14,12 @@ core_dependencies_shared_packages:
   - tar
   - unzip
 
-_core_dependencies_packages:
+_core_dependencies_specific_packages:
+  Archlinux:
+    - iproute2
+    - shadow
+    - subversion
+    - xz
   Alpine:
     - iproute2
     - shadow
@@ -19,14 +27,10 @@ _core_dependencies_packages:
     - xz
   Amazon-2018:
     - iproute
-    # - python-pip
-    # - python-setuptools
     - shadow-utils
     - xz
   Amazon-2:
     - iproute
-    # - python3-pip
-    # - python3-setuptools
     - shadow-utils
     - xz
   Debian:
@@ -38,6 +42,14 @@ _core_dependencies_packages:
     - python3-apt
     - subversion
     - xz-utils
+  Fedora-41:
+    - dnf
+    - iproute
+    - python3-libdnf5
+    - python3-libselinux
+    - python3-libsemanage
+    - shadow-utils
+    - xz
   RedHat-7:
     - iproute
     - libselinux-python
@@ -45,18 +57,7 @@ _core_dependencies_packages:
     - shadow-utils
     - xz
     - yum
-  RedHat: &redhat_packages
-    - dnf
-    - iproute
-    - python3-dnf
-    - python3-libselinux
-    - python3-libsemanage
-    # - python3-pip
-    # - python3-setuptools
-    # - python3-virtualenv
-    - shadow-utils
-    - xz
-  Rocky:
+  RedHat:
     - dnf
     - iproute
     - python3-dnf
@@ -67,18 +68,13 @@ _core_dependencies_packages:
   Suse:
     - iproute2
     - libselinux1
-    # - python3-pip
     - python3-selinux
-    # - python3-setuptools
     - shadow
     - subversion
     - xz
 
-core_dependencies_packages: "{{ _core_dependencies_packages[ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_core_dependencies_packages[ansible_os_family ~ '-' ~ ansible_distribution_major_version] | default(_core_dependencies_packages[ansible_os_family] )) }}"
+core_dependencies_specific_packages: "{{ _core_dependencies_specific_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] |
+  default(_core_dependencies_specific_packages[ansible_facts['os_family'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_core_dependencies_specific_packages[ansible_facts['os_family']]
+  )) }}"
 
-core_dependencies: "{{ core_dependencies_shared_packages + core_dependencies_packages }}"
-
-core_dependencies_pip_packages:
-  - boto
-  - boto3
-  - boto
+core_dependencies_packages: "{{ core_dependencies_shared_packages + core_dependencies_specific_packages }}"

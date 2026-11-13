@@ -1,0 +1,8 @@
+---
+- name: Restart consul
+  ansible.builtin.service:
+    name: consul
+    state: restarted
+  when:
+    - consul_license is defined
+    - consul_license != ""

@@ -1,0 +1,3 @@
+---
+squid_cache_dir: ufs /var/spool/squid 100 16 256
+squid_port: 3128

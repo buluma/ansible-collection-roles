@@ -1,0 +1,11 @@
+---
+# vars file for azure_cli
+
+# packages.microsoft.com/repos/azure-cli only publishes a fixed set of
+# Debian/Ubuntu codenames and lags behind new releases. Codenames missing
+# from that repo are mapped to the newest available codename for their
+# distribution so the apt repository URL still resolves.
+azure_cli_apt_codenames:
+  trixie: bookworm # Debian 13
+  resolute: noble # Ubuntu 26.04
+azure_cli_apt_codename: "{{ azure_cli_apt_codenames[ansible_facts['distribution_release']] | default(ansible_facts['distribution_release']) }}"

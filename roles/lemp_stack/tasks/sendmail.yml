@@ -1,0 +1,19 @@
+---
+- name: sendmail | Install Sendmail
+  ansible.builtin.package:
+    name: "{{ lemp_sendmail_packages[ansible_os_family] }}"
+    state: present
+- name: sendmail | Remove Postfix
+  ansible.builtin.package:
+    name: postfix
+    state: absent
+- name: sendmail | Copy Sendmail config
+  ansible.builtin.copy:
+    dest: /etc/mail/aliases
+    mode: preserve
+    remote_src: true
+    src: /etc/aliases
+- name: sendmail | Enable Sendmail service
+  ansible.builtin.service:
+    enabled: true
+    name: sendmail

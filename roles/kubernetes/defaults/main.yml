@@ -1,0 +1,44 @@
+---
+kubernetes_allow_pods_on_master: true
+kubernetes_apiserver_advertise_address: ""
+kubernetes_apt_ignore_key_error: false
+kubernetes_apt_keyring_path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+kubernetes_apt_key_url: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/Release.key"
+kubernetes_apt_repository: "deb [signed-by={{ kubernetes_apt_keyring_path }}] https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/ /"
+kubernetes_calico_manifest_file: "https://projectcalico.docs.tigera.io/manifests/calico.yaml"
+kubernetes_config_cluster_configuration:
+  kubernetesVersion: "{{ kubernetes_version_kubeadm }}"
+  networking:
+    podSubnet: "{{ kubernetes_pod_network.cidr }}"
+kubernetes_config_init_configuration:
+  localAPIEndpoint:
+    advertiseAddress: "{{ kubernetes_apiserver_advertise_address | default(ansible_facts['default_ipv4'].address, true) }}"
+kubernetes_config_kube_proxy_configuration: {}
+kubernetes_config_kubelet_configuration:
+  cgroupDriver: systemd
+kubernetes_flannel_manifest_file: "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml"
+kubernetes_ignore_preflight_errors: all
+kubernetes_join_command_extra_opts: ""
+kubernetes_kubeadm_init_extra_opts: ""
+kubernetes_kubeadm_kubelet_config_file_path: /etc/kubernetes/kubeadm-kubelet-config.yaml
+kubernetes_kubelet_extra_args: ""
+kubernetes_packages:
+  - name: kubelet
+    state: present
+  - name: kubectl
+    state: present
+  - name: kubeadm
+    state: present
+  - name: kubernetes-cni
+    state: present
+kubernetes_pod_network:
+  cidr: 10.244.0.0/16
+  cni: flannel
+kubernetes_role: master
+kubernetes_version: "1.36"
+kubernetes_version_kubeadm: stable-{{ kubernetes_version }}
+kubernetes_yum_base_url: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/rpm/"
+kubernetes_yum_gpg_check: true
+kubernetes_yum_gpg_key:
+  - "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/rpm/repodata/repomd.xml.key"
+kubernetes_yum_repo_gpg_check: true

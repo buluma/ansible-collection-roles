@@ -1,0 +1,31 @@
+---
+- name: lemp-php-system | Refresh Debian package indexes
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == 'Debian'
+- name: lemp-php-system | Install the distribution PHP runtime and extensions
+  notify:
+    - Restart php-fpm
+  ansible.builtin.package:
+    name: "{{ lemp_base_packages[ansible_os_family] + lemp_php_packages[ansible_os_family] }}"
+    state: present
+- name: lemp-php-system | Read installed PHP version
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - --show
+      - --showformat=${Package}\n
+      - php*-fpm
+  changed_when: false
+  register: lemp_php_fpm_packages
+  when: ansible_os_family == 'Debian'
+- name: lemp-php-system | Set Debian PHP-FPM version
+  ansible.builtin.set_fact:
+    lemp_php_version: "{{ (lemp_php_fpm_packages.stdout_lines | select('match', '^php[0-9]+\\.[0-9]+-fpm$') | first) | regex_replace('^php([0-9]+\\.[0-9]+)-fpm$', '\\1') }}"
+  when: ansible_os_family == 'Debian'
+- name: lemp-php-system | Set Debian PHP-FPM service and pool path
+  ansible.builtin.set_fact:
+    lemp_php_fpm_service: "php{{ lemp_php_version }}-fpm"
+    lemp_php_fpm_pool_path: "/etc/php/{{ lemp_php_version }}/fpm/pool.d/www.conf"
+  when: ansible_os_family == 'Debian'

@@ -1,0 +1,8 @@
+---
+mediawiki_destination: "{{ _mediawiki_destination[ansible_facts['distribution']] | default(_mediawiki_destination['default']) }}"
+mediawiki_major: 1
+# The minor version is the second component of mediawiki_version.
+mediawiki_minor: 46
+# The release number is the third component of mediawiki_version.
+mediawiki_release: 2
+mediawiki_version: "{{ mediawiki_major }}.{{ mediawiki_minor }}.{{ mediawiki_release }}"

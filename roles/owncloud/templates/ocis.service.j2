@@ -1,0 +1,15 @@
+[Unit]
+# {{ ansible_managed }}
+Description=oCIS server
+After=network.target
+
+[Service]
+Type=simple
+User={{ ocis_owner }}
+Group={{ ocis_group }}
+EnvironmentFile={{ ocis_config_dir }}/ocis.env
+ExecStart={{ ocis_binary_path }} server
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

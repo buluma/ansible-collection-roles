@@ -1,0 +1,6 @@
+---
+- name: gather_cluster | Gather facts from other nodes
+  ansible.builtin.setup:
+  delegate_facts: true
+  delegate_to: "{{ item }}"
+  loop: "{{ postgresql_replication__other_nodes }}"

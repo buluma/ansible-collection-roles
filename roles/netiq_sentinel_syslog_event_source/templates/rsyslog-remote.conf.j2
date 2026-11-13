@@ -1,0 +1,47 @@
+## {{ ansible_managed }}
+
+##
+## === When you're using remote logging, enable on-disk queues ===
+## === in rsyslog.d/remote.conf. When neccesary also set the   ===
+## === SYSLOG_REQUIRES_NETWORK=yes in /etc/sysconfig/syslog,   ===
+## === e.g. when rsyslog has to receive on a specific IP only. ===
+##
+## Note, that when the MYSQL, PGSQL, GSSAPI, GnuTLS or SNMP modules
+## (provided in separate rsyslog-module-* packages) are enabled, the
+## configuration can't be used on a system with /usr on a remote
+## filesystem, except on newer systems where initrd mounts /usr.
+## [The modules are linked against libraries installed bellow of
+##  /usr thus also installed in /usr/lib*/rsyslog because of this.]
+##
+
+# ######### Enable On-Disk queues for remote logging ##########
+#
+# An on-disk queue is created for this action. If the remote host is
+# down, messages are spooled to disk and sent when it is up again.
+#
+$WorkDirectory /var/spool/rsyslog # where to place spool files
+$ActionQueueFileName uniqName # unique name prefix for spool files
+$ActionQueueMaxDiskSpace 1g   # 1gb space limit (use as much as possible)
+$ActionQueueSaveOnShutdown on # save messages to disk on shutdown
+$ActionQueueType LinkedList   # run asynchronously
+$ActionResumeRetryCount -1    # infinite retries if host is down
+
+# ######### Sending Messages to Remote Hosts ##########
+
+# Remote Logging using TCP for reliable delivery
+# remote host is: name/ip:port, e.g. 192.168.0.1:514, port optional
+*.* @@{{ sentinel_syslog_server }}:{{sentinel_syslog_port }}
+
+# Remote Logging using UDP
+# remote host is: name/ip:port, e.g. 192.168.0.1:514, port optional
+#*.* @remote-host
+
+# -- TLS Syslog Client:
+## certificate files - just CA for a client
+#$DefaultNetstreamDriverCAFile /etc/rsyslog.d/ca.pem
+#
+## set up the action
+#$DefaultNetstreamDriver gtls # use gtls netstream driver
+#$ActionSendStreamDriverMode 1 # require TLS for the connection
+#$ActionSendStreamDriverAuthMode anon # server is NOT authenticated
+#*.* @@(o)server.example.net:10514 # send (all) messages

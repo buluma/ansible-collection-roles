@@ -1,14 +1,20 @@
 ---
-- name: Add ElasticSearch apt key.
-  ansible.builtin.apt_key:
-    id: "{{ beats_client_elastic_pgp_key }}"
+- name: Download ElasticSearch apt key
+  ansible.builtin.get_url:
     url: "{{ beats_client_elastic_gpg_key_url }}"
-    state: present
+    dest: /tmp/elastic-beats.asc
+    mode: "0644"
+
+- name: Import ElasticSearch apt key
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /usr/share/keyrings/elastic-beats.gpg /tmp/elastic-beats.asc
+    creates: /usr/share/keyrings/elastic-beats.gpg
+  changed_when: false
 
 - name: Install beats pre-req software
   ansible.builtin.apt:
     name: "{{ item }}"
-  with_items: "{{ beats_client_beats_prereq }}"
+  loop: "{{ beats_client_beats_prereq }}"
 
 - name: Add Beats apt repository.
   ansible.builtin.apt_repository:
@@ -17,9 +23,9 @@
 
 - name: Install beat packages.
   ansible.builtin.apt:
-    name: "{{ item }}={{ beats_client_version }}"
+    name: "{{ item }}{% if beats_client_version %}={{ beats_client_version }}{% endif %}"
     state: present
-  with_items: "{{ beats_client_beats_packages }}"
+  loop: "{{ beats_client_beats_packages }}"
 
 - name: Copy beat configuration
   become: true
@@ -30,7 +36,7 @@
     owner: root
     group: root
   notify: "Restart {{ item }}"
-  with_items: "{{ beats_client_beats_packages }}"
+  loop: "{{ beats_client_beats_packages }}"
 
 - name: Enable beat service
   become: true
@@ -38,10 +44,12 @@
     name: "{{ item }}"
     state: started
     enabled: true
-  with_items: "{{ beats_client_beats_packages }}"
+  loop: "{{ beats_client_beats_packages }}"
+  failed_when: false
 
 - name: Load default templates into elasticsearch
   ansible.builtin.command: |
     {{ item }} setup --template -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=["localhost:9200"]'
-  with_items: "{{ beats_client_beats_packages }}"
+  loop: "{{ beats_client_beats_packages }}"
   when: beats_client_inject_templates
+  changed_when: false

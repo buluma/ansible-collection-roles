@@ -1,0 +1,21 @@
+---
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+- name: Define htpasswd_required_packages.
+  ansible.builtin.set_fact:
+    htpasswd_required_packages: "{{ __htpasswd_required_packages | list }}"
+  when: htpasswd_required_packages is not defined
+- name: Ensure the htpasswd packages are installed.
+  ansible.builtin.package:
+    name: "{{ htpasswd_required_packages }}"
+    state: present
+- name: Ensure htpasswd credentials are configured.
+  community.general.htpasswd:
+    group: "{{ item.group }}"
+    mode: "{{ item.mode | default('u+rw,g+r') }}"
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    password: "{{ item.password }}"
+    path: "{{ item.path }}"
+  no_log: "{{ htpasswd_nolog }}"
+  with_items: "{{ htpasswd_credentials }}"

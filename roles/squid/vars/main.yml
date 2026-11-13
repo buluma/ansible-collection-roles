@@ -1,0 +1,14 @@
+---
+_squid_group:
+  Debian: proxy
+  default: squid
+_squid_user:
+  Debian: proxy
+  default: squid
+squid_config_directory: /etc/squid
+squid_config_file: squid.conf
+squid_group: "{{ _squid_group[ansible_facts['os_family']] | default(_squid_group['default']) }}"
+squid_packages:
+  - squid
+squid_service: squid
+squid_user: "{{ _squid_user[ansible_facts['os_family']] | default(_squid_user['default']) }}"

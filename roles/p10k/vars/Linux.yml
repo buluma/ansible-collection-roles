@@ -1,0 +1,16 @@
+---
+_p10k_dependencies:
+  default:
+    - zsh
+    - git
+    - wget
+    - curl
+  RedHat:
+    - zsh
+    - git
+    - wget
+
+p10k_dependencies: "{{ _p10k_dependencies[ansible_facts['os_family']] | default(_p10k_dependencies['default']) }}"
+
+fonts_path: /usr/share/fonts/TTF
+zsh_bin_path: /usr/bin/zsh

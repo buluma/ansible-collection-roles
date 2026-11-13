@@ -4,13 +4,13 @@
 - name: Collect package facts
   ansible.builtin.package_facts:
   when:
-    - ansible_os_family not in [ "Alpine", "Suse" ]
+    - ansible_facts['os_family'] not in [ "Alpine", "Suse" ]
 
 - name: Collect service_facts
   ansible.builtin.service_facts:
   when:
-    - ansible_os_family != "Debian"
-    - ansible_distribution_version != "NA"
+    - ansible_facts['os_family'] != "Debian"
+    - ansible_facts['distribution_version'] != "NA"
 
 - name: Show vars
   ansible.builtin.debug:

@@ -1,22 +1,15 @@
 ---
 # tasks file for core_dependencies
 
+- name: Remove conflicting packages
+  ansible.builtin.package:
+    name: "{{ core_dependencies_conflicting_packages }}"
+    state: absent
+
 - name: Install packages
   ansible.builtin.package:
-    name: "{{ core_dependencies }}"
-    state: present
+    name: "{{ core_dependencies_packages }}"
     update_cache: true
-  notify:
-    - Gather facts
-
-- name: Reset connetion
-  ansible.builtin.meta: reset_connection
-
-- name: Try to install pip packages
-  ansible.builtin.pip:
-    name: "{{ core_dependencies_pip_packages }}"
-    state: present
-  failed_when: false
   notify:
     - Gather facts
 

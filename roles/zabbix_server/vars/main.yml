@@ -1,0 +1,12 @@
+---
+_zabbix_server_requirements:
+  Debian:
+    - python3-mysqldb
+  RedHat:
+    - python3-PyMySQL
+  RedHat-7:
+    - MySQL-python
+  Suse:
+    - python3-PyMySQL
+zabbix_server_requirements: "{{ _zabbix_server_requirements[ansible_facts['os_family'] ~ '-' ~ ansible_facts['distribution_major_version']] | default (_zabbix_server_requirements[ansible_facts['os_family']]
+  ) }}"

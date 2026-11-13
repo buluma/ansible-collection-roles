@@ -1,0 +1,96 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Create Vault Raft storage path
+  ansible.builtin.file:
+    group: "{{ vault_configuration_group }}"
+    mode: "0750"
+    owner: "{{ vault_configuration_owner }}"
+    path: "{{ vault_configuration_storage_raft.path }}"
+    state: directory
+  when:
+    - vault_configuration_storage_raft is defined
+- name: Place TLS CA certificate
+  ansible.builtin.copy:
+    content: "{{ item.leader_ca_cert | default(omit) }}"
+    dest: "{{ vault_configuration_tls_directory }}/ca.crt"
+    group: "{{ vault_configuration_group }}"
+    mode: "0600"
+    owner: "{{ vault_configuration_owner }}"
+    src: "{{ item.leader_ca_cert_file | default(omit) }}"
+  loop: "{{ vault_configuration_storage_raft.retry_join }}"
+  loop_control:
+    label: A CA certificate
+  notify:
+    - Reload Vault
+  when:
+    - vault_configuration_storage_raft is defined
+    - vault_configuration_storage_raft.retry_join is defined
+    - item.leader_ca_cert is defined or item.leader_ca_cert_file is defined
+- name: Place TLS key
+  ansible.builtin.copy:
+    content: "{{ item.tls_key | default(omit) }}"
+    dest: "{{ vault_configuration_tls_directory }}/tls.key"
+    group: "{{ vault_configuration_group }}"
+    mode: "0600"
+    owner: "{{ vault_configuration_owner }}"
+    src: "{{ item.tls_key_file | default(omit) }}"
+  loop: "{{ vault_configuration_listeners }}"
+  loop_control:
+    label: A hidden TLS key
+  notify:
+    - Reload Vault
+  when:
+    - vault_configuration_listeners is defined
+    - item.tls_key is defined or item.tls_key_file is defined
+- name: Place TLS certificate
+  ansible.builtin.copy:
+    content: "{{ item.tls_cert | default(omit) }}"
+    dest: "{{ vault_configuration_tls_directory }}/tls.crt"
+    group: "{{ vault_configuration_group }}"
+    mode: "0600"
+    owner: "{{ vault_configuration_owner }}"
+    src: "{{ item.tls_cert_file | default(omit) }}"
+  loop: "{{ vault_configuration_listeners }}"
+  loop_control:
+    label: A long TLS certificate
+  notify:
+    - Reload Vault
+  when:
+    - vault_configuration_listeners is defined
+    - item.tls_cert is defined or item.tls_cert_file is defined
+- name: Place Vault license
+  ansible.builtin.copy:
+    content: "{{ vault_configuration_license }}"
+    dest: /etc/vault.d/license.hclic
+    group: "{{ vault_configuration_group }}"
+    mode: "0640"
+    owner: "{{ vault_configuration_owner }}"
+  notify:
+    - Reload Vault
+  when:
+    - vault_configuration_license is defined
+- name: Create socket directory
+  ansible.builtin.file:
+    group: "{{ vault_configuration_group }}"
+    mode: "0755"
+    owner: "{{ vault_configuration_owner }}"
+    path: "{{ item.address | dirname }}"
+    state: directory
+  loop: "{{ vault_configuration_listeners }}"
+  loop_control:
+    label: "{{ item.address | dirname }}"
+  when:
+    - item.type == "unix"
+- name: Place Vault configuration
+  ansible.builtin.template:
+    dest: /etc/vault.d/vault.hcl
+    group: "{{ vault_configuration_group }}"
+    mode: "0640"
+    owner: "{{ vault_configuration_owner }}"
+    src: vault.hcl.j2
+  notify:
+    - Restart Vault

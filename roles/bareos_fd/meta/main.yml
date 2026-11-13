@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: bareos_fd
+  description: Install and configure [Bareos](https://www.bareos.com/) File Daemon.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - bareos
+    - infrastructure
+    - linux
+    - storage
+    - system
+    - tools
+dependencies: []

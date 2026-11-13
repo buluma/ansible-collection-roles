@@ -1,0 +1,24 @@
+---
+- name: Restart ssh daemon
+  ansible.builtin.service:
+    name: "{{ ssh_daemon }}"
+    state: restarted
+
+- name: Copy ssh-chroot-jail extra items
+  ansible.builtin.copy: # noqa risky-file-permissions
+    src: "{{ item }}"
+    dest: "{{ ssh_chroot_jail_path }}{{ item }}"
+    remote_src: true
+    mode: "0644"
+  with_items: "{{ ssh_chroot_copy_extra_items }}"
+
+- name: Add binary libs via l2chroot
+  ansible.builtin.command: "{{ ssh_chroot_l2chroot_path }} {{ item.bin | default(item) }}"
+  when: item.l2chroot is not defined or item.l2chroot
+  with_items: "{{ ssh_chroot_bins }}"
+  changed_when: false
+
+- name: Copy extra libraries for whoami
+  ansible.builtin.shell: "mkdir -p {{ ssh_chroot_jail_path }}/{{ lib64_path }}/ && cp {{ lib64_path }}/libns* {{ ssh_chroot_jail_path }}/{{ lib64_path }}/"
+  when: "'/usr/bin/whoami' in ssh_chroot_bins"
+  changed_when: false

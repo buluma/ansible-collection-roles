@@ -1,0 +1,32 @@
+---
+_zabbix_configuration_path:
+  Ubuntu-16: /usr/share/zabbix/conf
+  Debian-11: /usr/share/zabbix/conf
+  default: /etc/zabbix/web
+_zabbix_web_httpd_service:
+  RedHat: httpd
+  default: apache2
+_zabbix_web_mysql_socket:
+  Debian: /run/mysql/mysqld.sock
+  RedHat: /var/lib/mysql/mysql.sock
+  default: /var/run/mysql/mysql.sock
+_zabbix_web_packages:
+  # Debian 11's zabbix repo doesn't ship zabbix-apache-conf at all (only
+  # zabbix-frontend-php); newer Debian releases' repos do.
+  Debian-11:
+    - zabbix-frontend-php
+  Debian:
+    - zabbix-frontend-php
+    - zabbix-apache-conf
+  RedHat:
+    - zabbix-web-mysql
+    - zabbix-apache-conf
+  Suse:
+    - zabbix-web-mysql
+    - zabbix-apache-conf
+zabbix_configuration_path: "{{ _zabbix_configuration_path[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_zabbix_configuration_path['default']
+  ) }}"
+zabbix_web_httpd_service: "{{ _zabbix_web_httpd_service[ansible_facts['os_family']] | default(_zabbix_web_httpd_service['default']) }}"
+zabbix_web_mysql_socket: "{{ _zabbix_web_mysql_socket[ansible_facts['os_family']] | default(_zabbix_web_mysql_socket['default']) }}"
+zabbix_web_packages: "{{ _zabbix_web_packages[ansible_facts['os_family'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_zabbix_web_packages[ansible_facts['os_family']]
+  ) }}"

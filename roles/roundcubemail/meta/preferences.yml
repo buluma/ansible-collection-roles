@@ -1,0 +1,30 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 11 (bullseye): EOL. No role code depends on it - nothing
+      # here parses ansible_distribution_major_version for Debian.
+      - "bookworm"
+      - "trixie"
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      # Excludes 26.04 (resolute): ships PHP 8.5, whose native
+      # array_first() collides with the packaged Roundcube 1.6.11's
+      # unguarded polyfill of the same name in bootstrap.php (upstream
+      # bug, fatal on every request).
+      # ansible-generator's Ubuntu mapping keys by codename, not release
+      # number - "24.04"/"22.04" were silently breaking generation.
+      - "noble"
+      - "jammy"

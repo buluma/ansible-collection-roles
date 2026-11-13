@@ -1,0 +1,149 @@
+---
+- name: pkg-suse | Find out whether to set repo_gpgcheck or not
+  ansible.builtin.set_fact:
+    agent_do_zypper_repo_gpgcheck: >-
+      {{ datadog_zypper_repo_gpgcheck if datadog_zypper_repo_gpgcheck != '' else
+      (
+        'true' if datadog_zypper_repo == '' and agent_datadog_agent_major_version|int
+      != 5 else 'false'
+      ) }}
+
+- name: pkg-suse | Check and download RPM Key(SLES11) # Work around due to SNI check for SLES11
+  when: ansible_facts['distribution_version']|int == 11
+  block:
+    - name: pkg-suse | Stat if current RPM key already exists
+      ansible.builtin.stat:
+        path: /tmp/DATADOG_RPM_KEY_CURRENT.public
+      register: agent_ddkeycurrent
+    - name: pkg-suse | Download current RPM key (SLES11)
+      ansible.builtin.get_url:
+        url: "{{ datadog_zypper_gpgkey_current }}"
+        dest: /tmp/DATADOG_RPM_KEY_CURRENT.public
+        mode: 600
+        force: true
+      when: not agent_ddkeycurrent.stat.exists
+
+- name: pkg-suse | Download current RPM key
+  ansible.builtin.get_url:
+    url: "{{ datadog_zypper_gpgkey_current }}"
+    dest: /tmp/DATADOG_RPM_KEY_CURRENT.public
+    force: true
+    mode: 600
+  when: ansible_facts['distribution_version']|int >= 12
+
+- name: pkg-suse | Import current RPM key
+  ansible.builtin.rpm_key:
+    key: /tmp/DATADOG_RPM_KEY_CURRENT.public
+    state: present
+  when: not ansible_check_mode
+
+- name: pkg-suse | Check and download E09422B3 key # Work around due to SNI check for SLES11
+  when: ansible_facts['distribution_version']|int == 11
+  block:
+    - name: pkg-suse | Stat if E09422B3 key (Expires 2022) RPM key already exists
+      ansible.builtin.stat:
+        path: /tmp/DATADOG_RPM_KEY_E09422B3.public
+      register: agent_ddnewkey
+    - name: pkg-suse | Download E09422B3 key (Expires 2022) RPM key (SLES11)
+      ansible.builtin.get_url:
+        url: "{{ datadog_zypper_gpgkey_e09422b3 }}"
+        dest: /tmp/DATADOG_RPM_KEY_E09422B3.public
+        mode: 600
+      when: not agent_ddnewkey.stat.exists
+
+- name: pkg-suse | Download E09422B3 key (Expires 2022) RPM key
+  ansible.builtin.get_url:
+    url: "{{ datadog_zypper_gpgkey_e09422b3 }}"
+    dest: /tmp/DATADOG_RPM_KEY_E09422B3.public
+    checksum: sha256:{{ datadog_zypper_gpgkey_e09422b3_sha256sum }}
+    mode: 600
+  when: ansible_facts['distribution_version']|int >= 12
+
+- name: pkg-suse | Import E09422B3 key (Expires 2022) RPM key
+  ansible.builtin.rpm_key:
+    key: /tmp/DATADOG_RPM_KEY_E09422B3.public
+    state: present
+  when: not ansible_check_mode
+
+- name: pkg-suse | Check and download 20200908 key # Work around due to SNI check for SLES11
+  when: ansible_facts['distribution_version']|int == 11
+  block:
+    - name: pkg-suse | Stat if 20200908 key (Expires 2024) RPM key already exists
+      ansible.builtin.stat:
+        path: /tmp/DATADOG_RPM_KEY_20200908.public
+      register: agent_ddnewkey_20200908
+    - name: pkg-suse | Download 20200908 key (Expires 2024) RPM key (SLES11)
+      ansible.builtin.get_url:
+        url: "{{ datadog_zypper_gpgkey_20200908 }}"
+        dest: /tmp/DATADOG_RPM_KEY_20200908.public
+        mode: 600
+      when: not  agent_ddnewkey_20200908.stat.exists
+
+- name: pkg-suse | Download 20200908 key (Expires 2024) RPM key
+  ansible.builtin.get_url:
+    url: "{{ datadog_zypper_gpgkey_20200908 }}"
+    dest: /tmp/DATADOG_RPM_KEY_20200908.public
+    checksum: sha256:{{ datadog_zypper_gpgkey_20200908_sha256sum }}
+    mode: 600
+  when: ansible_facts['distribution_version']|int >= 12
+
+- name: pkg-suse | Import 20200908 key (Expires 2024) RPM key
+  ansible.builtin.rpm_key:
+    key: /tmp/DATADOG_RPM_KEY_20200908.public
+    state: present
+  when: not ansible_check_mode
+
+- name: pkg-suse | Check and download 20280418 key # Work around due to SNI check for SLES11
+  when: ansible_facts['distribution_version']|int == 11
+  block:
+    - name: pkg-suse | Stat if 20280418 key (Expires 2028) RPM key already exists
+      ansible.builtin.stat:
+        path: /tmp/DATADOG_RPM_KEY_20280418.public
+      register: agent_ddnewkey_20280418
+    - name: pkg-suse | Download 20280418 key (Expires 2028) RPM key (SLES11)
+      ansible.builtin.get_url:
+        url: "{{ datadog_zypper_gpgkey_20280418 }}"
+        dest: /tmp/DATADOG_RPM_KEY_20280418.public
+        mode: 600
+      when: not agent_ddnewkey_20280418.stat.exists
+
+- name: pkg-suse | Download 20280418 key (Expires 2028) RPM key
+  ansible.builtin.get_url:
+    url: "{{ datadog_zypper_gpgkey_20280418 }}"
+    dest: /tmp/DATADOG_RPM_KEY_20280418.public
+    checksum: "sha256:{{ datadog_zypper_gpgkey_20280418_sha256sum }}"
+    mode: 600
+  when: ansible_facts['distribution_version']|int >= 12
+
+- name: pkg-suse | Import 20280418 key (Expires 2028) RPM key
+  ansible.builtin.rpm_key:
+    key: /tmp/DATADOG_RPM_KEY_20280418.public
+    state: present
+  when: not ansible_check_mode
+
+# ansible don't allow repo_gpgcheck to be set, we have to create the repo file manually
+- name: pkg-suse | Install DataDog zypper repo
+  ansible.builtin.template:
+    src: zypper.repo.j2
+    dest: /etc/zypp/repos.d/datadog.repo
+    owner: root
+    group: root
+    mode: "0644"
+  register: agent_datadog_zypper_repo_template
+  when: datadog_manage_zypper_repofile
+
+# refresh zypper repos only if the template changed
+- name: pkg-suse | Refresh Datadog zypper_repos # noqa false-handler args[module] (args.warn is deprecated since Ansible 2.11)
+  ansible.builtin.command: zypper refresh datadog
+  when: agent_datadog_zypper_repo_template.changed and not ansible_check_mode
+  # args:
+  #   warn: false # silence warning about using zypper directly
+  changed_when: true
+
+- name: pkg-suse | Include Suse agent pinned version install task
+  ansible.builtin.include_tasks: pkg-suse/install-pinned.yml
+  when: agent_datadog_agent_suse_version is defined
+
+- name: pkg-suse | Include Suse agent latest version install task
+  ansible.builtin.include_tasks: pkg-suse/install-latest.yml
+  when: agent_datadog_agent_suse_version is not defined

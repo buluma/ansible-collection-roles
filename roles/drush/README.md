@@ -1,84 +1,112 @@
-# [drush](#drush)
+# [Ansible role drush](#ansible-role-drush)
 
 Install Drupal shell.
 
-|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
-|------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-drush/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-drush/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-drush/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-drush)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/drush)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/drush)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-drush.svg)](https://github.com/buluma/ansible-role-drush/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-drush.svg)](https://github.com/buluma/ansible-role-drush/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-drush.svg)](https://github.com/buluma/ansible-role-drush/pulls/)|
+|GitHub|Issues|Pull Requests|Version|Downloads|
+|------|------|-------------|-------|---------|
+|[![github](https://github.com/buluma/ansible-role-drush/actions/workflows/molecule.yml/badge.svg)](https://github.com/buluma/ansible-role-drush/actions/workflows/molecule.yml)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-drush.svg)](https://github.com/buluma/ansible-role-drush/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-drush.svg)](https://github.com/buluma/ansible-role-drush/pulls/)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-drush.svg)](https://github.com/buluma/ansible-role-drush/releases/)|[![Ansible Role](https://img.shields.io/ansible/role/d/buluma/drush)](https://galaxy.ansible.com/ui/standalone/roles/buluma/drush/documentation)|
 
 ## [Example Playbook](#example-playbook)
 
-This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+This example is taken from [`molecule/default/converge.yml`](https://github.com/buluma/ansible-role-drush/blob/master/molecule/default/converge.yml) and is tested on each push, pull request and release.
+
 ```yaml
 ---
 - name: Converge
   hosts: all
   tasks:
-    - name: "Include buluma.drush"
-      ansible.builtin.include_role:
-        name: "buluma.drush"
+    - ansible.builtin.include_role:
+        name: buluma.drush
+      name: Include buluma.drush
 ```
 
-The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-drush/blob/master/molecule/default/prepare.yml):
+
 ```yaml
 ---
-- name: prepare
+- name: Prepare
   hosts: all
-  become: yes
-  gather_facts: no
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Install sudo if missing
+      ansible.builtin.raw: "{{ ansible_pkg_mgr | default('dnf') }} install -y sudo"
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Install python3 if missing
+      ansible.builtin.raw: >-
+        if [ -x /usr/bin/python3 ]; then exit 0; fi;
+        if command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y python3;
+        elif command -v dnf >/dev/null 2>&1; then dnf install -y python3;
+        elif command -v yum >/dev/null 2>&1; then yum install -y python3;
+        elif command -v zypper >/dev/null 2>&1; then zypper -n install python3;
+        else exit 1; fi
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Configure passwordless sudo
+      ansible.builtin.raw: >-
+        if ! grep -q '^%wheel ALL=(ALL) NOPASSWD: ALL' /etc/sudoers; then
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers;
+        fi;
+        visudo -cf /etc/sudoers
+      become: false
+      changed_when: false
+      failed_when: false
 
   roles:
     - role: buluma.bootstrap
+    - role: buluma.ca_certificates
 ```
 
+Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
-The default values for the variables are set in `defaults/main.yml`:
+The default values for the variables are set in [`defaults/main.yml`](https://github.com/buluma/ansible-role-drush/blob/master/defaults/main.yml):
+
 ```yaml
 ---
-# defaults file for drush
-# Install Drush Launcher.
-drush_launcher_install: true
-drush_launcher_version: "0.6.0"
-drush_launcher_phar_url: >-
-  https://github.com/drush-ops/drush-launcher/releases/download/{{ drush_launcher_version }}/drush.phar
-drush_launcher_path: /usr/local/bin/drush
-
-# Install Drush via Composer globally.
-drush_composer_global_install: false
-drush_composer_version: "~9.0"
-drush_composer_update: false
+drush_clone_depth: 1
+drush_composer_cli_options: --prefer-dist --no-interaction
 drush_composer_global_bin_path: ~/.config/composer/vendor/bin
+drush_composer_global_install: false
 drush_composer_path: /usr/local/bin/drush
-
-# Install from source (git clone + composer-based install).
+drush_composer_update: false
+drush_composer_version: "13.8.0"
+drush_force_composer_install: false
+drush_force_update: false
 drush_install_from_source: false
+drush_keep_updated: false
+drush_launcher_install: true
+drush_launcher_path: /usr/local/bin/drush
+drush_launcher_phar_url: "https://github.com/drush-ops/drush-launcher/releases/download/{{ drush_launcher_version }}/drush.phar"
+drush_launcher_version: "0.10.2"
 drush_source_install_bin_path: /usr/local/bin/drush
 drush_source_install_path: /usr/local/share/drush
-drush_source_install_version: "8.x"
-drush_keep_updated: false
-drush_force_update: false
-drush_force_composer_install: false
-drush_composer_cli_options: "--prefer-dist --no-interaction"
-drush_clone_depth: 1
+drush_source_install_version: "13.8.0"
 ```
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-drush/blob/main/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-drush/blob/master/requirements.txt).
 
-## [Status of used roles](#status-of-requirements)
+## [State of used roles](#state-of-used-roles)
 
 The following roles are used to prepare a system. You can prepare your system in another way.
 
-| Requirement | GitHub | GitLab |
-|-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+| Requirement | GitHub |
+|-------------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|
+|[buluma.ca_certificates](https://galaxy.ansible.com/buluma/ca_certificates)|[![Build Status GitHub](https://github.com/buluma/ansible-role-ca_certificates/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca_certificates/actions)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
+This role is part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -90,27 +118,25 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|fedora|all|
-|ubuntu|all|
+|[EL](https://hub.docker.com/r/buluma/docker-molecule-images)|10, 9|
+|[Debian](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
+|[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
+|[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.10, tests have been done to:
+The minimum version of Ansible required is 2.12, tests have been done on:
 
 - The previous version.
 - The current version.
 - The development version.
 
-
-
-If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-drush/issues)
-
-## [Changelog](#changelog)
-
-[Role History](https://github.com/buluma/ansible-role-drush/blob/master/CHANGELOG.md)
+If you find issues, please register them on [GitHub](https://github.com/buluma/ansible-role-drush/issues).
 
 ## [License](#license)
 
-Apache-2.0
+[Apache-2.0](https://github.com/buluma/ansible-role-drush/blob/master/LICENSE).
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)
+
+Drush 13 requires PHP 8.3 or later and a compatible Drupal 10/11 site. Upstream recommends installing Drush as a Composer dependency of the Drupal project and invoking `vendor/bin/drush`. The optional global and source installation modes are retained for existing callers; upgrading the default does not upgrade Drupal or PHP.

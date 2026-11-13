@@ -1,0 +1,80 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install zabbix-server requirements
+  ansible.builtin.package:
+    name: "{{ zabbix_server_requirements }}"
+    state: present
+- name: Install zabbix_server
+  ansible.builtin.package:
+    name:
+      - zabbix-server-mysql
+      - zabbix-sql-scripts
+    state: present
+- name: Find zabbix schema archive
+  ansible.builtin.find:
+    paths: /usr/share/zabbix-sql-scripts/mysql
+    patterns: "*.sql.gz"
+  register: _zabbix_sql_gz
+
+- name: Set zabbix schema paths
+  ansible.builtin.set_fact:
+    _zabbix_schema_gz: "{{ _zabbix_sql_gz.files[0].path }}"
+    _zabbix_schema_sql: "{{ _zabbix_sql_gz.files[0].path | regex_replace('\\.gz$', '') }}"
+  when: _zabbix_sql_gz.matched > 0
+
+- name: Unarchive zabbix schema
+  ansible.builtin.command:
+    cmd: "gunzip {{ _zabbix_schema_gz }}"
+    creates: "{{ _zabbix_schema_sql }}"
+  when: _zabbix_sql_gz.matched > 0
+  notify:
+    - Import zabbix schema
+    - Restart zabbix_server
+# Separator for the pre-commit handler parser.
+- name: Configure selinux
+  when:
+    - ansible_facts['selinux'].status is defined
+    - ansible_facts['selinux'].status == "enabled"
+  block:
+    - name: Set selinux settings for zabbix_server
+      ansible.posix.seboolean:
+        name: "{{ item }}"
+        persistent: true
+        state: true
+      loop:
+        - httpd_can_connect_zabbix
+        - httpd_can_network_connect_db
+        - zabbix_can_network
+    - name: Place selinux type enforcement
+      ansible.builtin.copy:
+        dest: /etc/zabbix/my-zabbixserver.te
+        mode: "0644"
+        src: my-zabbixserver.te
+      notify:
+        - Create selinux mod for zabbix_server
+        - Create selinux pp for zabbix_server
+        - Load selinux pp for zabbix_server
+# Separator for the pre-commit handler parser.
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Configure zabbix_server
+  ansible.builtin.template:
+    dest: /etc/zabbix/zabbix_server.conf
+    mode: "0644"
+    src: zabbix_server.conf.j2
+  notify:
+    - Restart zabbix_server
+# Separator for the pre-commit handler parser.
+- name: Start and enable zabbix_server
+  ansible.builtin.service:
+    enabled: true
+    name: zabbix-server
+    state: started
+  vars:
+    ci: "{{ lookup('env', 'CI') }}"
+  when:
+    - not ci

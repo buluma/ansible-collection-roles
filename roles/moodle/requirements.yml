@@ -1,0 +1,17 @@
+---
+collections:
+  - name: ansible.posix
+  - name: ansible.mysql
+  - name: community.crypto
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.buildtools
+  - name: buluma.cron
+  - name: buluma.core_dependencies
+  - name: buluma.epel
+  - name: buluma.httpd
+  - name: buluma.mysql
+  - name: buluma.openssl
+  - name: buluma.php
+  - name: buluma.python_pip
+  - name: buluma.selinux

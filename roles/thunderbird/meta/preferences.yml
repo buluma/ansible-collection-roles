@@ -1,0 +1,25 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 11 (bullseye): EOL. No role code depends on it.
+      - "bookworm"
+      - "trixie"
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      # 24.04+ replaced the thunderbird apt package with a snap-only stub
+      # ("requires the thunderbird snap to be installed") - only 22.04
+      # still ships the real deb.
+      - "22.04"

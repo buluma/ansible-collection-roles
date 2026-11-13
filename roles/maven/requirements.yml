@@ -1,0 +1,8 @@
+---
+collections:
+  - name: ansible.posix
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.buildtools
+  - name: buluma.core_dependencies
+  - name: buluma.java

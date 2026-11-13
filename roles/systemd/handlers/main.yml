@@ -1,0 +1,26 @@
+---
+# handlers file for systemd
+
+- name: Restart systemd-journald
+  ansible.builtin.service:
+    name: systemd-journald
+    state: restarted
+
+- name: Unmask systemd-logind
+  ansible.builtin.systemd:
+    name: systemd-logind
+    masked: false
+
+- name: Restart systemd-logind
+  ansible.builtin.service:
+    name: systemd-logind
+    state: restarted
+
+- name: Restart systemd-resolved
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: restarted
+  when:
+    - ansible_facts['os_family'] != "Suse"
+    - not (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9")
+  failed_when: false

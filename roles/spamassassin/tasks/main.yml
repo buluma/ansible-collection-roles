@@ -1,0 +1,59 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Ensure EPEL is installed (RedHat)
+  ansible.builtin.package:
+    name: epel-release
+    state: present
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution'] != 'Fedora'
+- name: Install spamassassin
+  ansible.builtin.package:
+    name: "{{ spamassassin_packages }}"
+    state: present
+- name: Create group
+  ansible.builtin.group:
+    name: "{{ spamassassin_group }}"
+    state: present
+    system: true
+- name: Create user
+  ansible.builtin.user:
+    comment: Spamassassin user
+    group: "{{ spamassassin_group }}"
+    name: "{{ spamassassin_user }}"
+    state: present
+    system: true
+- name: Ensure rsyslog.d directory exists
+  ansible.builtin.file:
+    path: /etc/rsyslog.d
+    state: directory
+    mode: "0755"
+- name: Configure rsyslog
+  ansible.builtin.template:
+    dest: /etc/rsyslog.d/spamassassin.conf
+    mode: "0644"
+    src: spamassassin.conf.j2
+- name: Configure software
+  ansible.builtin.copy:
+    dest: /etc/default/spamassassin
+    mode: "0644"
+    src: spamassassin
+  when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    - ansible_facts['distribution_release'] == "trusty"
+- name: Set permission on /var/log/spamassassin
+  ansible.builtin.file:
+    group: "{{ spamassassin_group }}"
+    mode: "640"
+    owner: "{{ spamassassin_user }}"
+    path: /var/log/spamassassin
+    state: directory
+- name: Start and enable spamassassin
+  ansible.builtin.service:
+    enabled: true
+    name: "{{ spamassassin_service }}"
+    state: started

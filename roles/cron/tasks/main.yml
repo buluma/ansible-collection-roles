@@ -1,67 +1,63 @@
 ---
-# tasks file for cron
-
 - name: Import assert.yml
-  ansible.builtin.import_tasks: assert.yml
-  run_once: true
+  ansible.builtin.import_tasks:
+    file: assert.yml
   delegate_to: localhost
-
+  run_once: true
 - name: Install cron
   ansible.builtin.package:
     name: "{{ cron_packages }}"
     state: present
-
 - name: Configure shell
   ansible.builtin.lineinfile:
-    path: "{{ cron_configuration }}"
-    line: "SHELL={{ cron_shell }}"
-    regexp: "^SHELL"
     create: true
+    line: SHELL={{ cron_shell }}
     mode: "0600"
+    path: "{{ cron_configuration }}"
+    regexp: ^SHELL
   notify:
     - Restart cron
-
+# Separator for the pre-commit handler parser.
 - name: Configure path
   ansible.builtin.lineinfile:
-    path: "{{ cron_configuration }}"
-    line: "PATH={{ cron_path }}"
-    regexp: "^PATH"
     create: true
+    line: PATH={{ cron_path }}
     mode: "0600"
+    path: "{{ cron_configuration }}"
+    regexp: ^PATH
   notify:
     - Restart cron
-
+# Separator for the pre-commit handler parser.
 - name: Configure mailto
   ansible.builtin.lineinfile:
-    path: "{{ cron_configuration }}"
-    line: "MAILTO={{ cron_mailto }}"
-    regexp: "^MAILTO"
     create: true
+    line: MAILTO={{ cron_mailto }}
     mode: "0600"
+    path: "{{ cron_configuration }}"
+    regexp: ^MAILTO
   notify:
     - Restart cron
-
+# Separator for the pre-commit handler parser.
 - name: Start and enable cron
   ansible.builtin.service:
+    enabled: true
     name: "{{ cron_service }}"
     state: started
-    enabled: true
   when:
     - cron_service is defined
-    - cron_service | length
-
+    - cron_service | length > 0
 - name: Schedule requested cron jobs
   ansible.builtin.cron:
-    name: "{{ item.name }}"
-    minute: "{{ item.minute | default(omit) }}"
-    hour: "{{ item.hour | default(omit) }}"
     day: "{{ item.day | default(omit) }}"
-    month: "{{ item.month | default(omit) }}"
-    weekday: "{{ item.weekday | default(omit) }}"
-    special_time: "{{ item.special_time | default(omit) }}"
+    hour: "{{ item.hour | default(omit) }}"
     job: "{{ item.job }}"
+    minute: "{{ item.minute | default(omit) }}"
+    month: "{{ item.month | default(omit) }}"
+    name: "{{ item.name }}"
+    special_time: "{{ item.special_time | default(omit) }}"
     state: "{{ item.state | default('present') }}"
     user: "{{ item.user | default(omit) }}"
+    weekday: "{{ item.weekday | default(omit) }}"
   loop: "{{ cron_jobs }}"
   loop_control:
     label: "{{ item.name }}"

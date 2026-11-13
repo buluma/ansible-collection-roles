@@ -1,0 +1,19 @@
+---
+- name: setup-Debian | Update apt cache.
+  ansible.builtin.apt:
+    cache_valid_time: "3600"
+    update_cache: "yes"
+- name: setup-Debian | Print the gateway for each host when defined
+  ansible.builtin.debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_facts['default_ipv4'].gateway }}
+  when: ansible_facts['default_ipv4'].gateway is defined
+- name: setup-Debian | Print return information from the previous task
+  ansible.builtin.debug:
+    var: result
+    verbosity: 2
+- name: setup-Debian | Display all variables/facts known for a host
+  ansible.builtin.debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
+- name: setup-Debian | Configure apt_autostart
+  ansible.builtin.include_tasks: autostart.yml

@@ -1,0 +1,8 @@
+---
+collections: []
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.common
+  - name: buluma.core_dependencies
+  - name: buluma.java
+  - name: buluma.service

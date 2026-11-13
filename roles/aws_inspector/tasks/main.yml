@@ -4,7 +4,7 @@
   ansible.builtin.get_url:
     url: "{{ aws_inspector_url }}"
     dest: "{{ aws_inspector_installer_dest }}"
-    mode: '0644'
+    mode: "0644"
 
 - name: Configure proxy if necessary
   ansible.builtin.template:
@@ -12,7 +12,7 @@
     dest: /etc/init.d/awsagent.env
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart awsagent
   when: aws_inspector_proxy_enabled
 

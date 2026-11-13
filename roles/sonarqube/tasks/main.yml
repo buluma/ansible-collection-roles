@@ -1,0 +1,90 @@
+---
+# tasks file for ansible-role-sonarqube/
+
+- name: Create SonarQube system group
+  ansible.builtin.group:
+    name: "{{ sonar_group }}"
+    state: present
+
+- name: Create SonarQube system user
+  ansible.builtin.user:
+    name: "{{ sonar_user }}"
+    group: "{{ sonar_group }}"
+    createhome: false
+    shell: "/sbin/nologin"
+    comment: "SonarQube System user"
+    state: present
+
+- name: Create SonarQube directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ sonar_user }}"
+    group: "{{ sonar_group }}"
+    mode: "u=rwx,g=rx,o="
+  with_items:
+    - "{{ sonar_install_directory }}"
+    - "{{ sonar_logs_dir }}"
+    - "{{ sonar_data_dir }}"
+    - "{{ sonar_temp_dir }}"
+
+- name: Execute Debian specific tasks
+  ansible.builtin.import_tasks:
+    file: setup_debian.yml
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Ensure procps is installed (provides sysctl)
+  ansible.builtin.package:
+    name: "{{ 'procps-ng' if ansible_facts['os_family'] == 'RedHat' else 'procps' }}"
+    state: present
+
+- name: Set max_map_count value (required by elasticsearch)
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: 262144
+    state: present
+
+- name: Ensure JAVA is installed
+  ansible.builtin.command: "java -version"
+  register: prereq_java
+  changed_when: false
+
+- name: Check java output
+  ansible.builtin.debug:
+    msg: "{{ prereq_java.stderr }}"
+
+- name: Fail if JAVA is not available
+  ansible.builtin.fail:
+    msg: "JAVA is not installed or configured"
+  when: not prereq_java.rc == 0
+
+- name: Run Prepare
+  ansible.builtin.import_tasks:
+    file: setup_prepare.yml
+
+- name: Run Setup
+  ansible.builtin.import_tasks:
+    file: setup_sonarqube.yml
+
+- name: Install plugins
+  ansible.builtin.include_tasks: setup_plugin.yml
+  with_items: "{{ sonar_plugins }}"
+  loop_control:
+    loop_var: "sonar_cplugin"
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+# bring back
+# - name: ensure target version matches
+#   ansible.builtin.uri:
+#     url: "http://{{ sonar_web_host }}:{{ sonar_web_port }}{{ sonar_web_context }}/api/server/version"
+#     method: GET
+#     return_content: yes
+#   register: api_check_version
+#   until: api_check_version.status == 200
+#   retries: 60
+#   delay: 5
+#   check_mode: no  # uri module not support check mode (at least in Ansible 2.10)
+#   changed_when: sonar_version | string not in api_check_version.content
+#   notify: fail if expected sonar version not confirmed
+#   ignore_errors: "{{ ansible_check_mode }}"

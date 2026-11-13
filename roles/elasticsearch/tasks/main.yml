@@ -1,0 +1,48 @@
+---
+- name: Include assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install elasticsearch
+  ansible.builtin.package:
+    name: "{{ elasticsearch_packages }}"
+    state: present
+- name: Configure elasticsearch
+  ansible.builtin.template:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    group: elasticsearch
+    mode: "0660"
+    owner: root
+    src: elasticsearch.yml.j2
+  notify: Restart elasticsearch
+
+- name: Create jvm.options.d directory
+  ansible.builtin.file:
+    path: /etc/elasticsearch/jvm.options.d
+    state: directory
+    owner: root
+    group: elasticsearch
+    mode: "0750"
+
+- name: Create jvm tmp directory
+  ansible.builtin.file:
+    path: "{{ elasticsearch_jvm_tmpdir }}"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: "0750"
+
+- name: Configure jvm tmp directory
+  ansible.builtin.copy:
+    content: "-Djava.io.tmpdir={{ elasticsearch_jvm_tmpdir }}"
+    dest: /etc/elasticsearch/jvm.options.d/tmpdir.options
+    owner: root
+    group: elasticsearch
+    mode: "0640"
+  notify: Restart elasticsearch
+
+- name: Start elasticsearch
+  ansible.builtin.service:
+    enabled: true
+    name: elasticsearch
+    state: started

@@ -1,0 +1,128 @@
+---
+- name: assert | Test systemd_default_target
+  ansible.builtin.assert:
+    that:
+      - systemd_default_target is defined
+      - systemd_default_target is string
+      - systemd_default_target in [ "multi-user.target", "graphical.target", "rescue.target" ]
+    quiet: true
+
+- name: assert | Test systemd_coredump
+  ansible.builtin.assert:
+    that:
+      - systemd_coredump is iterable
+    quiet: true
+  when:
+    - systemd_coredump is defined
+
+- name: assert | Test item in systemd_coredump
+  ansible.builtin.assert:
+    that:
+      - item.option is defined
+      - item.option is string
+      - item.option is not none
+      - item.value is defined
+    quiet: true
+  loop: "{{ systemd_coredump }}"
+  when:
+    - systemd_coredump is defined
+
+- name: assert | Test systemd_journald
+  ansible.builtin.assert:
+    that:
+      - systemd_journald is iterable
+    quiet: true
+  when:
+    - systemd_journald is defined
+
+- name: assert | Test item in systemd_journald
+  ansible.builtin.assert:
+    that:
+      - item.option is defined
+      - item.option is string
+      - item.option is not none
+      - item.value is defined
+    quiet: true
+  loop: "{{ systemd_journald }}"
+  when:
+    - systemd_journald is defined
+
+- name: assert | Test systemd_logind
+  ansible.builtin.assert:
+    that:
+      - systemd_logind is iterable
+    quiet: true
+  when:
+    - systemd_logind is defined
+
+- name: assert | Test item in systemd_logind
+  ansible.builtin.assert:
+    that:
+      - item.option is defined
+      - item.option is string
+      - item.option is not none
+      - item.value is defined
+    quiet: true
+  loop: "{{ systemd_logind }}"
+  when:
+    - systemd_logind is defined
+
+- name: assert | Test systemd_resolved
+  ansible.builtin.assert:
+    that:
+      - systemd_resolved is iterable
+    quiet: true
+  when:
+    - systemd_resolved is defined
+
+- name: assert | Test item in systemd_resolved
+  ansible.builtin.assert:
+    that:
+      - item.option is defined
+      - item.option is string
+      - item.option is not none
+      - item.value is defined
+    quiet: true
+  loop: "{{ systemd_resolved }}"
+  when:
+    - systemd_resolved is defined
+
+- name: assert | Test systemd_system
+  ansible.builtin.assert:
+    that:
+      - systemd_system is iterable
+    quiet: true
+  when:
+    - systemd_system is defined
+
+- name: assert | Test item in systemd_system
+  ansible.builtin.assert:
+    that:
+      - item.option is defined
+      - item.option is string
+      - item.option is not none
+      - item.value is defined
+    quiet: true
+  loop: "{{ systemd_system }}"
+  when:
+    - systemd_system is defined
+
+- name: assert | Test systemd_user
+  ansible.builtin.assert:
+    that:
+      - systemd_user is iterable
+    quiet: true
+  when:
+    - systemd_user is defined
+
+- name: assert | Test item in systemd_user
+  ansible.builtin.assert:
+    that:
+      - item.option is defined
+      - item.option is string
+      - item.option is not none
+      - item.value is defined
+    quiet: true
+  loop: "{{ systemd_user }}"
+  when:
+    - systemd_user is defined

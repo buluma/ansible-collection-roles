@@ -1,9 +1,13 @@
 ---
-- name: sshd restart
-  service: name=sshd state=restarted
-
-- name: firewalld restart
-  service: name=firewalld state=restarted
-
-- name: fail2ban restart
-  service: name=fail2ban state=restarted
+- name: Sshd restart
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
+- name: Firewalld restart
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
+- name: Fail2ban restart
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted

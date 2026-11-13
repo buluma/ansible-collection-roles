@@ -1,0 +1,24 @@
+---
+- name: passlib | Install passlib on Debian/Ubuntu
+  ansible.builtin.apt:
+    name: python3-passlib
+    state: present
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: passlib | Install passlib on RedHat/CentOS
+  ansible.builtin.dnf:
+    name: python3-passlib
+    state: present
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: passlib | Install passlib on Fedora (using dnf)
+  ansible.builtin.dnf:
+    name: python3-passlib
+    state: present
+  when: ansible_facts['distribution'] == "Fedora"
+
+- name: passlib | Install passlib on other Linux distributions (generic)
+  ansible.builtin.package:
+    name: python3-passlib
+    state: present
+  when: ansible_facts['os_family'] not in ['Debian', 'RedHat'] and ansible_facts['distribution'] != "Fedora"

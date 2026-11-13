@@ -1,0 +1,15 @@
+---
+- name: Restart kubelet
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: kubelet
+    state: restarted
+- name: Restart containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+- name: Refresh Kubernetes dnf cache
+  ansible.builtin.dnf:
+    disablerepo: "*"
+    enablerepo: kubernetes
+    state: present

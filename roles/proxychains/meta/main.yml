@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: proxychains
+  description: Install Proxychains forcing TCP connection to follow through proxy like TOR or any other SOCKS4, SOCKS5 or HTTP(S) proxy.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - networking
+    - proxy
+dependencies: []

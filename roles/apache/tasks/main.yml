@@ -1,13 +1,13 @@
 ---
 # Include variables and define needed variables.
 - name: Include os-specific variables.
-  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
 
 - name: Include variables for amazon linux.
   ansible.builtin.include_vars: "AmazonLinux.yml"
   when:
-    - ansible_distribution == "Amazon"
-    - ansible_distribution_major_version == "NA"
+    - ansible_facts['distribution'] == "Amazon"
+    - ansible_facts['distribution_major_version'] == "NA"
 
 - name: Define apache_packages.
   ansible.builtin.set_fact:
@@ -16,7 +16,7 @@
 
 # Setup/install tasks.
 - name: Setup/install tasks.
-  ansible.builtin.include_tasks: "setup-{{ ansible_os_family }}.yml"
+  ansible.builtin.include_tasks: "setup-{{ ansible_facts['os_family'] }}.yml"
 
 # Figure out what version of Apache is installed.
 - name: Get installed version of apache.
@@ -39,7 +39,7 @@
 
 # Configure Apache.
 - name: Configure apache.
-  ansible.builtin.include_tasks: "configure-{{ ansible_os_family }}.yml"
+  ansible.builtin.include_tasks: "configure-{{ ansible_facts['os_family'] }}.yml"
 
 - name: Ensure apache has selected state and enabled on boot.
   ansible.builtin.service:

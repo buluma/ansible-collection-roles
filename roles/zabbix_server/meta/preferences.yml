@@ -1,0 +1,21 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      # Excludes 10: Zabbix's official repo signing key lacks a valid
+      # RFC4880bis subkey binding signature, which EL10's rpm-sequoia
+      # backend rejects outright with no policy override available.
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  # Fedora excluded entirely: buluma.zabbix_repository has no real repo
+  # config for "Fedora" (ansible_facts['distribution']), it only matches
+  # RedHat-clone distributions, so its dnf/yum install task silently skips
+  # here -- no zabbix repo ever gets configured, and zabbix-server/
+  # zabbix-sql-scripts packages 404.
+  - name: Ubuntu
+    versions:
+      - all

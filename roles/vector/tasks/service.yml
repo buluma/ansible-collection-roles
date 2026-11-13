@@ -1,0 +1,30 @@
+---
+- name: service | Copy Daemon script
+  ansible.builtin.template:
+    dest: /etc/systemd/system/vector.service
+    group: root
+    mode: "0644"
+    owner: root
+    src: "{{ vector_service_template_path }}"
+  notify:
+    - Restart vector
+# Separator for the pre-commit handler parser.
+- name: service | Configuring service
+  when: true
+  tags:
+    - molecule-idempotence-notest
+  block:
+    - name: service | Configuring service
+      ansible.builtin.systemd:
+        daemon_reload: true
+        enabled: "{{ vector_service_enabled }}"
+        name: vector
+        state: "{{ vector_service_state }}"
+  rescue:
+    - name: service | Debug | Capture vector.service journal on start failure.
+      ansible.builtin.command: journalctl -xeu vector --no-pager -n 200
+      changed_when: false
+      register: vector_journal
+    - name: service | Debug | Print vector.service journal.
+      ansible.builtin.fail:
+        msg: "{{ vector_journal.stdout_lines }}"

@@ -1,0 +1,16 @@
+---
+# tasks file for microsoft_repository_keys
+
+- name: Add apt key
+  ansible.builtin.get_url:
+    url: "{{ microsoft_repository_keys_url }}"
+    dest: /etc/apt/trusted.gpg.d/microsoft.asc
+    mode: "0644"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+
+- name: Add rpm key
+  ansible.builtin.rpm_key:
+    key: "{{ microsoft_repository_keys_url }}"
+  when:
+    - ansible_facts['os_family'] in [ "RedHat", "Suse" ]

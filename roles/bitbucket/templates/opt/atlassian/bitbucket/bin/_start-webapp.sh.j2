@@ -25,6 +25,12 @@ if [ -z "${JVM_MAXIMUM_MEMORY}" ]; then
     JVM_MAXIMUM_MEMORY="{{ bitbucket_jvm_maximum_memory }}"
 fi
 
+# This setting controls the time (in ms) after which idle JNDI connections are removed from the connection pool
+# See https://docs.oracle.com/javase/jndi/tutorial/ldap/connect/config.html
+if [ -z "${JNDI_CONNECTION_POOL_TIMEOUT}" ]; then
+    JNDI_CONNECTION_POOL_TIMEOUT=300000
+fi
+
 # Uncommenting the following will set the umask for the webapp. It can be used to override the default
 # settings for the service user if they are not sufficiently secure.
 #
@@ -98,12 +104,13 @@ fi
 JVM_LIBRARY_PATH="$INST_DIR/lib/native;$BITBUCKET_HOME/lib/native"
 
 BITBUCKET_ARGS="-Datlassian.standalone=BITBUCKET -Dbitbucket.home=$BITBUCKET_HOME -Dbitbucket.install=$INST_DIR"
+JNDI_ARGS="-Dcom.sun.jndi.ldap.connect.pool.timeout=$JNDI_CONNECTION_POOL_TIMEOUT"
 JVM_FILE_ENCODING_ARGS="-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
-JVM_JAVA_ARGS="-Djava.io.tmpdir=$BITBUCKET_HOME/tmp -Djava.library.path=$JVM_LIBRARY_PATH"
-JVM_MEMORY_ARGS="-Xms$JVM_MINIMUM_MEMORY -Xmx$JVM_MAXIMUM_MEMORY -XX:+UseG1GC"
+JVM_JAVA_ARGS="-Djava.io.tmpdir=$BITBUCKET_HOME/tmp -Djava.library.path=$JVM_LIBRARY_PATH -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED"
+JVM_MEMORY_ARGS="-Xms$JVM_MINIMUM_MEMORY -Xmx$JVM_MAXIMUM_MEMORY -XX:ReservedCodeCacheSize={{ bitbucket_jvm_reserved_code_cache_size }} -XX:+UseZGC -XX:ZCollectionInterval=5 -XX:ZAllocationSpikeTolerance=5 -XX:+ExplicitGCInvokesConcurrent"
 JVM_REQUIRED_ARGS="$JVM_MEMORY_ARGS $JVM_FILE_ENCODING_ARGS $JVM_JAVA_ARGS"
 
-JAVA_OPTS="-classpath $INST_DIR/app $JAVA_OPTS $BITBUCKET_ARGS $JMX_OPTS $JVM_REQUIRED_ARGS $JVM_SUPPORT_RECOMMENDED_ARGS"
+JAVA_OPTS="-classpath $INST_DIR/app $JAVA_OPTS $BITBUCKET_ARGS $JNDI_ARGS $JMX_OPTS $JVM_SUPPORT_RECOMMENDED_ARGS $JVM_REQUIRED_ARGS"
 LAUNCHER="com.atlassian.bitbucket.internal.launcher.BitbucketServerLauncher"
 
 echo -e "\nStarting Bitbucket webapp at http://localhost:7990"

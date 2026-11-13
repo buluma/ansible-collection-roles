@@ -1,0 +1,16 @@
+---
+# vars file for qemu
+
+_qemu_packages:
+  default:
+    - qemu-kvm
+  Alpine:
+    - qemu-system-x86_64
+  # "qemu-kvm" is a virtual package on Debian/Ubuntu with more than one
+  # provider (e.g. qemu-system-x86 and qemu-system-x86-hwe on Ubuntu
+  # 26.04), which apt refuses to auto-resolve - install the real,
+  # unambiguous package instead.
+  Debian:
+    - qemu-system-x86
+
+qemu_packages: "{{ _qemu_packages[ansible_facts['os_family']] | default(_qemu_packages['default']) }}"

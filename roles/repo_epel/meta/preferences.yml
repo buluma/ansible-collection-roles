@@ -1,0 +1,9 @@
+---
+# EPEL is RHEL/CentOS-only by design (see meta/main.yml description) - restrict
+# CI to the EL platform. Testing Debian/Ubuntu/Fedora is pointless: the role
+# just skips everything on those, wasting CI time for no signal.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"

@@ -1,0 +1,54 @@
+---
+- name: docker | Adding Telegraf group
+  ansible.builtin.group:
+    gid: "{{ telegraf_gid_docker }}"
+    name: telegraf
+    state: present
+- name: docker | Adding Telegraf user
+  ansible.builtin.user:
+    create_home: false
+    group: telegraf
+    home: /etc/telegraf
+    name: telegraf
+    state: present
+    system: true
+    uid: "{{ telegraf_uid_docker }}"
+  become: true
+- name: docker | Create /etc/telegraf (home) directory
+  ansible.builtin.file:
+    group: telegraf
+    mode: "0750"
+    owner: telegraf
+    path: /etc/telegraf
+    state: directory
+  become: true
+- name: docker | Create /etc/telegraf.d directory
+  ansible.builtin.file:
+    group: telegraf
+    mode: "0750"
+    owner: telegraf
+    path: /etc/telegraf/telegraf.d
+    state: directory
+  become: true
+- name: docker | Ensure Telegraf Docker container is running
+  community.docker.docker_container:
+    command: -config /etc/telegraf/telegraf.conf -config-directory /etc/telegraf/telegraf.d
+    env:
+      HOST_ETC: /hostfs/etc
+      HOST_MOUNT_PREFIX: /hostfs
+      HOST_PROC: /hostfs/proc
+      HOST_SYS: /hostfs/sys
+    image: telegraf:{{ telegraf_agent_docker_image_version }}
+    name: "{{ telegraf_agent_docker_name }}"
+    network_mode: "{{ telegraf_agent_docker_network_mode }}"
+    restart_policy: "{{ telegraf_agent_docker_restart_policy }}"
+    security_opts:
+      - apparmor:unconfined
+    state: started
+    volumes:
+      - /etc/telegraf:/etc/telegraf:ro
+      - /:/hostfs:ro
+      - /etc:/hostfs/etc:ro
+      - /proc:/hostfs/proc:ro
+      - /sys:/hostfs/sys:ro
+      - /var/run:/var/run:ro

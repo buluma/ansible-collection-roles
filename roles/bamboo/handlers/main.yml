@@ -1,0 +1,6 @@
+---
+# handlers file for bamboo
+- name: Restart bamboo
+  ansible.builtin.service:
+    name: bamboo
+    state: restarted

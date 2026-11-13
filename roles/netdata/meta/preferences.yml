@@ -1,0 +1,34 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 11 (bullseye): EOL. No role code depends on it.
+      - "bookworm"
+      - "trixie"
+  # Fedora excluded entirely: 45 ships Python 3.15.0b3, whose dataclasses
+  # module dropped _is_type, breaking ansible-core's AnsiballZ module
+  # wrapper. 43/44 build netdata_git_version_tag (v1.44.0, ~mid-2024)
+  # from source against a GCC 15.2/OpenSSL 3.5+ toolchain that's newer
+  # than that source expects: distinct hard compile errors surfaced in
+  # three independent components in turn (fluent-bit's bundled onigmo
+  # regex lib -- "initialization of 'int (*)(void)' from incompatible
+  # pointer type", the ebpf plugin -- "too many arguments", and
+  # OpenSSL's removed ENGINE API -- "openssl/engine.h: No such file or
+  # directory"). Not a role bug -- this old netdata release doesn't
+  # build cleanly on this new a toolchain, full stop.
+  - name: Ubuntu
+    versions:
+      - "24.04"
+      - "22.04"
+      # 26.04 excluded: same root cause as Fedora above -- ships GCC 15.2,
+      # and netdata_git_version_tag's C source fails with
+      # "initialization of 'void (*)(void *)' from incompatible pointer
+      # type" even after relaxing our own CFLAGS, because the failure
+      # recurs in bundled sub-builds (fluent-bit) that don't inherit
+      # the parent CFLAGS override.

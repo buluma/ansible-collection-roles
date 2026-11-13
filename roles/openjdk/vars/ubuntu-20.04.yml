@@ -1,0 +1,110 @@
+---
+# Copyright 2024 Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+_apt_key:
+  "21":
+    - keyring: /etc/apt/trusted.gpg.d/home_alvistack.gpg
+      url: http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/Release.key
+      id: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - keyring: /etc/apt/trusted.gpg.d/adoptium.gpg
+      url: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      id: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+  "17":
+    - keyring: /etc/apt/trusted.gpg.d/home_alvistack.gpg
+      url: http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/Release.key
+      id: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - keyring: /etc/apt/trusted.gpg.d/adoptium.gpg
+      url: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      id: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+  "11":
+    - keyring: /etc/apt/trusted.gpg.d/home_alvistack.gpg
+      url: http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/Release.key
+      id: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - keyring: /etc/apt/trusted.gpg.d/adoptium.gpg
+      url: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      id: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+  "8":
+    - keyring: /etc/apt/trusted.gpg.d/home_alvistack.gpg
+      url: http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/Release.key
+      id: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - keyring: /etc/apt/trusted.gpg.d/adoptium.gpg
+      url: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      id: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+
+_apt_repository:
+  "21":
+    - filename: home:alvistack
+      repo: deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/ /
+      state: present
+    - filename: adoptium
+      repo: deb https://packages.adoptium.net/artifactory/deb focal main
+      state: present
+  "17":
+    - filename: home:alvistack
+      repo: deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/ /
+      state: present
+    - filename: adoptium
+      repo: deb https://packages.adoptium.net/artifactory/deb focal main
+      state: present
+  "11":
+    - filename: home:alvistack
+      repo: deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/ /
+      state: present
+    - filename: adoptium
+      repo: deb https://packages.adoptium.net/artifactory/deb focal main
+      state: present
+  "8":
+    - filename: home:alvistack
+      repo: deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/ /
+      state: present
+    - filename: adoptium
+      repo: deb https://packages.adoptium.net/artifactory/deb focal main
+      state: present
+
+_apt:
+  "21":
+    - { state: latest, name: temurin-21-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: libpostgresql-jdbc-java }
+  "17":
+    - { state: latest, name: temurin-17-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: libpostgresql-jdbc-java }
+  "11":
+    - { state: latest, name: temurin-11-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: libpostgresql-jdbc-java }
+  "8":
+    - { state: latest, name: temurin-8-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: libpostgresql-jdbc-java }
+
+_openjdk_home:
+  "21": /usr/lib/jvm/temurin-21-jdk-amd64
+  "17": /usr/lib/jvm/temurin-17-jdk-amd64
+  "11": /usr/lib/jvm/temurin-11-jdk-amd64
+  "8": /usr/lib/jvm/temurin-8-jdk-amd64

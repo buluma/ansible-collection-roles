@@ -1,6 +1,6 @@
 ---
 exceptions:
-  - variation: EL
-    reason: RedHat does not supply `bind` without a subscription.
-  - variation: openSuse
-    reason: Some tasks will not get idempotent.
+  - reason: RedHat does not supply `bind` without a subscription.
+    variation: EL
+  - reason: Some tasks will not get idempotent.
+    variation: openSuse

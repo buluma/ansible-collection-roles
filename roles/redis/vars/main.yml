@@ -1,0 +1,136 @@
+---
+# vars file for redis
+
+# Fedora (41+) and EL10 (RHEL/CentOS/Rocky/AlmaLinux) both replaced redis
+# with Valkey (a fork) after Redis's license change. Fedora keeps a
+# redis-compat shim package, but EL10 has no "redis" package at all
+# (confirmed via repo metadata) - either way the real package/user/
+# group/service/config path are all "valkey". Fedora's and EL10's
+# os_family is "RedHat" (shared with EL9 Rocky/CentOS/AlmaLinux, which
+# still ship real Redis), so every lookup checks distribution~major
+# version, then distribution, then os_family, in that order.
+
+_redis_packages:
+  default:
+    - redis
+  Debian:
+    - redis-server
+  Fedora:
+    - valkey
+  RedHat-10:
+    - valkey
+  Rocky-10:
+    - valkey
+  AlmaLinux-10:
+    - valkey
+  CentOS-10:
+    - valkey
+
+redis_packages: "{{ _redis_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_packages[ansible_facts['distribution']]
+  | default(_redis_packages[ansible_facts['os_family']] | default(_redis_packages['default']))) }}"
+
+_redis_configuration_directory:
+  default: /etc
+  Debian: /etc/redis
+  Suse: /etc/redis
+  Fedora: /etc/valkey
+  RedHat-10: /etc/valkey
+  Rocky-10: /etc/valkey
+  AlmaLinux-10: /etc/valkey
+  CentOS-10: /etc/valkey
+
+redis_configuration_directory: "{{ _redis_configuration_directory[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_configuration_directory[ansible_facts['distribution']]
+  | default(_redis_configuration_directory[ansible_facts['os_family']] | default(_redis_configuration_directory['default']))) }}"
+
+_redis_configuration_file:
+  default: redis.conf
+  Suse: default.conf
+  Fedora: valkey.conf
+  RedHat-10: valkey.conf
+  Rocky-10: valkey.conf
+  AlmaLinux-10: valkey.conf
+  CentOS-10: valkey.conf
+
+redis_configuration_file: "{{ _redis_configuration_file[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_configuration_file[ansible_facts['distribution']]
+  | default(_redis_configuration_file[ansible_facts['os_family']] | default(_redis_configuration_file['default']))) }}"
+
+_redis_owner:
+  default: redis
+  Alpine: root
+  Suse: root
+  Fedora: valkey
+  RedHat-10: valkey
+  Rocky-10: valkey
+  AlmaLinux-10: valkey
+  CentOS-10: valkey
+
+redis_owner: "{{ _redis_owner[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_owner[ansible_facts['distribution']] | default(_redis_owner[ansible_facts['os_family']]
+  | default(_redis_owner['default']))) }}"
+
+_redis_group:
+  default: root
+  Debian: redis
+  Suse: redis
+  Fedora: valkey
+  RedHat-10: valkey
+  Rocky-10: valkey
+  AlmaLinux-10: valkey
+  CentOS-10: valkey
+
+redis_group: "{{ _redis_group[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_group[ansible_facts['distribution']] | default(_redis_group[ansible_facts['os_family']]
+  | default(_redis_group['default']))) }}"
+
+_redis_data_directory:
+  default: /var/lib/redis
+  Fedora: /var/lib/valkey
+  RedHat-10: /var/lib/valkey
+  Rocky-10: /var/lib/valkey
+  AlmaLinux-10: /var/lib/valkey
+  CentOS-10: /var/lib/valkey
+
+redis_data_directory: "{{ _redis_data_directory[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_data_directory[ansible_facts['distribution']]
+  | default(_redis_data_directory[ansible_facts['os_family']] | default(_redis_data_directory['default']))) }}"
+
+_redis_log_file:
+  default: /var/log/redis/redis.log
+  Fedora: /var/log/valkey/valkey.log
+  RedHat-10: /var/log/valkey/valkey.log
+  Rocky-10: /var/log/valkey/valkey.log
+  AlmaLinux-10: /var/log/valkey/valkey.log
+  CentOS-10: /var/log/valkey/valkey.log
+
+redis_log_file: "{{ _redis_log_file[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_log_file[ansible_facts['distribution']]
+  | default(_redis_log_file[ansible_facts['os_family']] | default(_redis_log_file['default']))) }}"
+
+# Valkey's systemd unit uses RuntimeDirectory=valkey, which only makes
+# /run/valkey writable - the traditional /var/run/redis_6379.pid path
+# isn't covered by that sandboxing.
+_redis_pid_file:
+  default: /var/run/redis_6379.pid
+  Fedora: /run/valkey/valkey.pid
+  RedHat-10: /run/valkey/valkey.pid
+  Rocky-10: /run/valkey/valkey.pid
+  AlmaLinux-10: /run/valkey/valkey.pid
+  CentOS-10: /run/valkey/valkey.pid
+
+redis_pid_file: "{{ _redis_pid_file[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_pid_file[ansible_facts['distribution']]
+  | default(_redis_pid_file[ansible_facts['os_family']] | default(_redis_pid_file['default']))) }}"
+
+_redis_mode:
+  default: "640"
+  Alpine: "644"
+
+redis_mode: "{{ _redis_mode[ansible_facts['os_family']] | default(_redis_mode['default']) }}"
+
+_redis_service:
+  default: redis
+  Debian: redis-server
+  Suse: redis@default
+  Fedora: valkey
+  RedHat-10: valkey
+  Rocky-10: valkey
+  AlmaLinux-10: valkey
+  CentOS-10: valkey
+
+redis_service: "{{ _redis_service[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_redis_service[ansible_facts['distribution']] | default(_redis_service[ansible_facts['os_family']]
+  | default(_redis_service['default']))) }}"

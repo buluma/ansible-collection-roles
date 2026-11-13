@@ -1,0 +1,136 @@
+---
+- name: Debian | Set name if state != latest
+  ansible.builtin.set_fact:
+    telegraf_agent_package: telegraf={{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}
+  when:
+    - telegraf_agent_package_state != "latest"
+- name: Debian | Set telegraf_agent_package_arch
+  ansible.builtin.set_fact:
+    telegraf_agent_package_arch: "{{ ansible_facts['architecture'] }}"
+- name: Debian | Set telegraf_agent_package_arch specific for x86_64
+  ansible.builtin.set_fact:
+    telegraf_agent_package_arch: amd64
+  when:
+    - ansible_facts['architecture'] == "x86_64"
+- name: Debian | Set telegraf_agent_package_arch specific for arm64
+  ansible.builtin.set_fact:
+    telegraf_agent_package_arch: armhf
+  when:
+    - ansible_facts['architecture'] == "arm64"
+- name: Debian | Ensure the system can use the HTTPS transport for APT
+  ansible.builtin.stat:
+    path: /usr/lib/apt/methods/https
+  register: apt_https_transport
+- name: Debian | Install APT HTTPS transport
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: present
+  become: true
+  register: are_telegraf_dependencies_packages_installed
+  until: are_telegraf_dependencies_packages_installed is succeeded
+  when:
+    - not apt_https_transport.stat.exists
+- name: Debian | Configure Telegraf apt repository
+  when:
+    - telegraf_agent_package_method == "repo"
+  block:
+    - name: Debian | Download Telegraf apt key
+      ansible.builtin.get_url:
+        url: https://repos.influxdata.com/influxdata-archive.key
+        dest: /etc/apt/trusted.gpg.d/telegraf.asc
+        mode: "0644"
+      become: true
+      register: are_telegraf_dependencies_keys_installed
+      until: are_telegraf_dependencies_keys_installed is succeeded
+      when: (ansible_facts['distribution'] == "Debian" and ansible_facts['distribution_major_version']|int < 9) or (ansible_facts['distribution'] == "Ubuntu"
+        and ansible_facts['distribution_major_version']|int < 18)
+    - name: Debian | Configure keyring-based repository signing
+      when: (ansible_facts['distribution'] == "Debian" and ansible_facts['distribution_major_version']|int >= 9) or (ansible_facts['distribution'] == "Ubuntu"
+        and ansible_facts['distribution_major_version']|int >= 18)
+      block:
+        - name: Debian | Ensure the shared keyrings directory exists
+          ansible.builtin.stat:
+            path: /usr/share/keyrings
+          register: usr_share_keyrings
+        - name: Debian | Create shared keyrings directory
+          ansible.builtin.file:
+            group: root
+            mode: "0755"
+            owner: root
+            path: /usr/share/keyrings
+            state: directory
+          become: true
+          when:
+            - not usr_share_keyrings.stat.exists
+        - name: Debian | Install Telegraf apt key
+          ansible.builtin.get_url:
+            dest: /usr/share/keyrings/influxdata-archive.asc
+            mode: "0644"
+            url: https://repos.influxdata.com/influxdata-archive.key
+          become: true
+          register: are_telegraf_dependencies_keys_installed
+          until: are_telegraf_dependencies_keys_installed is succeeded
+        - name: Debian | Set Telegraf apt repository parameters
+          ansible.builtin.set_fact:
+            telegraf_repository_params: "[signed-by=/usr/share/keyrings/influxdata-archive.asc]"
+    # InfluxData doesn't build per-codename repos for every Debian/Ubuntu
+    # release (e.g. no noble/resolute) - their own docs use a single
+    # universal "stable" suite under the debian path for both distros.
+    - name: Debian | Add Telegraf repository
+      ansible.builtin.copy:
+        content: deb {{ telegraf_repository_params | default('') }} https://repos.influxdata.com/debian stable main
+        dest: /etc/apt/sources.list.d/telegraf.list
+        mode: "0644"
+      become: true
+    - name: Debian | Install Telegraf package (repo)
+      ansible.builtin.apt:
+        name: "{{ telegraf_agent_package }}"
+        state: "{{ telegraf_agent_package_state }}"
+        update_cache: true
+      become: true
+      ignore_errors: "{{ ansible_check_mode }}"
+      notify: Restart Telegraf
+      register: is_telegraf_package_installed
+      until: is_telegraf_package_installed is succeeded
+      when:
+        - telegraf_agent_package_method == "repo"
+    - name: Debian | Install Telegraf package (repo)
+      ansible.builtin.apt:
+        name: "{{ telegraf_agent_package }}"
+        state: "{{ telegraf_agent_package_state }}"
+        update_cache: true
+      become: true
+      ignore_errors: "{{ ansible_check_mode }}"
+      notify: Restart Telegraf
+      register: is_telegraf_package_installed
+      until: is_telegraf_package_installed is succeeded
+- name: Debian | Download Telegraf package (online)
+  ansible.builtin.get_url:
+    dest: "{{ telegraf_agent_package_path }}/{{ telegraf_agent_package }}"
+    mode: "0644"
+    url: https://dl.influxdata.com/telegraf/releases/{{ telegraf_agent_package_file_deb }}
+    use_proxy: "{{ true if http_proxy is defined and http_proxy else false }}"
+  environment:
+    http_proxy: "{{ http_proxy | default(None) | default(omit) }}"
+    https_proxy: "{{ https_proxy | default(None) | default(omit) }}"
+  when:
+    - telegraf_agent_package_method == "online"
+- name: Debian | Install Telegraf package (online)
+  ansible.builtin.apt:
+    allow_downgrade: true
+    deb: "{{ telegraf_agent_package_path }}/{{ telegraf_agent_package }}"
+    state: present
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  notify: Restart Telegraf
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded
+  when:
+    - telegraf_agent_package_method == "online" or telegraf_agent_package_method == "offline"
+- name: Debian | Remove repository (online/offline install)
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/telegraf.list
+    state: absent
+  become: true
+  when:
+    - telegraf_agent_package_method == "online" or telegraf_agent_package_method == "offline"

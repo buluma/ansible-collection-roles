@@ -1,138 +1,339 @@
-# [dnsmasq](#dnsmasq)
+# [Ansible role dnsmasq](#ansible-role-dnsmasq)
 
-Set up dnsmasq in Debian-like systems.
+Install and configure dnsmasq on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
-|------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-dnsmasq/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-dnsmasq/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-dnsmasq/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-dnsmasq)|[![quality](https://img.shields.io/ansible/quality/59135)](https://galaxy.ansible.com/buluma/dnsmasq)|[![downloads](https://img.shields.io/ansible/role/d/59135)](https://galaxy.ansible.com/buluma/dnsmasq)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-dnsmasq.svg)](https://github.com/buluma/ansible-role-dnsmasq/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-dnsmasq.svg)](https://github.com/buluma/ansible-role-dnsmasq/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-dnsmasq.svg)](https://github.com/buluma/ansible-role-dnsmasq/pulls/)|
+|GitHub|Issues|Pull Requests|Version|Downloads|
+|------|------|-------------|-------|---------|
+|[![github](https://github.com/buluma/ansible-role-dnsmasq/actions/workflows/molecule.yml/badge.svg)](https://github.com/buluma/ansible-role-dnsmasq/actions/workflows/molecule.yml)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-dnsmasq.svg)](https://github.com/buluma/ansible-role-dnsmasq/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-dnsmasq.svg)](https://github.com/buluma/ansible-role-dnsmasq/pulls/)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-dnsmasq.svg)](https://github.com/buluma/ansible-role-dnsmasq/releases/)|[![Ansible Role](https://img.shields.io/ansible/role/d/buluma/dnsmasq)](https://galaxy.ansible.com/ui/standalone/roles/buluma/dnsmasq/documentation)|
 
 ## [Example Playbook](#example-playbook)
 
-This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+This example is taken from [`molecule/default/converge.yml`](https://github.com/buluma/ansible-role-dnsmasq/blob/master/molecule/default/converge.yml) and is tested on each push, pull request and release.
+
 ```yaml
 ---
 - name: Converge
   hosts: all
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
   pre_tasks:
-    - name: include vars
-      # TODO: move to vars
-      include_vars: "{{ playbook_dir }}/../../tests/vars/main.yml"
+    - name: Update apt cache.
+      ansible.builtin.apt:
+
+        update_cache: true
+
+        cache_valid_time: 600
+      when: ansible_facts['os_family'] == 'Debian'
 
   roles:
     - role: buluma.dnsmasq
 ```
 
-The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-dnsmasq/blob/master/molecule/default/prepare.yml):
+
 ```yaml
 ---
 - name: Prepare
   hosts: all
-  gather_facts: no
-  become: yes
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Install sudo if missing
+      ansible.builtin.raw: "{{ ansible_pkg_mgr | default('dnf') }} install -y sudo"
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Install python3 if missing
+      ansible.builtin.raw: >-
+        if [ -x /usr/bin/python3 ]; then exit 0; fi;
+        if command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y python3;
+        elif command -v dnf >/dev/null 2>&1; then dnf install -y python3;
+        elif command -v yum >/dev/null 2>&1; then yum install -y python3;
+        elif command -v zypper >/dev/null 2>&1; then zypper -n install python3;
+        else exit 1; fi
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Configure passwordless sudo
+      ansible.builtin.raw: >-
+        if ! grep -q '^%wheel ALL=(ALL) NOPASSWD: ALL' /etc/sudoers; then
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers;
+        fi;
+        visudo -cf /etc/sudoers
+      become: false
+      changed_when: false
+      failed_when: false
 
   roles:
     - role: buluma.bootstrap
-    - role: buluma.sysctl
 ```
 
+Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
-The default values for the variables are set in `defaults/main.yml`:
+The default values for the variables are set in [`defaults/main.yml`](https://github.com/buluma/ansible-role-dnsmasq/blob/master/defaults/main.yml):
+
 ```yaml
-# defaults file
 ---
-dnsmasq_service_state: "{{ service_default_state | default('started') }}"
-dnsmasq_service_enabled: "{{ service_default_enabled | default(true) }}"
+# defaults file for dnsmasq
 
-dnsmasq_service_resolved_disabled: false
+# dnsmasq_port: 5353
 
-dnsmasq_etc_default_config_dir: '/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new'
-
-# TODO: Clean this up (some day)
-dnsmasq_etc_default:
-  - |
-    # This file has five functions:
-    # 1) to completely disable starting dnsmasq,
-    # 2) to set DOMAIN_SUFFIX by running `dnsdomainname`
-    # 3) to select an alternative config file
-    #    by setting DNSMASQ_OPTS to --conf-file=<file>
-    # 4) to tell dnsmasq to read the files in /etc/dnsmasq.d for
-    #    more configuration variables.
-    # 5) to stop the resolvconf package from controlling dnsmasq's
-    #    idea of which upstream nameservers to use.
-
-    # NB. If systemd is installed and starting dnsmasq, this file is IGNORED.
-
-    # For upgraders from very old versions, all the shell variables set
-    # here in previous versions are still honored by the init script
-    # so if you just keep your old version of this file nothing will break.
-
-    {% if dnsmasq_etc_default_domain_suffix is defined %}
-    DOMAIN_SUFFIX=`{{ dnsmasq_etc_default_domain_suffix }}`
-    {% else %}
-    #DOMAIN_SUFFIX=`dnsdomainname`
-    {% endif %}
-    {% if dnsmasq_etc_default_dnsmasq_opts is defined %}
-    DNSMASQ_OPTS="{{ dnsmasq_etc_default_dnsmasq_opts }}"
-    {% else %}
-    #DNSMASQ_OPTS="--conf-file=/etc/dnsmasq.alt"
-    {% endif %}
-
-    # Whether or not to run the dnsmasq daemon; set to 0 to disable.
-    ENABLED={{ dnsmasq_service_enabled | bool | ternary(1, 0) }}
-
-    # By default search this drop directory for configuration options.
-    # Libvirt leaves a file here to make the system dnsmasq play nice.
-    # Comment out this line if you don't want this. The dpkg-* are file
-    # endings which cause dnsmasq to skip that file. This avoids pulling
-    # in backups made by dpkg.
-    {% if dnsmasq_etc_default_config_dir %}
-    CONFIG_DIR={{ dnsmasq_etc_default_config_dir }}
-    {% else %}
-    #CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
-    {% endif %}
-
-
-    # If the resolvconf package is installed, dnsmasq will use its output
-    # rather than the contents of /etc/resolv.conf to find upstream
-    # nameservers. Uncommenting this line inhibits this behaviour.
-    # Not that including a "resolv-file=<filename>" line in
-    # /etc/dnsmasq.conf is not enough to override resolvconf if it is
-    # installed: the line below must be uncommented.
-    {% if dnsmasq_etc_default_ignore_resolvconf is defined %}
-    IGNORE_RESOLVCONF={{ dnsmasq_etc_default_ignore_resolvconf | bool | ternary('yes', 'no') }}
-    {% else %}
-    #IGNORE_RESOLVCONF=yes
-    {% endif %}
-
-    {% for line in dnsmasq_etc_default_options | default([]) %}
-    {{ line }}
-    {% endfor %}
-
-dnsmasq_dnsmasq_conf: []
-dnsmasq_dnsmasq_d_files_present: {}
-dnsmasq_dnsmasq_d_files_absent: {}
+dnsmasq_domain_needed: false
+dnsmasq_bogus_priv: false
+dnsmasq_conf_file: "{{ dnsmasq_documentation_path }}/trust-anchors.conf"
+dnsmasq_dnssec: false
+dnsmasq_dnssec_check_unsigned: false
+dnsmasq_filterwin2k: false
+# dnsmasq_resolv_file: /etc/resolv.conf
+dnsmasq_strict_order: false
+dnsmasq_no_resolv: false
+dnsmasq_no_poll: false
+# dnsmasq_servers:
+#   - domain: localnet
+#     nameserver: "192.168.0.1"
+#   - domain: "3.168.192.in-addr.arpa"
+#     nameserver: "10.1.2.3"
+#   - domain: "10.1.2.3"
+#     interface: eth1
+#   - destination: "10.2.3.4"
+#     nameserver: "192.168.1.1"
+#     interface: "192.168.1.1"
+#     port: 55
+# dnsmasq_locals:
+#   - domain: localnet
+# dnsmasq_addresses:
+#   - domain: double-click.net
+#     address: "127.0.0.1"
+#   - domain: www.thekelleys.org.uk
+#     address: "fe80::20d:60ff:fe36:f83"
+# dnsmasq_ipsets:
+#   - domains:
+#       - name: yahoo.com
+#       - name: google.com
+#     destination: vpn
+#     option: search
+dnsmasq_user: "{{ dnsmasq_set_user }}"
+dnsmasq_group: "{{ dnsmasq_set_group }}"
+# dnsmasq_interfaces:
+#   - name: lo
+#   - name: eth0
+# dnsmasq_except_interface: eth0
+# dnsmasq_listen_addresses:
+#   - name: "127.0.0.1"
+dnsmasq_no_dhcp_interface: ""
+dnsmasq_local_service: false
+dnsmasq_bind_interfaces: false
+dnsmasq_no_hosts: false
+# dnsmasq_addn_hosts: /etc/banner_add_hosts
+dnsmasq_expand_hosts: false
+# dnsmasq_domains:
+#   - name: thekelleys.org.uk
+#   - name: wireless.thekelleys.org.uk
+#     subnet: "192.168.2.0/24"
+#   - name: reserved.thekelleys.org.uk
+#     from: "192.68.3.100"
+#     until: "192.168.3.200"
+# dnsmasq_dhcp_ranges:
+#   - from: "192.168.0.50"
+#     until: "192.168.0.150"
+#     leasetime: 12h
+#   - from: "192.168.0.50"
+#     until: "192.168.0.150"
+#     subnet: "255.255.255.0"
+#     leasetime: 12h
+#   - from: "192.168.0.50"
+#     until: "192.168.0.150"
+#     sets:
+#       - name: red
+#   - from: "192.168.0.50"
+#     until: "192.168.0.150"
+#     leasetime: 12h
+#     tags:
+#       - name: green
+#   - from: "192.168.0.0"
+#     options:
+#       - name: static
+#     static: true
+#   - from: "1234::2"
+#     until: "1234::500"
+#     prefix: 64
+#     leasetime: 12h
+#   - from: "1234::"
+#     options:
+#       - name: ra-only
+#   - from: "1234::"
+#     options:
+#       - name: ra-names
+#   - from: "1234::"
+#     options:
+#       - name: ra-only
+#     leasetime: 48hA
+#   - from: "1234::2"
+#     until: "1234::500"
+#     options:
+#       - name: slaac
+#   - from: "1234::"
+#     options:
+#        - name: ra-stateless
+#   - from: "1234::"
+#     options:
+#       - name: ra-stateless
+#       - name: ra-names
+dnsmasq_enable_ra: false
+# dnsmasq_hosts:
+#   - name: "11:22:33:44:55:66"
+#     value: "192.168.0.60"
+#   - name: "11:22:33:44:55:66"
+#     value: fred
+#   - name: "11:22:33:44:55:66"
+#     value: "fred,192.168.0.60,45m"
+#   - name: "11:22:33:44:55:66,12:34:56:78:90:12"
+#     value: "192.168.0.60"
+#   - name: bert
+#     value: "192.168.0.70,infinite"
+#   - name: "id:01:02:02:04"
+#     value: "192.168.0.60"
+#   - name: "id:ff:00:00:00:00:00:02:00:00:02:c9:00:f4:52:14:03:00:28:05:81"
+#     value: "192.168.0.61"
+# dnsmasq_dhcp_ignore: "tag:!known"
+# dnsmasq_dhcp_vendorclass: "set:red,Linux"
+# dnsmasq_dhcp_userclass: "set:red,accounts"
+dnsmasq_dhcp_mac: "set:red,00:60:8C:*:*:*"
+dnsmasq_read_ethers: false
+# dnsmasq_dhcp_options:
+#   - name: 3
+#     value: "1.2.3.4"
+#   - name: "option:router"
+#     value: "1.2.3.4"
+#   - name: 3
+#   - name: "option:ntp-server"
+#     value: "192.168.0.4,10.10.0.5"
+#   - name: "option6:dns-server"
+#     value: "[1234::77],[1234::88]"
+#   - name: "option6:dns-server"
+#     value: "[::],[1234::88]"
+#   - name: "option6:information-refresh-time"
+#     value: 6h
+#   - name: "option:T1"
+#     value: 1m
+#   - name: "option:T2"
+#     value: 2m
+#   - name: 42
+#     value: "0.0.0.0"
+#   - name: 40
+#     value: welly
+#   - name: 23
+#     value: 50
+#   - name: 27
+#     value: 1
+#   - name: 128
+#     value: "e4:45:74:68:00:00"
+#   - name: 129
+#     value: NIC=eepro100
+#   - name: "option:ntp-server"
+#     tag: red
+#     value: "192.168.1.1"
+#   - name: 19
+#     value: 0
+#   - name: 44
+#     value: "0.0.0.0"
+#   - name: 45
+#     value: "0.0.0.0"
+#   - name: 46
+#     value: 8
+#   - name: 252
+#     value: "\n"
+#   - name: "option:domain-search"
+#     value: eng.apple.com,marketing.apple.com
+#   - name: 121
+#     value: "192.168.1.0/24,1.2.3.4,10.0.0.0/8,5.6.7.8"
+#   - name: "vendor:PXEClient"
+#     value: "1,0.0.0.0"
+#   - name: "vendor:MSFT"
+#     value: 2,1i
+#   - name: "vendor:Etherboot"
+#     value: 60,"Etherboot"
+# dnsmasq_dhcp_option_force:
+#   - name: 208
+#     value: "f1:00:74:7e"
+#   - name: 209
+#     value: configs/common
+#   - name: 210
+#     value: /tftpboot/pxelinux/files/
+#   - name: 211
+#     value: 30i
+# dnsmasq_dhcp_boot: pxelinux.0
+# dnsmasq_dhcp_boot: "pxelinux.0,server.name,192.168.1.100"
+dnsmasq_enable_tftp: false
+# dnsmasq_tftp_root: /var/ftpd
+dnsmasq_tftp_no_fail: false
+dnsmasq_tftp_secure: false
+dnsmasq_tftp_no_blocksize: false
+# dnsmasq_dhcp_lease_max: 150
+# dnsmasq_dhcp_leasefile: /var/lib/dnsmasq/dnsmasq.leases
+dnsmasq_dhcp_authoritative: false
+dnsmasq_dhcp_rapid_commit: false
+dnsmasq_dhcp_script: /bin/echo
+# dnsmasq_cache_size: 150
+dnsmasq_no_negcache: false
+# dnsmasq_local_ttl: 3600
+# dnsmasq_bogus_nxdomain: "64.94.110.11"
+# dnsmasq_aliases:
+#   - from: "1.2.3.4"
+#     until: "4.5.6.7"
+#   - from: "1.2.3.0"
+#     until: "5.6.7.0"
+#     subnet: "255.255.255.0"
+#   - from: "192.168.0.10-192.168.0.40"
+#     until: "10.0.0.0"
+#     subnet: "255.255.255.0"
+# dnsmasq_mx_hosts:
+#   - domain: maildomain.com
+#     host: servermacine.com
+#     priority: 50
+#   - domain: servermachine.com
+dnsmasq_localmx: false
+dnsmasq_selfmx: false
+# dnsmasq_src_hosts:
+#   - record: _ldap._tcp.example.com
+#     destination: ldapserver.example.com
+#     port: 389
+#   - record: _ldap._tcp.example.com
+#     destination: ldapserver.example.com
+#     port: 389
+#     priority: 1
+#   - record: _ldap._tcp.example.com
+#     destination: ldapserver.example.com
+#     port: 389
+#     priority: 2
+#   - record: _ldap._tcp.example.com
+dnsmasq_log_queries: false
+dnsmasq_log_dhcp: false
+# dnsmasq_conf_dir: /etc/dnsmasq.d
+# dnsmasq_dhcp_name_match: "set:wpad-ignore,wpad"
+# dnsmasq_ignore_names: "tag:wpad-ignore"
 ```
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-dnsmasq/blob/main/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-dnsmasq/blob/master/requirements.txt).
 
-## [Status of used roles](#status-of-requirements)
+## [State of used roles](#state-of-used-roles)
 
 The following roles are used to prepare a system. You can prepare your system in another way.
 
-| Requirement | GitHub | GitLab |
-|-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.sysctl](https://galaxy.ansible.com/buluma/sysctl)|[![Build Status GitHub](https://github.com/buluma/ansible-role-sysctl/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-sysctl/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-sysctl/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-sysctl)|
+| Requirement | GitHub |
+|-------------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
+This role is part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -144,26 +345,22 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|ubuntu|all|
-|debian|all|
+|[EL](https://hub.docker.com/r/buluma/docker-molecule-images)|10, 9|
+|[Debian](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
+|[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
+|[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.10, tests have been done to:
+The minimum version of Ansible required is 2.12, tests have been done on:
 
 - The previous version.
 - The current version.
 - The development version.
 
-
-
-If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-dnsmasq/issues)
-
-## [Changelog](#changelog)
-
-[Role History](https://github.com/buluma/ansible-role-dnsmasq/blob/master/CHANGELOG.md)
+If you find issues, please register them on [GitHub](https://github.com/buluma/ansible-role-dnsmasq/issues).
 
 ## [License](#license)
 
-Apache-2.0
+[Apache-2.0](https://github.com/buluma/ansible-role-dnsmasq/blob/master/LICENSE).
 
 ## [Author Information](#author-information)
 

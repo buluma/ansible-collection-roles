@@ -1,0 +1,16 @@
+---
+_install_packages:
+  default:
+    - transmission
+    - transmission-cli
+    - transmission-gtk
+  Debian:
+    - transmission
+    - transmission-cli
+    - transmission-gtk
+  RedHat:
+    - transmission
+    - transmission-cli
+    - transmission-gtk
+
+install_packages: "{{ _install_packages[ansible_facts['os_family']] | default(_install_packages['default']) }}"

@@ -1,0 +1,31 @@
+[Unit]
+Description=bamboo
+After=syslog.target network.target
+
+[Service]
+{% if bamboo_master_jvm_memory is defined %}
+Environment=JVM_MINIMUM_MEMORY={{ bamboo_master_jvm_memory }}
+Environment=JVM_MAXIMUM_MEMORY={{ bamboo_master_jvm_memory }}
+{% endif %}
+
+Environment=PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/bin:/bin{% if bamboo_agent is defined and bamboo_agent.capabilities is defined %}{% for item in bamboo_agent.capabilities %}{% if item.binary_path is defined %}:{{ item.binary_path }}{% endif %}{% endfor %}{% endif %}
+
+
+Environment=HTTP_PROXY={% if http_proxy is defined %}{{ http_proxy.protocol }}://{{ http_proxy.host }}:{{ http_proxy.port }}{% endif %}
+
+
+Environment=HTTPS_PROXY={% if http_proxy is defined %}{{ http_proxy.protocol }}://{{ http_proxy.host }}:{{ http_proxy.port }}{% endif %}
+
+
+Environment=NO_PROXY={% if http_proxy is defined %}{{ http_proxy.exception | default('') | join(",") }}{% endif %}
+
+
+
+Type=forking
+User=bamboo
+Group=bamboo
+ExecStart={{ bamboo_master_binary_folder }}/bin/start-bamboo.sh
+ExecStop={{ bamboo_master_binary_folder }}/bin/stop-bamboo.sh
+
+[Install]
+WantedBy=multi-user.target

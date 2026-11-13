@@ -1,0 +1,6 @@
+---
+# handlers file for powertools
+
+- name: Yum update cache
+  ansible.builtin.dnf:
+    update_cache: true

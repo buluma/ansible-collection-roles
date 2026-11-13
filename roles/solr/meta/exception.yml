@@ -1,0 +1,4 @@
+---
+exceptions:
+  - variation: ubuntu:latest
+    reason: "bin/sh: 1: sudo: not found"

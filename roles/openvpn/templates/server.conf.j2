@@ -1,0 +1,30 @@
+{{ ansible_managed | comment }}
+
+port {{ openvpn_port }}
+proto {{ openvpn_proto }}
+dev {{ openvpn_dev }}
+ca {{ openvpn_configuration_directory }}/ca.crt
+cert {{ openvpn_configuration_directory }}/server.crt
+key {{ openvpn_configuration_directory }}/server.key
+dh {{ openvpn_configuration_directory }}/dh.pem
+topology {{ openvpn_topology }}
+server {{ openvpn_server_network }} {{ openvpn_server_netmask }}
+ifconfig-pool-persist ipp.txt
+{% for option in openvpn_push_options %}
+push "{{ option }}"
+{% endfor %}
+keepalive 10 120
+# tls-crypt {{ openvpn_configuration_directory }}/myvpn.tlsauth 0
+cipher {{ openvpn_cipher }}
+user nobody
+group {{ openvpn_group }}
+persist-key
+persist-tun
+status openvpn-status.log
+verb {{ openvpn_verb }}
+explicit-exit-notify 1
+remote-cert-eku "TLS Web Client Authentication"
+
+{% for option in openvpn_server_custom_options %}
+{{ option }}
+{% endfor %}

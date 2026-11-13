@@ -1,0 +1,4 @@
+---
+sentinel_syslog_port: 1468
+sentinel_syslog_server: sentinel.example.com
+syslog_implementation: rsyslog

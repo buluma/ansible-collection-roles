@@ -1,0 +1,19 @@
+---
+# vars file for systemd
+_systemd_requirements:
+  default:
+    - dbus
+  Debian-bookworm:
+    - dbus
+    - systemd-resolved
+  Suse:
+    - dbus-1
+
+systemd_requirements: "{{ _systemd_requirements[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_release']] | default(_systemd_requirements[ansible_facts['os_family']]
+  | default(_systemd_requirements['default'])) }}"
+
+_systemd_path:
+  default: /usr/lib/systemd/system
+  Debian: /lib/systemd/system
+
+system_path: "{{ _systemd_path[ansible_facts['os_family']] | default(_systemd_path['default']) }}"

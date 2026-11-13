@@ -1,0 +1,111 @@
+---
+- name: agent-win | Create main Datadog agent configuration file
+  ansible.windows.win_template:
+    # FIXME: should have permissions set to only be readable by ddagentuser
+    src: datadog.yaml.j2
+    dest: "{{ agent_datadog_windows_config_root }}\\datadog.yaml"
+  when: datadog_manage_config
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Register all checks directories present in datadog
+  ansible.windows.win_find:
+    paths: "{{ ansible_facts['env']['ProgramData'] }}\\Datadog\\conf.d"
+    patterns:
+      - "*.d"
+    file_type: directory
+  register: agent_datadog_conf_directories
+  when: datadog_manage_config and (datadog_disable_untracked_checks or datadog_disable_default_checks)
+
+- name: agent-win | Delete checks not present in agent_datadog_tracked_checks
+  ansible.windows.win_file:
+    path: "{{ ansible_facts['env']['ProgramData'] }}\\Datadog\\conf.d\\{{ item }}.d\\conf.yaml"
+    state: absent
+  loop: "{{ agent_datadog_conf_directories.files | map(attribute='path') | list | map('win_basename') | list | map('regex_replace', '^(.*).d$', '\\1') | list }}"
+  when: datadog_manage_config and datadog_disable_untracked_checks and item not in agent_datadog_tracked_checks
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Delete default checks
+  ansible.windows.win_file:
+    path: "{{ ansible_facts['env']['ProgramData'] }}\\Datadog\\conf.d\\{{ item }}.d\\conf.yaml.default"
+    state: absent
+  loop: "{{ agent_datadog_conf_directories.files | map(attribute='path') | list | map('win_basename') | list | map('regex_replace', '^(.*).d$', '\\1') | list }}"
+  when: datadog_manage_config and datadog_disable_default_checks and item not in agent_datadog_tracked_checks
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Delete example checks
+  ansible.windows.win_file:
+    path: "{{ ansible_facts['env']['ProgramData'] }}\\Datadog\\conf.d\\{{ item }}.d\\conf.yaml.example"
+    state: absent
+  loop: "{{ agent_datadog_conf_directories.files | map(attribute='path') | list | map('win_basename') | list | map('regex_replace', '^(.*).d$', '\\1') | list }}"
+  when: datadog_manage_config and datadog_disable_example_checks and item not in agent_datadog_tracked_checks
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Ensure configuration directories are present for each Datadog check
+  ansible.windows.win_file:
+    path: "{{ agent_datadog_windows_config_root }}\\conf.d\\{{ item }}.d"
+    state: directory
+  with_items: "{{ agent_datadog_checks | list }}"
+  when: datadog_manage_config
+
+- name: agent-win | Create a configuration file for each Datadog check
+  ansible.windows.win_template:
+    src: checks.yaml.j2
+    dest: "{{ agent_datadog_windows_config_root }}\\conf.d\\{{ item }}.d\\conf.yaml"
+  with_items: "{{ agent_datadog_checks | list }}"
+  when: datadog_manage_config
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Remove old configuration file for each Datadog check
+  ansible.windows.win_file:
+    path: "{{ agent_datadog_windows_config_root }}\\conf.d\\{{ item }}.yaml"
+    state: absent
+  with_items: "{{ agent_datadog_checks | list }}"
+  when: datadog_manage_config
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Create custom check file for each custom check
+  ansible.windows.win_copy:
+    src: "{{ datadog_custom_checks[item] }}"
+    dest: "{{ agent_datadog_windows_config_root }}\\checks.d\\{{ item }}.py"
+  with_items: "{{ datadog_custom_checks | list }}"
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Ensure datadog-trace-agent and datadog-process-agent are not disabled
+  ansible.windows.win_service:
+    name: "{{ item }}"
+    start_mode: manual
+  when: not datadog_skip_running_check and datadog_enabled and not ansible_check_mode
+  with_list:
+    - datadog-trace-agent
+    - datadog-process-agent
+
+- name: agent-win | Create system-probe configuration file
+  ansible.windows.win_template:
+    src: system-probe.yaml.j2
+    dest: "{{ agent_datadog_windows_config_root }}\\system-probe.yaml"
+  when: datadog_manage_config
+  notify: Restart datadog-agent-win
+
+- name: agent-win | Ensure datadog-agent is running
+  ansible.windows.win_service:
+    name: datadogagent
+    state: started
+    start_mode: delayed
+  when: not datadog_skip_running_check and datadog_enabled and not ansible_check_mode
+
+- name: agent-win | Ensure datadog-agent is disabled
+  ansible.windows.win_service:
+    name: "{{ item }}"
+    state: stopped
+    start_mode: disabled
+  when: not datadog_skip_running_check and not datadog_enabled
+  with_list:
+    - datadog-trace-agent
+    - datadog-process-agent
+    - datadogagent
+
+- name: agent-win | Create installation information file
+  ansible.builtin.template:
+    src: install_info.j2
+    dest: "{{ agent_datadog_windows_config_root }}\\install_info"
+    mode: "0644"

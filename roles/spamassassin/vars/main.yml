@@ -1,0 +1,13 @@
+---
+_spamassassin_service:
+  Alpine: spamd
+  Suse: spamd
+  default: spamassassin
+spamassassin_packages:
+  - spamassassin
+spamassassin_service: >-
+  {{ 'spamd'
+     if (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] | int >= 12)
+        or (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 24)
+        or ansible_facts['os_family'] in ['Alpine', 'Suse']
+     else 'spamassassin' }}

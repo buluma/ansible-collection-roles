@@ -1,5 +1,4 @@
 ---
-
 # (c) Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: apt-key add
-  ansible.builtin.apt_key:
-    keyring: "{{ item.keyring }}"
+- name: debian | Download Apt keys
+  ansible.builtin.get_url:
     url: "{{ item.url }}"
-    id: "{{ item.id }}"
-    state: "{{ item.state }}"
+    dest: "{{ item.keyring | replace('.gpg', '.asc') }}"
+    mode: "0644"
   loop: "{{ _apt_key }}"
   register: result
   until: result is succeeded
 
-- name: apt-add-repository
+- name: debian | Apt-add-repository
   ansible.builtin.apt_repository:
     filename: "{{ item.filename }}"
     repo: "{{ item.repo }}"
@@ -34,7 +32,7 @@
   register: result
   until: result is succeeded
 
-- name: apt-get install
+- name: debian | Apt-get install
   ansible.builtin.apt:
     name: "{{ item.name }}"
     state: "{{ item.state }}"

@@ -1,0 +1,11 @@
+---
+- name: MacOS | Set package name
+  ansible.builtin.set_fact:
+    telegraf_agent_package: telegraf
+- name: MacOS | Install Telegraf package
+  ansible.builtin.package:
+    name: "{{ telegraf_agent_package }}"
+    state: "{{ telegraf_agent_package_state }}"
+  notify: Restart Telegraf
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded

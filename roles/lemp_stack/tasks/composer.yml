@@ -1,0 +1,16 @@
+---
+- name: composer | Download composer installer
+  ansible.builtin.get_url:
+    dest: /tmp/installer
+    mode: "0644"
+    url: https://getcomposer.org/installer
+- name: composer | Install composer
+  ansible.builtin.command:
+    argv:
+      - php
+      - /tmp/installer
+      - --
+      - --install-dir=/usr/local/bin
+      - --filename=composer
+  args:
+    creates: /usr/local/bin/composer

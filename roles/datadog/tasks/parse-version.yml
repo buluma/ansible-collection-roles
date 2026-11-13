@@ -1,0 +1,105 @@
+---
+- name: parse-version | Parse Agent version
+  ansible.builtin.set_fact:
+    agent_version: "{{ datadog_agent_version | regex_search(agent_regexp, '\\g<epoch>', '\\g<major>', '\\g<minor>', '\\g<bugfix>', '\\g<suffix>', '\\g<release>')
+      }}"
+  vars:
+    agent_regexp: (?:(?P<epoch>[0-9]+):)?(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<bugfix>[0-9]+)(?P<suffix>(?:~|-)[^0-9\s-]+[^-\s]*)?(?:-(?P<release>[0-9]+))?
+
+- name: parse-version | Set version vars
+  ansible.builtin.set_fact:
+    agent_datadog_epoch: "{{ agent_version.0 | default('', true) | string }}"
+    agent_datadog_major: "{{ agent_version.1 | default('', true) | string }}"
+    agent_datadog_minor: "{{ agent_version.2 | default('', true) | string }}"
+    agent_datadog_bugfix: "{{ agent_version.3 | default('', true) | string }}"
+    agent_datadog_suffix: "{{ agent_version.4 | default('', true) | string }}"
+    agent_datadog_release: "{{ agent_version.5 | default('', true) | string }}"
+
+- name: parse-version | Fill empty version epoch with default
+  ansible.builtin.set_fact:
+    agent_datadog_epoch: "1"
+  when: agent_datadog_epoch | length == 0
+
+- name: parse-version | Fill empty version release with default
+  ansible.builtin.set_fact:
+    agent_datadog_release: "1"
+  when: agent_datadog_release | length == 0
+
+- name: parse-version | Stop play if datadog_agent_version and datadog_agent_major_version are not compatible
+  ansible.builtin.fail:
+    msg: "The provided major version {{ agent_datadog_agent_major_version }} is not compatible with the version {{ agent_datadog_major }} deduced from datadog_agent_version
+      ({{ datadog_agent_version }}). Aborting play."
+  when: agent_datadog_agent_major_version | length > 0 and agent_datadog_major != agent_datadog_agent_major_version
+
+- name: parse-version | Set agent_datadog_agent_major_version to deduced value from datadog_agent_version
+  ansible.builtin.set_fact:
+    agent_datadog_agent_major_version: "{{ agent_datadog_major }}"
+
+- name: parse-version | Set helper variables
+  ansible.builtin.set_fact:
+    agent_datadog_agent_linux_version: "{{ agent_datadog_epoch }}:{{ agent_datadog_major }}.{{ agent_datadog_minor }}.{{ agent_datadog_bugfix }}{{ agent_datadog_suffix
+      }}-{{ agent_datadog_release }}" # noqa yaml[line-length]
+    agent_datadog_rpm_version_finding_cmd: "rpm -q --qf '%{EPOCH}:%{VERSION}-%{RELEASE}' {{ datadog_agent_flavor }}"
+
+- name: parse-version | Set OS-specific versions
+  # NOTE: if changing these, make sure the format correspond with values in agent_datadog_version_finding_cmds below
+  ansible.builtin.set_fact:
+    agent_datadog_agent_debian_version: "{{ agent_datadog_agent_linux_version }}"
+    agent_datadog_agent_redhat_version: "{{ agent_datadog_agent_linux_version }}"
+    agent_datadog_agent_suse_version: "{{ agent_datadog_agent_linux_version }}"
+    agent_datadog_agent_windows_version: "{{ agent_datadog_major }}.{{ agent_datadog_minor }}.{{ agent_datadog_bugfix }}{{ agent_datadog_suffix }}"
+    agent_datadog_agent_macos_version: "{{ agent_datadog_major }}.{{ agent_datadog_minor }}.{{ agent_datadog_bugfix }}{{ agent_datadog_suffix }}"
+
+- name: parse-version | Construct commands to find Agent version
+  ansible.builtin.set_fact:
+    agent_datadog_version_finding_cmds:
+      Debian: "dpkg -s {{ datadog_agent_flavor }} | grep '^Version:' | awk '{print $2}'"
+      RedHat: "{{ agent_datadog_rpm_version_finding_cmd }}"
+      Rocky: "{{ agent_datadog_rpm_version_finding_cmd }}"
+      AlmaLinux: "{{ agent_datadog_rpm_version_finding_cmd }}"
+      Suse: "{{ agent_datadog_rpm_version_finding_cmd }}"
+
+- name: parse-version | Create OS-specific version dict
+  ansible.builtin.set_fact:
+    agent_datadog_agent_os2version:
+      Debian: "{{ agent_datadog_agent_debian_version }}"
+      RedHat: "{{ agent_datadog_agent_redhat_version }}"
+      Rocky: "{{ agent_datadog_agent_redhat_version }}"
+      AlmaLinux: "{{ agent_datadog_agent_redhat_version }}"
+      Suse: "{{ agent_datadog_agent_suse_version }}"
+      Windows: "{{ agent_datadog_agent_windows_version }}"
+      Darwin: "{{ agent_datadog_agent_macos_version }}"
+
+- name: parse-version | Get Linux Agent version
+  ansible.builtin.shell: "{{ agent_datadog_version_finding_cmds[ansible_facts['os_family']] }}" # noqa command-instead-of-shell - We need shell because of pipes
+  register: agent_datadog_version_check_linux
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: ansible_facts['system'] is defined and ansible_facts['system'] == "Linux"
+
+# The task is win_shell, so if users don't have the "ansible.windows" collection installed,
+# parsing the task would fail even if the host is not Windows. By hiding the task inside
+# a conditionally included file, we can prevent this.
+- name: parse-version | Include Windows Agent version tasks
+  ansible.builtin.include_tasks: parse-version-windows.yml
+  when: ansible_facts['os_family'] == "Windows"
+
+- name: parse-version | Include macOS Agent version tasks
+  ansible.builtin.include_tasks: parse-version-macos.yml
+  when: ansible_facts['os_family'] == "Darwin"
+
+- name: parse-version | Set skip install flag if version already installed (Linux)
+  ansible.builtin.set_fact:
+    agent_datadog_skip_install: "{{ agent_datadog_version_check_linux.stdout | trim == agent_datadog_agent_os2version[ansible_facts['os_family']] }}"
+  when: ansible_facts['system'] is defined and ansible_facts['system'] == "Linux"
+
+- name: parse-version | Set skip install flag if version already installed (Windows)
+  ansible.builtin.set_fact:
+    agent_datadog_skip_install: "{{ agent_datadog_version_check_win.stdout | trim == agent_datadog_agent_os2version[ansible_facts['os_family']] }}"
+  when: ansible_facts['os_family'] == "Windows"
+
+- name: parse-version | Set skip install flag if version already installed (macOS)
+  ansible.builtin.set_fact:
+    agent_datadog_skip_install: "{{ agent_datadog_version_check_macos.stdout | trim == agent_datadog_agent_os2version[ansible_facts['os_family']] }}"
+  when: ansible_facts['os_family'] == "Darwin"

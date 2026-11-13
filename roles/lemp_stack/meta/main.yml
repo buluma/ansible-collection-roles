@@ -1,0 +1,15 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: Install LEMP Stack
+  galaxy_tags:
+    - lemp
+    - nginx
+    - php
+    - mysql
+  license: MIT
+  min_ansible_version: "2.12"
+  namespace: buluma
+  role_name: lemp_stack

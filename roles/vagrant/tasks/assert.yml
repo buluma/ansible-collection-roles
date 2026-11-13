@@ -1,0 +1,15 @@
+---
+- name: assert | Test vagrant_version
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - vagrant_version is defined
+      - vagrant_version is string
+      - vagrant_version is not none
+- name: assert | Test vagrant_unarchive_dest
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - vagrant_unarchive_dest is defined
+      - vagrant_unarchive_dest is string
+      - vagrant_unarchive_dest is not none

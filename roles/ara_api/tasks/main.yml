@@ -1,0 +1,4 @@
+---
+# tasks file for ara_api
+- name: Import ara_api tasks
+  ansible.builtin.import_tasks: main.yaml

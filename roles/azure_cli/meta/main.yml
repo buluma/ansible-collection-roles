@@ -6,25 +6,6 @@ galaxy_info:
   license: Apache-2.0
   company: none
   min_ansible_version: "2.12"
-
-  platforms:
-    - name: Alpine
-      versions:
-        - all
-    - name: EL
-      versions:
-        - "8"
-    - name: Debian
-      versions:
-        - bullseye
-    - name: Fedora
-      versions:
-        - all
-    - name: Ubuntu
-      versions:
-        - all
-
   galaxy_tags:
     - azurecli
-
 dependencies: []

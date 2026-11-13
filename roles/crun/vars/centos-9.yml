@@ -1,5 +1,4 @@
 ---
-
 _rpm_key:
   - key: "http://downloadcontent.opensuse.org/repositories/home:/buluma/CentOS_9_Stream/repodata/repomd.xml.key"
     fingerprint: "73fa4cd708ec6538ce87b9db8a0cf4d70dee6ef3"

@@ -1,0 +1,18 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Create remote_backup_directory
+  ansible.builtin.file:
+    mode: "0755"
+    path: "{{ restore_remote_directory }}"
+    state: directory
+- name: Loop over objects in restore_objects
+  ansible.builtin.include_tasks:
+    file: object.yml
+  loop: "{{ restore_objects }}"
+  loop_control:
+    loop_var: object
+  when:
+    - restore_objects is defined

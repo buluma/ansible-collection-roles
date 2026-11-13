@@ -1,0 +1,60 @@
+---
+# tasks file for npm
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Configure debian
+  when:
+    - ansible_facts['os_family'] == "Debian"
+  block:
+    - name: Install nodejs key
+      ansible.builtin.get_url:
+        url: "{{ npm_apt_key }}"
+        dest: /etc/apt/trusted.gpg.d/npm.asc
+        validate_certs: "{{ npm_validate_certs }}"
+        mode: "0644"
+
+    - name: Install nodejs deb repository
+      ansible.builtin.apt_repository:
+        repo: "{{ item }}"
+        state: present
+      loop: "{{ npm_apt_repositories }}"
+
+    - name: Pin nodejs to the NodeSource repository
+      ansible.builtin.copy:
+        dest: /etc/apt/preferences.d/nodesource
+        content: |
+          Package: *
+          Pin: origin deb.nodesource.com
+          Pin-Priority: 600
+        mode: "0644"
+
+- name: Install nodejs rpm repository
+  ansible.builtin.yum_repository:
+    name: "{{ item.name }}"
+    state: present
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgkey: "{{ npm_gpg_key }}"
+  loop: "{{ npm_yum_repositories }}"
+  when:
+    - ansible_facts['distribution'] == "CentOS"
+    - ansible_facts['distribution_major_version'] == "6"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install npm
+  ansible.builtin.package:
+    name: "{{ npm_packages }}"
+    state: present
+
+- name: Set the registry
+  ansible.builtin.lineinfile:
+    path: /usr/etc/npmrc
+    regexp: "^registry="
+    line: "registry={{ npm_registry }}"
+    create: true
+    mode: "0644"

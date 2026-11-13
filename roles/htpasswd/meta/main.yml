@@ -1,0 +1,22 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: htpasswd installation and helper role for Linux servers.
+  galaxy_tags:
+    - system
+    - web
+    - webserver
+    - apache
+    - nginx
+    - http
+    - basic
+    - authentication
+    - htpasswd
+    - htaccess
+    - security
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  namespace: buluma
+  role_name: htpasswd

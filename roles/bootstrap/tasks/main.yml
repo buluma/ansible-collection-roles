@@ -2,7 +2,8 @@
 # tasks file for bootstrap
 
 - name: Import assert.yml
-  ansible.builtin.import_tasks: assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
   run_once: true
   delegate_to: localhost
 
@@ -14,9 +15,144 @@
   when:
     - ansible_connection is defined
     - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
-    - bootstrap_wait_for_host | bool
+    - ansible_connection is not none
+    - bootstrap_wait_for_host
+
+- name: Gather bootstrap facts
+  ansible.builtin.include_tasks:
+    file: gather_facts.yml
+  when:
+    - bootstrap_os_family is not defined or bootstrap_distribution is not defined or bootstrap_distribution_major_version is not defined
+
+- name: Detect python3 version (raw)
+  ansible.builtin.raw: 'python3 -c ''import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")'''
+  args:
+    executable: /bin/sh
+  register: bootstrap_python3_version
+  changed_when: false
+  failed_when: false
+  become: false
+
+- name: Ensure python3.9 on Enterprise Linux 8 (raw)
+  ansible.builtin.raw: yum -y install python39 python39-pyyaml python39-setuptools
+  args:
+    executable: /bin/sh
+  register: bootstrap_install_python39
+  until: bootstrap_install_python39.rc == 0
+  retries: 3
+  delay: 5
+  changed_when: bootstrap_install_python39.rc == 0 and 'Nothing to do' not in bootstrap_install_python39.stdout
+  failed_when: false
+  become: false
+  when:
+    - bootstrap_os_family | default('') == "RedHat"
+    - (bootstrap_distribution_major_version | default('0') | int) == 8
+    - bootstrap_python3_version.rc != 0 or (bootstrap_python3_version.stdout | trim) is version('3.7', '<')
+
+- name: Fall back to python3.8 on Enterprise Linux 8 if python3.9 unavailable (raw)
+  ansible.builtin.raw: yum -y install python38 python38-pyyaml python38-setuptools
+  args:
+    executable: /bin/sh
+  register: bootstrap_install_modern_python
+  changed_when: bootstrap_install_modern_python.rc == 0 and 'Nothing to do' not in bootstrap_install_modern_python.stdout
+  failed_when: false
+  become: false
+  when:
+    - bootstrap_os_family | default('') == "RedHat"
+    - (bootstrap_distribution_major_version | default('0') | int) == 8
+    - bootstrap_install_python39.rc | default(1) != 0
+
+- name: Select ansible python interpreter (Enterprise Linux 8)
+  ansible.builtin.raw: >-
+    if [ -x /usr/bin/python3.9 ]; then echo /usr/bin/python3.9;
+    elif [ -x /usr/bin/python3.8 ]; then echo /usr/bin/python3.8;
+    else echo /usr/bin/python3; fi
+  args:
+    executable: /bin/sh
+  register: bootstrap_python_interpreter
+  changed_when: false
+  become: false
+  when:
+    - bootstrap_os_family | default('') == "RedHat"
+    - (bootstrap_distribution_major_version | default('0') | int) == 8
+
+- name: Set ansible python interpreter fact (Enterprise Linux 8)
+  ansible.builtin.set_fact:
+    ansible_python_interpreter: "{{ bootstrap_python_interpreter.stdout | trim }}"
+  when:
+    - bootstrap_os_family | default('') == "RedHat"
+    - (bootstrap_distribution_major_version | default('0') | int) == 8
+    - bootstrap_python_interpreter is defined
+    - (bootstrap_python_interpreter.stdout | trim) | length > 0
+
+- name: Fail if Enterprise Linux 8 host lacks Python 3.9+
+  ansible.builtin.fail:
+    msg: >-
+      This host only has {{ bootstrap_python_interpreter.stdout | trim }}
+      available, but Ansible requires Python 3.9 or newer on managed nodes.
+      python39 failed to install after retries - check package repo
+      availability on this host.
+  when:
+    - bootstrap_os_family | default('') == "RedHat"
+    - (bootstrap_distribution_major_version | default('0') | int) == 8
+    - bootstrap_python_interpreter is defined
+    - (bootstrap_python_interpreter.stdout | trim) != '/usr/bin/python3.9'
+
+- name: Verify python interpreter works (raw)
+  ansible.builtin.raw: "{{ bootstrap_python_interpreter.stdout | trim }} -c 'import sys; print(sys.version)'"
+  register: bootstrap_python_verify
+  changed_when: false
+  failed_when: false
+  become: false
+  when:
+    - bootstrap_os_family | default('') == "RedHat"
+    - (bootstrap_distribution_major_version | default('0') | int) == 8
+    - bootstrap_python_interpreter is defined
+    - (bootstrap_python_interpreter.stdout | trim) | length > 0
+
+- name: Ensure modern python on Suse (raw)
+  ansible.builtin.raw: >-
+    zypper -n install python311 python311-xml ||
+    zypper -n install python310 python310-xml ||
+    zypper -n install python39 python39-xml ||
+    zypper -n install python38 python38-xml
+  args:
+    executable: /bin/sh
+  register: bootstrap_install_modern_python_suse
+  changed_when: bootstrap_install_modern_python_suse.rc == 0
+  failed_when: false
+  become: false
+  when:
+    - bootstrap_os_family | default('') == "Suse"
+    - bootstrap_python3_version.rc != 0 or (bootstrap_python3_version.stdout | trim) is version('3.7', '<')
+
+- name: Select ansible python interpreter (Suse)
+  ansible.builtin.raw: >-
+    if [ -x /usr/bin/python3.11 ]; then echo /usr/bin/python3.11;
+    elif [ -x /usr/bin/python3.10 ]; then echo /usr/bin/python3.10;
+    elif [ -x /usr/bin/python3.9 ]; then echo /usr/bin/python3.9;
+    elif [ -x /usr/bin/python3.8 ]; then echo /usr/bin/python3.8;
+    else echo /usr/bin/python3; fi
+  args:
+    executable: /bin/sh
+  register: bootstrap_python_interpreter_suse
+  changed_when: false
+  become: false
+  when:
+    - bootstrap_os_family | default('') == "Suse"
+
+- name: Set ansible python interpreter fact (Suse)
+  ansible.builtin.set_fact:
+    ansible_python_interpreter: "{{ bootstrap_python_interpreter_suse.stdout | trim }}"
+  when:
+    - bootstrap_os_family | default('') == "Suse"
+    - bootstrap_python_interpreter_suse is defined
+    - (bootstrap_python_interpreter_suse.stdout | trim) | length > 0
 
 - name: Prepare system
+  # At this stage, python and/or sudo are not installed, `become` can't be used.
+  # This means this role has to run as root, can't switch user.
+  become: false
   block:
     - name: Test connection
       ansible.builtin.wait_for_connection:
@@ -34,14 +170,12 @@
 
     - name: Install bootstrap packages (raw)
       ansible.builtin.raw: "{{ bootstrap_install.raw }}"
+      args:
+        executable: /bin/sh
       register: bootstrap_install_packages
       changed_when:
-        - (bootstrap_install.stdout_regex in bootstrap_install_packages.stdout and
-           bootstrap_os_family in [ "Alpine", "Archlinux", "Gentoo" ]) or
-          (bootstrap_install.stdout_regex not in bootstrap_install_packages.stdout and
-           bootstrap_os_family in [ "Debian", "RedHat", "Rocky", "Suse" ])
-  # At this stage, python and/or sudo are not installed, `become` can't be used.
-  become: false
+        - (bootstrap_install.stdout_regex in bootstrap_install_packages.stdout and bootstrap_os_family in [ "Alpine", "Archlinux", "Gentoo" ]) or
+          (bootstrap_install.stdout_regex not in bootstrap_install_packages.stdout and bootstrap_os_family in [ "Debian", "RedHat", "Rocky", "Suse" ])
 
 - name: Gather ansible facts
   ansible.builtin.setup:
@@ -51,5 +185,8 @@
   ansible.builtin.package:
     name: "{{ item }}"
     state: present
+    update_cache: true
   loop: "{{ bootstrap_facts_packages.split() }}"
   become: "{{ bootstrap_become }}"
+  when:
+    - not (bootstrap_os_family | default('') == "RedHat" and (bootstrap_distribution_major_version | default('0') | int) == 8)

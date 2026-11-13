@@ -1,0 +1,22 @@
+---
+- name: Remove externally managed from Debian 12
+  ansible.builtin.import_tasks: debian12.yml
+  when:
+    - ansible_facts['os_family'] == "Debian"
+
+- name: Ensure Pip is installed.
+  ansible.builtin.package:
+    name:
+      - "{{ pip_package }}"
+      - python3-packaging
+    state: present
+
+- name: Ensure pip_install_packages are installed.
+  ansible.builtin.pip:
+    name: "{{ item.name | default(item) }}"
+    version: "{{ item.version | default(omit) }}"
+    virtualenv: "{{ item.virtualenv | default(omit) }}"
+    state: "{{ item.state | default(omit) }}"
+    extra_args: "{{ item.extra_args | default(omit) }}"
+    executable: "{{ item.virtualenv | default(false) | ternary(omit, pip_executable) }}"
+  loop: "{{ pip_install_packages }}"

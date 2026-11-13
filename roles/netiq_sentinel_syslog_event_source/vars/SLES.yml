@@ -1,0 +1,6 @@
+---
+sentinel_collector_magic: SUSE Linux Enterprise Server
+syslog_implementation: syslog-ng
+syslog_package_names:
+  - syslog-ng
+syslog_service_name: syslog-ng

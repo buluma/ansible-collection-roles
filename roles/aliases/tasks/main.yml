@@ -1,0 +1,10 @@
+---
+# tasks file for aliases
+- name: Configure /etc/aliases
+  ansible.builtin.template:
+    src: aliases.j2
+    dest: /etc/aliases
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Aliases_update

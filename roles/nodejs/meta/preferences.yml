@@ -1,0 +1,21 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+# Fedora is excluded entirely: NodeSource only publishes "el"-numbered RPM
+# repos (RHEL/CentOS/Rocky/AlmaLinux/Amazon), nothing for Fedora, so this
+# role's RedHat setup path (which os_family routes Fedora into) has never
+# actually worked there.
+platforms:
+  # EL10 excluded too: NodeSource's RPM signing key has a SHA-1
+  # self-signature from 2014, which RHEL10's default crypto policy
+  # rejects on import ("No binding signature") - a vendor-side problem,
+  # not something fixable in this role.
+  - name: EL
+    versions:
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  - name: Ubuntu
+    versions:
+      - all

@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+
+standby_mode          = 'on'
+primary_conninfo      = 'host={{ postgresql_replication__master_node_address }} port=5432 user={{ postgresql_replication__user }} password={{ postgresql_replication__password }}'
+trigger_file = '{{postgresql_replication__trigger_file}}'
+restore_command = 'cp {{ postgresql_replication__waldir }}/%f "%p"'

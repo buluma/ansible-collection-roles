@@ -1,0 +1,18 @@
+---
+- name: filesystem | Test storage_filesystems
+  ansible.builtin.assert:
+    that:
+      - filesystem.name is defined
+    quiet: true
+
+- name: filesystem | Create filesystems
+  community.general.filesystem:
+    dev: "{{ filesystem.name }}"
+    fstype: "{{ filesystem.fstype | default(storage_default_fstype) }}"
+  when:
+    - ansible_facts['os_family'] != 'Alpine'
+  notify:
+    - Reload systemd
+
+- name: filesystem | Run handlers
+  ansible.builtin.meta: flush_handlers

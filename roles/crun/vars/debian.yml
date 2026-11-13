@@ -1,5 +1,4 @@
 ---
-
 _apt_key:
   - keyring: "/etc/apt/trusted.gpg.d/home_buluma.gpg"
     url: "http://downloadcontent.opensuse.org/repositories/home:/buluma/Debian_Testing/Release.key"

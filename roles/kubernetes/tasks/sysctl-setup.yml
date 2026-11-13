@@ -1,0 +1,26 @@
+---
+- name: sysctl-setup | Ensure procps is installed.
+  ansible.builtin.package:
+    name: "{{ procps_package }}"
+    state: present
+  when: "ansible_facts['distribution'] != 'Debian' or ansible_facts['distribution_major_version'] | int < 10\n"
+- name: sysctl-setup | Ensure kmod is installed (provides modprobe).
+  ansible.builtin.package:
+    name: kmod
+    state: present
+- name: sysctl-setup | Load the overlay and br_netfilter kernel modules.
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - overlay
+    - br_netfilter
+- name: sysctl-setup | Let iptables see bridged traffic.
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    state: present
+    value: "1"
+  loop:
+    - net.bridge.bridge-nf-call-iptables
+    - net.bridge.bridge-nf-call-ip6tables
+  when: "ansible_facts['distribution'] != 'Debian' or ansible_facts['distribution_major_version'] | int < 10\n"

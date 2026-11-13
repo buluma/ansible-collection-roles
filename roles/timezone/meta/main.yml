@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: buluma
+  namespace: buluma
+  role_name: timezone
+  description: "Ansible Role for Timezone Management"
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - system
+dependencies: []

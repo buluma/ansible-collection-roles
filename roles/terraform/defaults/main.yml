@@ -1,0 +1,3 @@
+---
+terraform_destination: /usr/local/bin
+terraform_version: "1.17.0"

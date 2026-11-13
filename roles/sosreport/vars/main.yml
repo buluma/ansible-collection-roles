@@ -1,0 +1,12 @@
+---
+# vars file for sosreport
+
+sosreport_packages: >-
+  {{ ['sosreport']
+     if (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] | int < 13)
+        or (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int < 26)
+     else ['sos'] }}
+
+sosreport_command: sos report --batch --tmp-dir={{ sosreport_remote_location }}
+
+sosreport_patterns: "sosreport-*-{{ ansible_facts['date_time'].date }}-*.tar.*"

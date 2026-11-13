@@ -1,0 +1,10 @@
+---
+- name: lib | Deploy lib
+  ansible.builtin.get_url:
+    dest: "{{ tomcat_directory }}//{{ instance.name }}/lib/"
+    mode: "0640"
+    url: "{{ lib.url }}"
+  notify:
+    - Restart tomcat instance
+  when:
+    - lib.url is defined

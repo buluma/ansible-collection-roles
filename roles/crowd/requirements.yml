@@ -1,0 +1,8 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.java
+  - name: alvistack.openjdk
+collections:
+  - name: operator_sdk.util
+    version: ">=0.0.0,<1.0.0"

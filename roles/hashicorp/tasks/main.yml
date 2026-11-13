@@ -1,0 +1,71 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install using package
+  when:
+    - hashicorp_installation_method == "package"
+  block:
+    - name: Install repository for RedHat
+      ansible.builtin.get_url:
+        dest: /etc/yum.repos.d/hashicorp.repo
+        mode: "0640"
+        url: "{{ hashicorp_repository_url }}"
+      when:
+        - ansible_facts['os_family'] in [ "RedHat", "Rocky" ]
+    - name: Configure debian
+      when:
+        - ansible_facts['os_family'] == "Debian"
+      block:
+        - name: Install required package gpg
+          ansible.builtin.package:
+            name: gpg
+        - name: Install apt key for Debian
+          ansible.builtin.get_url:
+            url: https://apt.releases.hashicorp.com/gpg
+            dest: /etc/apt/trusted.gpg.d/hashicorp.asc
+            validate_certs: false
+            mode: "0644"
+        - name: Install repository for Debian
+          ansible.builtin.apt_repository:
+            repo: deb [arch={{ hashicorp_architecture_mapping }}] https://apt.releases.hashicorp.com {{ ansible_facts['distribution_release'] }} main
+            state: present
+    - name: Install hashicorp product using package
+      when:
+        - hashicorp_products is defined
+      block:
+        - name: Install latest hashicorp product using package
+          ansible.builtin.package:
+            name: "{{ item.name }}"
+            state: present
+          loop: "{{ hashicorp_products }}"
+          loop_control:
+            label: "{{ item.name }}"
+          when:
+            - item.version is not defined
+        - name: Install versioned hashicorp product using package
+          ansible.builtin.package:
+            name: "{{ item.name }}{{ version_coupler }}{{ item.version }}"
+            state: present
+          when:
+            - item.version is defined
+          loop: "{{ hashicorp_products }}"
+          loop_control:
+            label: "{{ item.name }}"
+- name: Install manually
+  when:
+    - hashicorp_installation_method == "manual"
+  block:
+    - name: Install hashicorp product manually
+      ansible.builtin.unarchive:
+        dest: "{{ hashicorp_destination }}"
+        group: "{{ hashicorp_group }}"
+        mode: "{{ hashicorp_mode }}"
+        owner: "{{ hashicorp_owner }}"
+        remote_src: true
+        src: "{{ hashicorp_src }}"
+      loop: "{{ hashicorp_products }}"
+      loop_control:
+        label: "{{ item.name }}"

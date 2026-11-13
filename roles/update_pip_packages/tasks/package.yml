@@ -1,0 +1,19 @@
+---
+- name: package | Update package {{ package.key }}
+  when:
+    - package.key not in update_pip_package_ignore
+  block:
+    - name: package | Update package {{ package.key }}
+      ansible.builtin.pip:
+        name: "{{ package.key }}"
+        state: latest # noqa package-latest
+      environment:
+        path: "/bin:/usr/local/bin"
+  rescue:
+    - name: package | Force-reinstall package {{ package.key }}
+      ansible.builtin.pip:
+        name: "{{ package.key }}"
+        state: latest # noqa package-latest
+        extra_args: --ignore-installed
+      environment:
+        path: "/bin:/usr/local/bin"

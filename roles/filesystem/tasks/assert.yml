@@ -1,31 +1,37 @@
 ---
+- name: assert | Warn if filesytem_default_filesystem is set incorrectly
+  block:
+    - name: assert | Test filesytem_default_filesystem
+      ansible.builtin.assert:
+        that:
+          - filesytem_default_filesystem is defined
+          - filesytem_default_filesystem is string
+          - filesytem_default_filesystem in [ "btrfs", "ext2", "ext3", "ext4", "ext4dev", "f2fs", "lvm", "ocfs2", "reiserfs", "swap", "vfat", "xfs" ]
+        quiet: true
+  rescue:
+    - name: assert | Warn about unknown filesystem
+      ansible.builtin.debug:
+        msg: "The filesystem you are using can be unknown, proceeding."
 
-- name: Test if filesytem_default_filesystem is set correctly
-  ansible.builtin.assert:
-    that:
-      - filesytem_default_filesystem is defined
-      - filesytem_default_filesystem is string
-      - filesytem_default_filesystem in [ "btrfs", "ext2", "ext3", "ext4", "ext4dev", "f2fs", "lvm", "ocfs2", "reiserfs", "swap", "vfat", "xfs" ]
-    quiet: true
-
-- name: Test if filesystem_list is set correctly
+- name: assert | Test filesystem_list
   ansible.builtin.assert:
     that:
       - filesystem_list is defined
       - filesystem_list is iterable
     quiet: true
 
-- name: Test if item.dev in filesystem_list is set correctly
+- name: assert | Test item.dev in filesystem_list
   ansible.builtin.assert:
     that:
       - item.dev is defined
       - item.dev is string
+      - item.dev is not none
     quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
     label: "{{ item.dev }}"
 
-- name: Test if item.force in filesystem_list is set correctly
+- name: assert | Test item.force in filesystem_list
   ansible.builtin.assert:
     that:
       - item.force is boolean
@@ -36,7 +42,7 @@
   when:
     - item.force is defined
 
-- name: Test if item.fstype in filesystem_list is set correctly
+- name: assert | Test item.fstype in filesystem_list
   ansible.builtin.assert:
     that:
       - item.fstype is string
@@ -48,7 +54,7 @@
   when:
     - item.fstype is defined
 
-- name: Test if item.state in filesystem_list is set correctly
+- name: assert | Test item.state in filesystem_list
   ansible.builtin.assert:
     that:
       - item.state is string
@@ -60,19 +66,19 @@
   when:
     - item.state is defined
 
-- name: Test if item.opts in filesystem_list is set correctly
+- name: assert | Test item.opts in filesystem_list
   ansible.builtin.assert:
     that:
       - item.opts is string
+      - item.opts is not none
     quiet: true
   loop: "{{ filesystem_list }}"
   loop_control:
-    label:
-      label: "{{ item.dev }}"
+    label: "{{ item.dev }}"
   when:
     - item.opts is defined
 
-- name: Test if item.resizefs in filesystem_list is set correctly
+- name: assert | Test item.resizefs in filesystem_list
   ansible.builtin.assert:
     that:
       - item.resizefs is boolean
@@ -83,7 +89,7 @@
   when:
     - item.resizefs is defined
 
-- name: Test if item.resizefs and item.fstype in filesystem_list is set correctly
+- name: assert | Test item.resizefs and item.fstype in filesystem_list
   ansible.builtin.assert:
     that:
       - item.fstype in [ "ext2", "ext3", "ext4", "ext4dev", "f2fs", "lvm", "swap", "vfat", "xfs" ]
@@ -93,4 +99,4 @@
     label: "{{ item.dev }}"
   when:
     - item.resizefs is defined
-    - item.resizefs | bool
+    - item.resizefs is boolean

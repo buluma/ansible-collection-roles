@@ -1,0 +1,7 @@
+---
+- name: delete | Remove users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    remove: "{{ item.remove }}"
+    state: absent
+  with_items: "{{ capistrano_setup_users_deleted }}"

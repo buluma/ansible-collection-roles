@@ -1,2 +1,23 @@
 ---
-tox_parallel: true
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      # Excludes 10: Microsoft's azure-cli RPM bundles a venv that ends up
+      # running EL10's system Python 3.12+, which dropped distutils from
+      # stdlib; azure-cli's own code still imports it, so `az --version`
+      # crashes. Bug in Microsoft's package, not this role.
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

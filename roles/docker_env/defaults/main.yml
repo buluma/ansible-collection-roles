@@ -2,16 +2,14 @@
 # defaults file for docker_env
 
 # default container variables
-state: started
-command: sleep 1d
-privileged: true
-interactive: true
-tty: true
-volumes:
-  - /sys/fs/cgroup:/sys/fs/cgroup:ro
-capabilities:
+docker_env_state: started
+docker_env_command: sleep 1d
+docker_env_privileged: true
+docker_env_interactive: true
+docker_env_tty: true
+docker_env_capabilities:
   - SYS_ADMIN
-restart_policy: unless-stopped
+docker_env_restart_policy: unless-stopped
 container_default_behavior: no_defaults
 
 # pull images/create containers

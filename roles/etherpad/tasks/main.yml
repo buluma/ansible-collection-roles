@@ -1,45 +1,103 @@
 ---
-# tasks file for etherpad
-
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: true
   delegate_to: localhost
-
+  run_once: true
 - name: Create etherpad_installation_destination
   ansible.builtin.file:
+    mode: "0750"
     path: "{{ etherpad_installation_destination }}"
     state: directory
+- name: Create persistent Etherpad data directory
+  ansible.builtin.file:
     mode: "0750"
-
-- name: Install etherpad
-  ansible.builtin.unarchive:
-    src: "{{ etherpad_url }}"
-    dest: "{{ etherpad_installation_destination }}"
-    remote_src: true
-    creates: "{{ etherpad_working_directory }}"
-    mode: "0750"
-
-- name: Configure etherpad
-  ansible.builtin.template:
-    src: "{{ etherpad_configuration_file }}.j2"
-    dest: "{{ etherpad_working_directory }}/{{ etherpad_configuration_file }}"
-    mode: "0640"
-  notify:
-    - Restart etherpad
-
-- name: Create etherpad service
-  ansible.builtin.import_role:
-    name: buluma.service
-  vars:
-    service_list:
-      - name: etherpad
-        description: Etherpad
-        start_command: "{{ etherpad_working_directory }}/bin/run.sh --root"
-        working_directory: "{{ etherpad_working_directory }}"
-
-- name: Start and enable etherpad
+    path: "{{ etherpad_data_directory }}"
+    state: directory
+- name: Check for the persistent Etherpad database
+  ansible.builtin.stat:
+    path: "{{ etherpad_data_directory }}/dirty.db"
+  register: etherpad_persistent_database
+- name: Find existing versioned Etherpad databases
+  ansible.builtin.find:
+    depth: 3
+    file_type: file
+    paths: "{{ etherpad_installation_destination }}"
+    patterns: dirty.db
+    recurse: true
+  register: etherpad_legacy_database_search
+  when: not etherpad_persistent_database.stat.exists
+- name: Select versioned Etherpad databases for migration
+  ansible.builtin.set_fact:
+    etherpad_legacy_dirty_databases: >-
+      {{
+        etherpad_legacy_database_search.files
+        | selectattr(
+          'path',
+          'match',
+          '^'
+          ~ (etherpad_installation_destination | regex_escape)
+          ~ '/etherpad-[^/]+/var/dirty\\.db$'
+        )
+        | map(attribute='path')
+        | list
+      }}
+  when: not etherpad_persistent_database.stat.exists
+- name: Require one unambiguous legacy Etherpad database
+  ansible.builtin.assert:
+    that:
+      - etherpad_legacy_dirty_databases | length <= 1
+    fail_msg: >-
+      Multiple versioned Etherpad dirty databases were found. Move the intended
+      database to {{ etherpad_data_directory }}/dirty.db before rerunning this role.
+  when: not etherpad_persistent_database.stat.exists
+- name: Read service state before migrating the Etherpad database
+  ansible.builtin.service_facts:
+  when:
+    - etherpad_legacy_dirty_databases | default([]) | length == 1
+- name: Stop Etherpad before migrating its database
   ansible.builtin.service:
     name: "{{ etherpad_service }}"
-    state: started
+    state: stopped
+  when:
+    - etherpad_legacy_dirty_databases | default([]) | length == 1
+    - >-
+      etherpad_service in ansible_facts.services
+      or (etherpad_service ~ '.service') in ansible_facts.services
+- name: Migrate the existing Etherpad database to persistent storage
+  ansible.builtin.copy:
+    src: "{{ etherpad_legacy_dirty_databases | first }}"
+    dest: "{{ etherpad_data_directory }}/dirty.db"
+    mode: "0640"
+    remote_src: true
+  when:
+    - not etherpad_persistent_database.stat.exists
+    - etherpad_legacy_dirty_databases | default([]) | length == 1
+- name: Install etherpad
+  ansible.builtin.unarchive:
+    creates: "{{ etherpad_working_directory }}"
+    dest: "{{ etherpad_installation_destination }}"
+    mode: "0750"
+    remote_src: true
+    src: "{{ etherpad_url }}"
+- name: Configure etherpad
+  ansible.builtin.template:
+    dest: "{{ etherpad_working_directory }}/{{ etherpad_configuration_file }}"
+    mode: "0640"
+    src: "{{ etherpad_configuration_file }}.j2"
+  notify:
+    - Restart etherpad
+# Separator for the pre-commit handler parser.
+- name: Create etherpad service
+  ansible.builtin.import_role:
+    name: buluma.roles.service
+  vars:
+    service_list:
+      - description: Etherpad
+        name: etherpad
+        start_command: "{{ etherpad_working_directory }}/bin/run.sh --root"
+        working_directory: "{{ etherpad_working_directory }}"
+- name: Start and enable etherpad
+  ansible.builtin.service:
     enabled: true
+    name: "{{ etherpad_service }}"
+    state: started

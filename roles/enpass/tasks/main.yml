@@ -1,0 +1,60 @@
+---
+# tasks file for enpass
+
+- name: Install required software
+  ansible.builtin.package:
+    name: "{{ enpass_requirements }}"
+
+- name: Configure Debian like systems
+  when:
+    - ansible_facts['os_family'] == "Debian"
+  block:
+    - name: Trust APT key
+      ansible.builtin.get_url:
+        url: "https://apt.enpass.io/keys/enpass-linux.key"
+        dest: /etc/apt/trusted.gpg.d/enpass.asc
+        validate_certs: false
+        mode: "0644"
+
+    - name: Add APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://apt.enpass.io/ stable main"
+
+- name: Configure RedHat like systems
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+  block:
+    - name: Add YUM repository
+      ansible.builtin.yum_repository:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        baseurl: "{{ item.baseurl }}"
+        gpgcheck: "{{ item.gpgcheck }}"
+        gpgkey: "{{ item.gpgkey }}"
+        enabled: "{{ item.enabled | default('true') }}"
+      loop: "{{ enpass_yum_repositories }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+- name: Configure Suse like systems
+  when:
+    - ansible_facts['os_family'] == "Suse"
+  block:
+    - name: Add ZYPPER repository
+      community.general.zypper_repository:
+        name: "{{ item.name }}"
+        repo: "{{ item.baseurl }}"
+      loop: "{{ enpass_yum_repositories }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.name != "enpass-testing"
+
+- name: Trust YUM key
+  ansible.builtin.rpm_key:
+    key: "https://yum.enpass.io/RPM-GPG-KEY-enpass-signing-key"
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+
+- name: Install enpass
+  ansible.builtin.package:
+    name: enpass

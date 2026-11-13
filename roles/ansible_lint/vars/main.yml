@@ -1,0 +1,14 @@
+---
+# vars file for ansible_lint
+
+_ansible_lint_packages:
+  default:
+    - name: ansible-lint
+      type: pip
+  Debian:
+    - name: ansible-lint
+      type: package
+  RedHat:
+    - name: ansible-lint
+      type: pip
+ansible_lint_packages: "{{ _ansible_lint_packages[ansible_facts['os_family']] | default(_ansible_lint_packages['default']) }}"

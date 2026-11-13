@@ -1,62 +1,46 @@
 ---
-# vars file for dns
-
+_dns_confdir:
+  Alpine: /etc/bind
+  Debian: /etc/bind
+  Suse: /var/lib/named/etc
+  default: /etc
+_dns_datadir:
+  Alpine: /var/bind
+  Debian: /var/lib/bind
+  Suse: /var/lib/named/var/named
+  default: /var/named
+_dns_group:
+  Debian: bind
+  default: named
+_dns_owner:
+  Debian: bind
+  RedHat: root
+  default: named
 _dns_packages:
-  default:
-    - bind
   Alpine:
     - bind
     - bind-tools
   Debian:
     - bind9
-
-dns_packages: "{{ _dns_packages[ansible_os_family] | default(_dns_packages['default'] ) }}"
-
-_dns_validate_certs:
-  default: true
-  Debian: false
-
-dns_validate_certs: "{{ _dns_validate_certs[ansible_os_family] | default(_dns_validate_certs['default'] ) }}"
-
-_dns_datadir:
-  default: /var/named
-  Alpine: /var/bind
-  Debian: /var/lib/bind
-  Suse: /var/lib/named/var/named
-
-dns_datadir: "{{ _dns_datadir[ansible_os_family] | default(_dns_datadir['default'] ) }}"
-
-_dns_confdir:
-  default: /etc
-  Alpine: /etc/bind
-  Debian: /etc/bind
-  Suse: /var/lib/named/etc
-
-dns_confdir: "{{ _dns_confdir[ansible_os_family] | default(_dns_confdir['default'] ) }}"
-
-_dns_group:
-  default: named
-  Debian: bind
-
-dns_group: "{{ _dns_group[ansible_os_family] | default(_dns_group['default'] ) }}"
-
-_dns_owner:
-  default: named
-  Debian: bind
-  RedHat: &redhat_owner root
-  Rocky: *redhat_owner
-
-dns_owner: "{{ _dns_owner[ansible_os_family] | default(_dns_owner['default'] ) }}"
-
+  default:
+    - bind
 _dns_service:
-  default: bind
   Alpine: named
-  Debian-10: bind9
   Debian: named
-  RedHat: &redhat_service named
-  Rocky: *redhat_service
-  Ubuntu-18: bind9
-  Ubuntu-16: bind9
+  Debian-10: bind9
+  RedHat: named
   Suse: named
-
-dns_service: "{{ _dns_service[ansible_distribution ~ '-' ~ ansible_distribution_major_version] | default(_dns_service[ansible_distribution] | default(_dns_service[ansible_os_family] | default(_dns_service['default'] ))) }}"
+  Ubuntu-16: bind9
+  Ubuntu-18: bind9
+  default: bind
+_dns_validate_certs:
+  Debian: false
+  default: true
+dns_confdir: "{{ _dns_confdir[ansible_facts['os_family']] | default(_dns_confdir['default']) }}"
+dns_datadir: "{{ _dns_datadir[ansible_facts['os_family']] | default(_dns_datadir['default']) }}"
+dns_group: "{{ _dns_group[ansible_facts['os_family']] | default(_dns_group['default']) }}"
+dns_owner: "{{ _dns_owner[ansible_facts['os_family']] | default(_dns_owner['default']) }}"
+dns_packages: "{{ _dns_packages[ansible_facts['os_family']] | default(_dns_packages['default']) }}"
+dns_service: "{{ _dns_service[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_dns_service[ansible_facts['distribution']]
+  | default(_dns_service[ansible_facts['os_family']] | default(_dns_service['default'] ))) }}"
+dns_validate_certs: "{{ _dns_validate_certs[ansible_facts['os_family']] | default(_dns_validate_certs['default']) }}"

@@ -1,0 +1,23 @@
+---
+- name: sepolicy-RedHat | Check if SSH port is already allowed in SELinux (RedHat)
+  ansible.builtin.command:
+    argv:
+      - semanage
+      - port
+      - -lC
+  ignore_errors: true
+  register: allowed
+  changed_when: false
+- name: sepolicy-RedHat | Allow SSH port in SELinux (RedHat) {{ security_ssh_port }}
+  ansible.builtin.command:
+    argv:
+      - semanage
+      - port
+      - -a
+      - -t
+      - ssh_port_t
+      - -p
+      - tcp
+      - "{{ security_ssh_port }}"
+  changed_when: allowed.rc != 0
+  when: allowed.rc != 0

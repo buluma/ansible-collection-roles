@@ -1,0 +1,14 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.bareos_repository
+    src: https://github.com/buluma/ansible-role-bareos_repository.git
+    # The `buildtools`, `python_pip` and `postgres` roles provide a database.
+  - name: buluma.buildtools
+    # EPEL is required for python-pip on RHEL7.
+  - name: buluma.epel
+  - name: buluma.python_pip
+  - name: buluma.postgres
+    # The `core_dependencies` and `postfix` roles provide mailing capabilities for the `bareos_role`: "dir".
+    # - name: buluma.core_dependencies
+    # - name: buluma.postfix

@@ -1,2 +1,23 @@
 ---
-# vars file for daemonize
+# vars file for buildroot
+
+_daemonize_packages:
+  default:
+    - build-essential
+  Debian:
+    - build-essential
+    - unzip
+    - tar
+    - sudo
+  RedHat:
+    - gcc
+    - make
+    - tar
+    - unzip
+  # Rocky: *centos_packages
+  Suse:
+    - tar
+    - unzip
+
+daemonize_packages: "{{ _daemonize_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_daemonize_packages[ansible_facts['distribution']]
+  | default(_daemonize_packages[ansible_facts['os_family']] | default (_daemonize_packages['default'] ))) }}"

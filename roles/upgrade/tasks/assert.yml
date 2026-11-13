@@ -1,0 +1,19 @@
+---
+- name: assert | Test upgrade_packages
+  ansible.builtin.assert:
+    that:
+      - upgrade_packages is iterable
+    quiet: true
+  when:
+    - upgrade_packages is defined
+
+- name: assert | Test item in upgrade_packages
+  ansible.builtin.assert:
+    that:
+      - item is defined
+      - item is string
+      - item is not none
+    quiet: true
+  loop: "{{ upgrade_packages }}"
+  when:
+    - upgrade_packages is defined

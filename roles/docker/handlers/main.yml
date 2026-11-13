@@ -1,8 +1,6 @@
 ---
-# handlers file for docker
-
 - name: Change group for docker socket
   ansible.builtin.file:
-    path: "{{ docker_socket }}"
     group: docker
     mode: "0660"
+    path: "{{ docker_socket }}"

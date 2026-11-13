@@ -1,0 +1,72 @@
+---
+# tasks file for stratis
+
+- name: Install stratis
+  ansible.builtin.package:
+    name: "{{ stratis_packages }}"
+    state: present
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+
+- name: Start dbus-broker
+  ansible.builtin.service:
+    name: dbus-broker
+    state: started
+    enabled: true
+  when:
+    - ansible_facts['distribution'] == "Fedora"
+    - ansible_facts['distribution_major_version'] | int > 33
+
+- name: Start and enable stratis
+  ansible.builtin.service:
+    name: "{{ stratis_service }}"
+    state: started
+    enabled: true
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+  tags:
+    - molecule-notest
+
+- name: Create pools
+  ansible.builtin.command:
+    cmd: stratis pool create {{ item.name }} {{ item.devices | join(' ') }}
+    creates: /stratis/{{ item.name }}
+  loop: "{{ stratis_pools }}"
+  when:
+    - stratis_pools is defined
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Create filesystems
+  ansible.builtin.command:
+    cmd: stratis fs create {{ item.pool }} {{ item.name }}
+    creates: /stratis/{{ item.pool }}/{{ item.name }}
+  loop: "{{ stratis_filesystems }}"
+  when:
+    - stratis_filesystems is defined
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Create mountpoint
+  ansible.builtin.file:
+    path: "{{ item.mountpoint }}"
+    state: directory
+    recurse: true
+    mode: "0755"
+  loop: "{{ stratis_mounts }}"
+  when:
+    - stratis_mounts is defined
+  loop_control:
+    label: "{{ item.mountpoint }}"
+
+- name: Mount filesystems
+  ansible.posix.mount:
+    path: "{{ item.mountpoint }}"
+    src: "{{ item.device }}"
+    fstype: xfs
+    state: present
+  loop: "{{ stratis_mounts }}"
+  when:
+    - stratis_mounts is defined
+  loop_control:
+    label: "{{ item.mountpoint }}"

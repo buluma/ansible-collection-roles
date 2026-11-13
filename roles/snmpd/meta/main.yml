@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: snmpd
+  description: Install and configure snmpd on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - snmpd
+dependencies: []

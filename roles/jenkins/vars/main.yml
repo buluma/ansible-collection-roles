@@ -1,0 +1,24 @@
+---
+_jenkins_configuration_directory:
+  Alpine: /etc/conf.d
+  RedHat: /etc/sysconfig
+  Suse: /etc/sysconfig
+  default: /etc/default
+_jenkins_package:
+  Debian: jenkins={{ jenkins_version }}
+  default: jenkins-{{ jenkins_version }}
+_jenkins_requirements:
+  RedHat:
+    - initscripts
+    - chkconfig
+  Suse:
+    - insserv-compat
+  default: []
+jenkins_apt_key_url: "https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key"
+jenkins_apt_repository_repo: "deb https://pkg.jenkins.io/debian-stable binary/"
+jenkins_configuration_directory: "{{ _jenkins_configuration_directory[ansible_facts['os_family']] | default(_jenkins_configuration_directory['default']) }}"
+jenkins_package: "{{ _jenkins_package[ansible_facts['distribution']] | default(_jenkins_package['default']) }}"
+jenkins_requirements: "{{ _jenkins_requirements[ansible_facts['os_family']] | default(_jenkins_requirements['default']) }}"
+jenkins_rpm_key: "https://pkg.jenkins.io/rpm-stable/jenkins.io-2026.key"
+jenkins_yum_repository_baseurl: "https://pkg.jenkins.io/redhat/jenkins.repo"
+jenkins_zypper_repository_repo: "https://pkg.jenkins.io/opensuse/"

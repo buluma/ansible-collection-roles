@@ -1,0 +1,53 @@
+---
+php_version: system
+lemp_base_packages:
+  RedHat:
+    - mariadb-server
+  Debian:
+    - default-mysql-server
+lemp_php_packages:
+  RedHat:
+    - php
+    - php-cli
+    - php-fpm
+    - php-gd
+    - php-intl
+    - php-mbstring
+    - php-mysqlnd
+    - php-odbc
+    - php-pear
+    - php-pecl-apcu
+    - php-pecl-imagick
+    - php-soap
+    - php-tidy
+    - php-xml
+  Debian:
+    - php
+    - php-apcu
+    - php-cli
+    - php-fpm
+    - php-gd
+    - php-imagick
+    - php-intl
+    - php-mbstring
+    - php-mysql
+    - php-odbc
+    - php-pear
+    - php-soap
+    - php-tidy
+    - php-xml
+lemp_sendmail_packages:
+  RedHat:
+    - sendmail
+    - sendmail-cf
+    - make
+  Debian:
+    - sendmail
+    - sendmail-cf
+    - make
+    - bsd-mailx
+lemp_web_user: "{{ 'nginx' if ansible_os_family == 'RedHat' else 'www-data' }}"
+lemp_document_root: "{{ '/usr/share/nginx/html' if ansible_os_family == 'RedHat' else '/var/www/html' }}"
+lemp_nginx_cache_directory: "{{ '/var/lib/nginx/cache' if ansible_os_family == 'RedHat' else '/var/cache/nginx' }}"
+lemp_php_session_directory: "{{ '/var/lib/php/session' if ansible_os_family == 'RedHat' else '/var/lib/php/sessions' }}"
+lemp_php_fpm_service: php-fpm

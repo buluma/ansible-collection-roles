@@ -1,0 +1,41 @@
+---
+- name: Debian | Install needrestart for needs-restarting
+  ansible.builtin.apt:
+    name: "needrestart"
+    state: present
+    update_cache: true
+
+- name: Debian | Mark packages for hold (apt-mark)
+  ansible.builtin.command: "apt-mark hold {{ item }}"
+  changed_when: false
+  loop: "{{ os_updates_apt_exclude }}"
+
+- name: Debian | Install OS Updates
+  ansible.builtin.apt:
+    upgrade: "{{ os_updates_apt_upgrade }}"
+
+- name: Debian | Mark packages for unhold (apt-mark)
+  ansible.builtin.command: "apt-mark unhold {{ item }}"
+  changed_when: false
+  loop: "{{ os_updates_apt_exclude }}"
+
+- name: Debian | Check if a reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: debian_needs_restart
+
+- name: Debian | Reboot machine if needed or forced
+  ansible.builtin.reboot:
+    post_reboot_delay: "{{ os_updates_reboot_delay | default('0') }}"
+    reboot_timeout: "{{ os_updates_reboot_timeout }}"
+  when:
+    - (debian_needs_restart.stat.exists and os_updates_reboot != "NEVER") or os_updates_reboot == "ALWAYS"
+  tags:
+    - molecule-notest
+    - molecule-idempotence-notest
+
+- name: Debian | APT autoremove
+  ansible.builtin.apt:
+    autoremove: true
+    autoclean: true
+  when: os_updates_apt_autoremove | bool

@@ -1,0 +1,12 @@
+---
+collections:
+  - name: ansible.posix
+  - name: ansible.mysql
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.ca_certificates
+  - name: buluma.core_dependencies
+  - name: buluma.container_docs
+  - name: buluma.mysql
+  - name: buluma.selinux
+  - name: buluma.zabbix_repository

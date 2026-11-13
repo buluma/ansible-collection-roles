@@ -1,0 +1,32 @@
+---
+- name: assert | Test if dynamic_chain is set correctly
+  ansible.builtin.assert:
+    that:
+      - dynamic_chain is defined
+      - dynamic_chain is boolean
+    quiet: true
+    msg: "'dynamic_chain' can not be coupled with different chain"
+
+- name: assert | Test if strict_chain is set correctly
+  ansible.builtin.assert:
+    that:
+      - strict_chain is defined
+      - strict_chain is boolean
+    quiet: true
+    msg: "'strict_chain' can not be coupled with different chain"
+
+- name: assert | Test if round_robin_chain is set correctly
+  ansible.builtin.assert:
+    that:
+      - round_robin_chain is defined
+      - round_robin_chain is boolean
+    quiet: true
+    msg: "'round_robin_chain' can not be coupled with different chain"
+
+- name: assert | Test if random_chain is set correctly
+  ansible.builtin.assert:
+    that:
+      - random_chain is defined
+      - random_chain is boolean
+    quiet: true
+    msg: "'random_chain' can not be coupled with different chain"

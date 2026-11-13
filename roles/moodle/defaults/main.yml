@@ -1,0 +1,11 @@
+---
+moodle_data_directory: /opt/moodledata
+moodle_database_hostname: localhost
+moodle_database_name: moodle
+moodle_database_password: moodle
+moodle_database_prefix: ""
+moodle_database_type: mysqli
+moodle_database_username: moodle
+moodle_directory_mode: "0750"
+moodle_version: 522
+moodle_wwwroot: "https://{{ ansible_facts['default_ipv4'].address }}/moodle"

@@ -1,0 +1,19 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+- name: Refresh varnish yum metadata cache
+  ansible.builtin.command:
+    cmd: "yum -q makecache -y --disablerepo='*' --enablerepo='varnishcache_{{ varnish_packagecloud_repo }}'" # noqa command-instead-of-module
+  changed_when: true
+- name: Restart varnish
+  ansible.builtin.service:
+    name: varnish
+    state: restarted
+  changed_when: false
+  failed_when: false
+- name: Restart service cron on centos
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: varnish
+    state: restarted

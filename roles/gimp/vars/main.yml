@@ -1,0 +1,27 @@
+---
+# vars file for gimp
+_gimp_packages:
+  default: []
+  Alpine:
+    - gimp
+  Debian:
+    - gimp
+    - gimp-gmic
+    - libbabl-0.1-0
+  # gimp-gmic was dropped during the GIMP 3.0 transition and isn't
+  # packaged for these releases (yet, in Ubuntu's case).
+  Debian-13:
+    - gimp
+    - libbabl-0.1-0
+  Ubuntu-26:
+    - gimp
+    - libbabl-0.1-0
+  Fedora:
+    - gimp
+  openSUSE Leap:
+    - gimp
+  RedHat:
+    - gimp
+
+gimp_packages: "{{ _gimp_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_gimp_packages[ansible_facts['distribution']]
+  | default(_gimp_packages[ansible_facts['os_family']] | default(_gimp_packages['default']))) }}"

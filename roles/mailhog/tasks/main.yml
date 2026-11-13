@@ -1,0 +1,41 @@
+---
+- name: Ensure mailhog install directory exists.
+  ansible.builtin.file:
+    group: root
+    mode: "0755"
+    owner: root
+    path: "{{ mailhog_install_dir }}"
+    state: directory
+- name: Download MailHog and mhsendmail binaries.
+  ansible.builtin.get_url:
+    dest: "{{ item.dest }}"
+    group: root
+    mode: "0755"
+    owner: root
+    url: "{{ item.url }}"
+  with_items:
+    - dest: "{{ mailhog_install_dir }}/mailhog"
+      url: "{{ mailhog_binary_url }}"
+    - dest: "{{ mailhog_install_dir }}/mhsendmail"
+      url: "{{ mhsendmail_binary_url }}"
+- name: Copy mailhog init script into place.
+  ansible.builtin.template:
+    dest: /etc/init.d/mailhog
+    group: root
+    mode: "0755"
+    owner: root
+    src: mailhog.init.j2
+  when: ansible_facts['service_mgr'] != 'systemd'
+- name: Copy mailhog systemd unit file into place (for systemd systems).
+  ansible.builtin.template:
+    dest: /etc/systemd/system/mailhog.service
+    group: root
+    mode: "0755"
+    owner: root
+    src: mailhog.unit.j2
+  when: ansible_facts['service_mgr'] == 'systemd'
+- name: Ensure mailhog is enabled and will start on boot.
+  ansible.builtin.service:
+    enabled: "true"
+    name: mailhog
+    state: started

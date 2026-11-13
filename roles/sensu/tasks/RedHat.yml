@@ -1,0 +1,22 @@
+---
+- name: RedHat | Ensure sensu.repo is copied
+  ansible.builtin.copy:
+    src: sensu.repo
+    dest: /etc/yum.repos.d/sensu.repo
+    mode: "0644"
+
+- name: RedHat | Ensure sensu is installed
+  ansible.builtin.dnf:
+    name: sensu-go-backend
+    state: present
+# Add the Sensu repository
+# - name: Add Sensu repository
+#   ansible.builtin.shell: curl -s https://packagecloud.io/install/repositories/sensu/stable/script.deb.sh | sudo bash
+#   args:
+#     warn: false
+
+# - name: Add Sensu repository-RHEL
+#   shell: "set -o pipefail ; curl -s https://packagecloud.io/install/repositories/sensu/stable/script.rpm.sh | sudo bash"
+#   register: sensu_repo
+#   # changed_when: false
+#   # failed_when: false

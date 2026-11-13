@@ -1,2 +1,24 @@
 ---
-tox_parallel: true
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      # Excludes 9: ships Python 3.9, but ara[server] requires
+      # django>=5.2,<5.3, which needs Python >=3.10.
+      - "10"
+  - name: Debian
+    versions:
+      # Excludes 11: ships Python 3.9, but ara[server] requires
+      # django>=5.2,<5.3, which needs Python >=3.10.
+      - "13"
+      - "12"
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

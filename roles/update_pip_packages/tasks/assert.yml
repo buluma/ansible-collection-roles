@@ -1,0 +1,15 @@
+---
+- name: assert | Test update_pip_packages_clients
+  ansible.builtin.assert:
+    that:
+      - update_pip_packages_clients is defined
+      - update_pip_packages_clients is iterable
+    quiet: true
+
+- name: assert | Test update_pip_packages_ignore
+  ansible.builtin.assert:
+    that:
+      - update_pip_packages_ignore is iterable
+    quiet: true
+  when:
+    - update_pip_packages_ignore is defined

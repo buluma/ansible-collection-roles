@@ -1,0 +1,58 @@
+---
+_vault_architecture_map:
+  arm64: arm64
+  i386: "386"
+  x86_64: amd64
+_vault_package:
+  ent: vault-enterprise{{ vault_version_separator }}{{ vault_version }}+ent-{{ vault_package_release }}
+  hsm: vault-enterprise-hsm{{ vault_version_separator }}{{ vault_version }}+ent-{{ vault_package_release }}
+  oss: vault{{ vault_version_separator }}{{ vault_version }}-{{ vault_package_release }}
+_vault_prerequisites:
+  Debian:
+    - apparmor-utils
+    - file
+    - libcap2-bin
+    - openssl
+    - procps
+  default:
+    - file
+    - libcap
+    - openssl
+_vault_version_separator:
+  apt: "="
+  default: "-"
+vault_architecture: "{{ _vault_architecture_map[ansible_facts['architecture']] }}"
+vault_data_directories:
+  - group: "{{ vault_user }}"
+    mode: "0755"
+    name: "{{ vault_data_directory }}/data"
+    owner: "{{ vault_user }}"
+  - group: "{{ vault_user }}"
+    mode: "0700"
+    name: "{{ vault_data_directory }}/tls"
+    owner: "{{ vault_user }}"
+vault_directories:
+  - group: "{{ vault_user }}"
+    mode: "0755"
+    name: "{{ vault_path }}/etc/vault.d"
+    owner: "{{ vault_user }}"
+  - group: root
+    mode: "0555"
+    name: "{{ vault_path }}/usr/bin"
+    owner: root
+vault_package: "{{ _vault_package[vault_type] }}"
+vault_prerequisites: "{{ _vault_prerequisites[ansible_facts['os_family']] | default(_vault_prerequisites['default']) }}"
+vault_tls_files:
+  - group: "{{ vault_user }}"
+    mode: "0600"
+    name: "{{ vault_data_directory }}/tls/tls.crt"
+    owner: "{{ vault_user }}"
+  - group: "{{ vault_user }}"
+    mode: "0600"
+    name: "{{ vault_data_directory }}/tls/tls.key"
+    owner: "{{ vault_user }}"
+  - group: "{{ vault_user }}"
+    mode: "0700"
+    name: "{{ vault_data_directory }}/tls"
+    owner: "{{ vault_user }}"
+vault_version_separator: "{{ _vault_version_separator[ansible_facts['pkg_mgr']] | default(_vault_version_separator['default']) }}"

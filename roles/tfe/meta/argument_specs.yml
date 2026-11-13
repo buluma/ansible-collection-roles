@@ -1,0 +1,109 @@
+---
+argument_specs:
+  main:
+    author: Shadow Walker
+    description: "Install and configure tfe on your system.\n"
+    options:
+      tfe_capacity_concurrency:
+        default: 10
+        description: Maximum number of Terraform runs that can execute concurrently on each Terraform Enterprise node.
+        type: int
+      tfe_database_host:
+        default: tfe.RaNdOm.eu-west-1.rds.amazonaws.com
+        description: A database hostname.
+        type: str
+      tfe_database_name:
+        default: tfe
+        description: A database name.
+        type: str
+      tfe_database_parameters:
+        default: sslmode=disable
+        description: A database parameter.
+        type: str
+      tfe_database_password:
+        default: my_pass_c0mpl.x
+        description: A database password.
+        type: str
+      tfe_database_user:
+        default: tfe
+        description: A database username.
+        type: str
+      tfe_encryption_password:
+        default: S0meP@ssword
+        description: An encryption password for the TFE application.
+        type: str
+      tfe_hostname:
+        default: tfe.example.com
+        description: Configure a hostname, used to redirect HTTP(S) requests.
+        type: str
+      tfe_iact_subnets:
+        default:
+          - 10.0.0.0/8
+          - 192.168.0.0/24
+        description: A list of CIDR notated subnets that are allowed to create an 'Initial Admin Token'.
+        type: list
+      tfe_image:
+        default: images.releases.hashicorp.com/hashicorp/terraform-enterprise:v202309-1
+        description: Select the image to use for Terraform Enterprise. This includes the version.
+        type: str
+      tfe_license:
+        default: XYZ123
+        description: Paste the license of Terraform Enterprise here. It's a long string.
+        type: str
+      tfe_log_forwarding_config_path:
+        default: /etc/fluent-bit/fluent-bit.conf
+        description: The path to the log forwarding configuration.
+        type: str
+      tfe_object_storage_s3_access_key_id:
+        default: xyz
+        description: An S3 access key.
+        type: str
+      tfe_object_storage_s3_bucket:
+        default: SomeBucketName
+        description: An S3 bucket name.
+        type: str
+      tfe_object_storage_s3_endpoint:
+        default: ""
+        description: Useful when using a private S3 endpoint. Leave blank to use the default AWS S3 endpoint.
+        type: str
+      tfe_object_storage_s3_region:
+        default: eu-west-1
+        description: An S3 region.
+        type: str
+      tfe_object_storage_s3_secret_access_key:
+        default: xyz
+        description: An S3 secret key.
+        type: str
+      tfe_object_storage_s3_use_instance_profile:
+        default: false
+        description: Use an instance profile for S3 access.
+        type: bool
+      tfe_operational_mode:
+        choices:
+          - disk
+          - external
+          - active-active
+        default: active-active
+        description: "You can set the operational mode to either: 'disk', 'external' or 'active-active'."
+        type: str
+      tfe_redis_host:
+        default: tfe.RaNdOm.0001.euw1.cache.amazonaws.com
+        description: A Redis hostname.
+        type: str
+      tfe_tls_bundle:
+        default: bundle.pem
+        description: A TLS bundle.
+        type: str
+      tfe_tls_certificate:
+        default: cert.pem
+        description: A TLS certificate.
+        type: str
+      tfe_tls_key:
+        default: key.pem
+        description: A TLS key.
+        type: str
+      tfe_vault_cluster_address:
+        default: https://ANSIBLE_DEFAULT_IP_V4.ADDRESS:8201
+        description: The internal Vault requires an internal address of the node.
+        type: str
+    short_description: Install and configure tfe on your system.

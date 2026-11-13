@@ -1,0 +1,21 @@
+---
+_rpm_key:
+  - fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+    key: http://download.opensuse.org/repositories/home:/alvistack/openSUSE_Leap_15.5/repodata/repomd.xml.key
+    state: present
+_yum_repository:
+  - baseurl: http://download.opensuse.org/repositories/home:/alvistack/openSUSE_Leap_15.5
+    description: home:alvistack (openSUSE_Leap_15.5)
+    enabled: true
+    file: home_alvistack
+    gpgcheck: true
+    gpgkey: http://download.opensuse.org/repositories/home:/alvistack/openSUSE_Leap_15.5/repodata/repomd.xml.key
+    module_hotfixes: true
+    name: home_alvistack
+    priority: "2"
+    state: present
+_zypper:
+  - name: atlassian-bitbucket-100:{{ bitbucket_version }}
+    state: present
+  - name: fontconfig
+    state: latest

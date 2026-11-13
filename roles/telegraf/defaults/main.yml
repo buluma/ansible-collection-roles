@@ -1,0 +1,87 @@
+---
+telegraf_agent_aws_tags: false
+telegraf_agent_aws_tags_prefix: ""
+telegraf_agent_collection_jitter: 0
+telegraf_agent_config_path: /etc/telegraf
+telegraf_agent_debug: false
+telegraf_agent_docker: false
+telegraf_agent_docker_image_version: "{{ telegraf_agent_version }}"
+telegraf_agent_docker_name: telegraf
+telegraf_agent_docker_network_mode: bridge
+telegraf_agent_docker_restart_policy: unless-stopped
+telegraf_agent_flush_interval: 10
+telegraf_agent_flush_jitter: 0
+telegraf_agent_hostname: "{{ ansible_facts['fqdn'] }}"
+telegraf_agent_interval: 10
+telegraf_agent_logfile: ""
+telegraf_agent_metric_batch_size: 1000
+telegraf_agent_metric_buffer_limit: 10000
+telegraf_agent_omit_hostname: false
+telegraf_agent_output:
+  - config:
+      - urls = ["http://localhost:8086"]
+      - database = "telegraf"
+      - precision = "s"
+    type: influxdb
+telegraf_agent_package: telegraf
+telegraf_agent_package_file_deb: telegraf_{{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}_{{ telegraf_agent_package_arch }}.deb
+telegraf_agent_package_file_rpm: telegraf-{{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}.{{ ansible_facts['architecture'] }}.rpm
+telegraf_agent_package_method: repo
+telegraf_agent_package_path: /tmp
+telegraf_agent_package_state: present
+telegraf_agent_quiet: false
+telegraf_agent_round_interval: true
+telegraf_agent_version: "1.40.2"
+telegraf_agent_version_patch: 1
+telegraf_enabled: true
+telegraf_gid_docker: 995
+telegraf_global_tags: []
+telegraf_mac_group: admin
+telegraf_mac_user: user
+telegraf_plugins_default:
+  - config:
+      - percpu = true
+    plugin: cpu
+  - plugin: disk
+  # inputs.io was renamed/replaced by inputs.diskio; io was removed
+  # entirely (hard error, not just a warning, as of 1.38+).
+  - plugin: diskio
+  - plugin: mem
+  - plugin: net
+  - plugin: system
+  - plugin: swap
+  - plugin: netstat
+  - plugin: processes
+  - plugin: kernel
+telegraf_plugins_extra: {}
+telegraf_plugins_extra_exclusive: false
+telegraf_redhat_releasever: $releasever
+telegraf_uid_docker: 998
+telegraf_win_include: "C:\\Telegraf\\telegraf_agent.d"
+telegraf_win_install_dir: "C:\\Telegraf"
+telegraf_win_logfile: "C:\\Telegraf\\telegraf.log"
+telegraf_win_logfile_rotation_max_archives: 3
+telegraf_win_service_args:
+  - -service install
+  - -config "{{ telegraf_win_install_dir }}\telegraf.conf"
+  - --config-directory "{{ telegraf_win_include }}"
+telegraf_yum_baseurl:
+  amazon: https://repos.influxdata.com/centos/6/$basearch/stable
+  centos: https://repos.influxdata.com/stable/$basearch/main
+  # InfluxData now publishes one universal repo for every RPM distro
+  # (their own docs use this same path regardless of distro/release).
+  almalinux: https://repos.influxdata.com/stable/$basearch/main
+  default: https://repos.influxdata.com/stable/$basearch/main
+  fedora: https://repos.influxdata.com/stable/$basearch/main
+  redhat: https://repos.influxdata.com/stable/$basearch/main
+  rocky: https://repos.influxdata.com/stable/$basearch/main
+# influxdata-archive_compat.key only carries their old signing key;
+# newer packages (e.g. influxdata-archive-keyring) are signed with a
+# key that's only in the non-compat archive key.
+telegraf_yum_gpgkey: "https://repos.influxdata.com/influxdata-archive.key"
+telegraf_zypper_repos:
+  default: http://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/
+  opensuse leap: http://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Leap_{{ ansible_facts['distribution_version'] }}/
+  opensuse tumbleweed: http://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/
+  sles: http://download.opensuse.org/repositories/devel:/languages:/go/SLE_{{ ansible_facts['distribution_major_version'] }}_SP{{
+    ansible_facts['distribution_release'] }}/

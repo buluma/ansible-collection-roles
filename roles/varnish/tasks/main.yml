@@ -1,0 +1,90 @@
+---
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+- name: Set the packagecloud repository name based on the version.
+  ansible.builtin.set_fact:
+    varnish_packagecloud_repo: varnish{{ varnish_version | replace('.', '') }}
+- name: Include RedHat setup
+  ansible.builtin.include_tasks: setup-RedHat.yml
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: Include Debian setup
+  ansible.builtin.include_tasks: setup-Debian.yml
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Ensure Varnish config path exists.
+  ansible.builtin.file:
+    mode: "0755"
+    path: "{{ varnish_config_path }}"
+    state: directory
+- name: Copy Varnish configuration (sysvinit).
+  ansible.builtin.template:
+    dest: "{{ varnish_sysvinit_config_path }}/varnish"
+    group: root
+    mode: "0644"
+    owner: root
+    src: varnish.j2
+  notify:
+    - Restart varnish
+  # Separator for the pre-commit handler parser.
+  when: (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version']|int < 7) or (ansible_facts['os_family'] == 'Debian' and
+    ansible_facts['distribution_release'] != 'xenial')
+- name: Copy Debian Jessie/Xenial specific Varnish configs (systemd).
+  ansible.builtin.template:
+    dest: "{{ varnish_systemd_config_path }}/varnish.service"
+    group: root
+    mode: "0644"
+    owner: root
+    src: varnish.service.j2
+  notify:
+    - Reload systemd
+    - Restart varnish
+  # Separator for the pre-commit handler parser.
+  when: (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version']|int >= 7) or (ansible_facts['distribution'] == 'Debian' and
+    ansible_facts['distribution_version']|int >= 8) or (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'].split('.')[0]|int >=
+    16)
+- name: Copy Varnish configuration (systemd).
+  ansible.builtin.template:
+    dest: "{{ varnish_config_path }}/varnish.params"
+    group: root
+    mode: "0644"
+    owner: root
+    src: varnish.params.j2
+  when: (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version']|int >= 7) or (ansible_facts['os_family'] == 'Debian' and
+    ansible_facts['distribution_release'] == 'xenial')
+- name: Copy Varnish default VCL.
+  ansible.builtin.template:
+    dest: "{{ varnish_config_path }}/default.vcl"
+    group: root
+    mode: "0644"
+    owner: root
+    src: "{{ varnish_default_vcl_template_path }}"
+  notify:
+    - Restart varnish
+  # Separator for the pre-commit handler parser.
+  when: varnish_use_default_vcl
+- name: Copy varnish secret.
+  ansible.builtin.template:
+    dest: "{{ varnish_config_path }}/secret"
+    group: root
+    mode: "0644"
+    owner: root
+    src: secret.j2
+  notify:
+    - Restart varnish
+# Separator for the pre-commit handler parser.
+- name: Ensure varnish services are started and enabled on startup.
+  ansible.builtin.service:
+    enabled: true
+    name: "{{ item }}"
+    state: started
+  when: varnish_enabled_services and not (ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution_release'] == 'xenial')
+  with_items: "{{ varnish_enabled_services | default([]) }}"
+- name: Ensure varnish services are started and enabled on startup (Xenial specific)
+  ansible.builtin.service:
+    enabled: true
+    name: "{{ item }}"
+    state: started
+    use: service
+  when:
+    - varnish_enabled_services | length > 0
+    - (ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution_release'] == "xenial")
+  with_items: "{{ varnish_enabled_services | default([]) }}"

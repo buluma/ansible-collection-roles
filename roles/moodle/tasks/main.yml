@@ -1,0 +1,63 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ moodle_requirements }}"
+    state: present
+- name: Set moodle git tag
+  ansible.builtin.set_fact:
+    moodle_git_tag: "{{ moodle_version | string | regex_replace('^(.)(.)(.)$', '\\1.\\2.\\3') }}"
+- name: Check if moodle is already unpacked
+  ansible.builtin.stat:
+    path: "{{ moodle_httpd_data_directory }}/moodle"
+  register: moodle_installed
+- name: Download moodle archive
+  ansible.builtin.get_url:
+    dest: /tmp/moodle.zip
+    mode: "0644"
+    url: "https://github.com/moodle/moodle/archive/refs/tags/v{{ moodle_git_tag }}.zip"
+  register: moodle_download
+  retries: 3
+  until:
+    - moodle_download is succeeded
+  when: not moodle_installed.stat.exists
+- name: Unpack moodle
+  ansible.builtin.unarchive:
+    creates: "{{ moodle_httpd_data_directory }}/moodle"
+    dest: "{{ moodle_httpd_data_directory }}"
+    group: "{{ moodle_httpd_group }}"
+    mode: "0755"
+    owner: "{{ moodle_httpd_owner }}"
+    remote_src: true
+    src: /tmp/moodle.zip
+  when: not moodle_installed.stat.exists
+- name: Move moodle into place
+  ansible.builtin.command:
+    argv:
+      - mv
+      - "{{ moodle_httpd_data_directory }}/moodle-{{ moodle_git_tag }}"
+      - "{{ moodle_httpd_data_directory }}/moodle"
+  changed_when: true
+  when: not moodle_installed.stat.exists
+- name: Make directory
+  ansible.builtin.file:
+    group: "{{ moodle_httpd_group }}"
+    mode: "{{ moodle_directory_mode }}"
+    owner: "{{ moodle_httpd_owner }}"
+    path: "{{ moodle_data_directory }}"
+    state: directory
+- name: Configure moodle
+  ansible.builtin.template:
+    dest: "{{ moodle_httpd_data_directory }}/moodle/config.php"
+    group: "{{ moodle_httpd_group }}"
+    mode: "0640"
+    owner: "{{ moodle_httpd_owner }}"
+    src: config.php.j2
+- name: Setup cron job
+  ansible.builtin.cron:
+    job: /usr/bin/php {{ moodle_httpd_data_directory }}/moodle/admin/cli/cron.php >/dev/null
+    name: moodle
+    user: "{{ moodle_httpd_owner }}"

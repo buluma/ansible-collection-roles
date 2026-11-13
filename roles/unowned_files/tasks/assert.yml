@@ -1,0 +1,36 @@
+---
+- name: assert | Test if unowned_files_delete is set correctly
+  ansible.builtin.assert:
+    that:
+      - unowned_files_delete is defined
+      - unowned_files_delete is boolean
+    quiet: true
+
+- name: assert | Test if unowned_files_default_owner is set correctly
+  ansible.builtin.assert:
+    that:
+      - unowned_files_default_owner is defined
+      - unowned_files_default_owner is string
+    quiet: true
+
+- name: assert | Test if unowned_files_default_group is set correctly
+  ansible.builtin.assert:
+    that:
+      - unowned_files_default_group is defined
+      - unowned_files_default_group is string
+    quiet: true
+
+- name: assert | Test if unowned_files_directories is set correctly
+  ansible.builtin.assert:
+    that:
+      - unowned_files_directories is defined
+      - unowned_files_directories is iterable
+    quiet: true
+
+- name: assert | Test if item in unowned_files_directories is set correctly
+  ansible.builtin.assert:
+    that:
+      - item is defined
+      - item is string
+    quiet: true
+  loop: "{{ unowned_files_directories }}"

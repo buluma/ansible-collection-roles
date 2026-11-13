@@ -1,11 +1,8 @@
 ---
-# tasks file for anaconda
-
 - name: Import assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: true
   delegate_to: localhost
-
+  run_once: true
 - name: Install requirements (package)
   ansible.builtin.package:
     name: "{{ item.name }}"
@@ -15,7 +12,6 @@
     label: "{{ item.name }}"
   when:
     - item.type == "package"
-
 - name: Install requirements (pip)
   ansible.builtin.pip:
     name: "{{ item.name }}"
@@ -25,50 +21,47 @@
     label: "{{ item.name }}"
   when:
     - item.type == "pip"
-
 - name: Download anaconda
   ansible.builtin.get_url:
-    url: "{{ anaconda_url }}"
     dest: "{{ anaconda_download_dest }}"
-    mode: 0644
-
+    mode: "0640"
+    url: "{{ anaconda_url }}"
 - name: Install anaconda
   ansible.builtin.command:
     cmd: bash {{ anaconda_download_dest }}/{{ anaconda_file }} -b -p {{ anaconda_prefix }}
     creates: "{{ anaconda_prefix }}"
-
 - name: Create anaconda service
   ansible.builtin.import_role:
-    name: buluma.service
+    name: buluma.roles.service
   vars:
     service_list:
-      - name: anaconda
-        description: Anaconda Notebook
+      - description: Anaconda Notebook
+        name: anaconda
         start_command: "{{ anaconda_prefix }}/bin/jupyter notebook --ip={{ anaconda_ip }} --port={{ anaconda_port }} --allow-root"
-
 - name: Change selinux settings
+  when:
+    - ansible_facts['selinux'].status is defined
+    - ansible_facts['selinux'].status == "enabled"
   block:
     - name: Check for domain_can_mmap_files seboolean
       ansible.builtin.command:
         cmd: getsebool domain_can_mmap_files
-      register: anaconda_getsebool_domain_can_mmap_files
-      check_mode: false
       changed_when: false
-      failed_when: false
-
+      check_mode: false
+      register: anaconda_getsebool_domain_can_mmap_files
     - name: Modify selinux settings
       ansible.posix.seboolean:
         name: domain_can_mmap_files
-        state: true
         persistent: true
+        state: true
       when:
         - anaconda_getsebool_domain_can_mmap_files.rc == 0
-  when:
-    - ansible_selinux.status is defined
-    - ansible_selinux.status == "enabled"
-
+  rescue:
+    - name: Could not change selinux settings
+      ansible.builtin.debug:
+        msg: Could not change selinux settings, continuing.
 - name: Start and enable anaconda
   ansible.builtin.service:
+    enabled: true
     name: anaconda
     state: started
-    enabled: true

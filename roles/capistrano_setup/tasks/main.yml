@@ -1,0 +1,15 @@
+---
+# tasks file for capistrano_setup
+# Install passlib if required
+
+- name: Import Users
+  ansible.builtin.include_tasks: users.yml
+  tags: users
+
+- name: Import structure
+  ansible.builtin.include_tasks: structure.yml
+  tags: structure.yml
+
+- name: Import delete
+  ansible.builtin.include_tasks: delete.yml
+  tags: delete.yml

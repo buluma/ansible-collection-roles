@@ -1,0 +1,158 @@
+---
+# Copyright 2024 Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+_rpm_key:
+  "21":
+    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+  "17":
+    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+  "11":
+    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+  "8":
+    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+      state: present
+    - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
+      state: present
+
+_yum_repository:
+  "21":
+    - file: home:alvistack
+      name: home_alvistack
+      description: home:alvistack (Fedora_39)
+      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      state: present
+    - file: adoptium
+      name: adoptium
+      description: adoptium
+      baseurl: https://packages.adoptium.net/artifactory/rpm/fedora/39/x86_64
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      state: present
+  "17":
+    - file: home:alvistack
+      name: home_alvistack
+      description: home:alvistack (Fedora_39)
+      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      state: present
+    - file: adoptium
+      name: adoptium
+      description: adoptium
+      baseurl: https://packages.adoptium.net/artifactory/rpm/fedora/39/x86_64
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      state: present
+  "11":
+    - file: home:alvistack
+      name: home_alvistack
+      description: home:alvistack (Fedora_39)
+      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      state: present
+    - file: adoptium
+      name: adoptium
+      description: adoptium
+      baseurl: https://packages.adoptium.net/artifactory/rpm/fedora/39/x86_64
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      state: present
+  "8":
+    - file: home:alvistack
+      name: home_alvistack
+      description: home:alvistack (Fedora_39)
+      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/Fedora_39/repodata/repomd.xml.key
+      state: present
+    - file: adoptium
+      name: adoptium
+      description: adoptium
+      baseurl: https://packages.adoptium.net/artifactory/rpm/fedora/39/x86_64
+      enabled: true
+      priority: "2"
+      module_hotfixes: true
+      gpgcheck: true
+      gpgkey: https://packages.adoptium.net/artifactory/api/gpg/key/public
+      state: present
+
+_yum:
+  "21":
+    - { state: latest, name: temurin-21-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: postgresql-jdbc }
+  "17":
+    - { state: latest, name: temurin-17-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: postgresql-jdbc }
+  "11":
+    - { state: latest, name: temurin-11-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: postgresql-jdbc }
+  "8":
+    - { state: latest, name: temurin-8-jdk }
+    - { state: latest, name: maven }
+    - { state: latest, name: mysql-connector-java }
+    - { state: latest, name: postgresql-jdbc }
+
+_openjdk_home:
+  "21": /usr/lib/jvm/temurin-21-jdk
+  "17": /usr/lib/jvm/temurin-17-jdk
+  "11": /usr/lib/jvm/temurin-11-jdk
+  "8": /usr/lib/jvm/temurin-8-jdk

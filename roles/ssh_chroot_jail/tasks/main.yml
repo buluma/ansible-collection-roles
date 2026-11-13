@@ -1,0 +1,109 @@
+---
+# Prepare
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Update apt cache.
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 600
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Ensure build dependencies are installed.
+  ansible.builtin.package:
+    name:
+      - ed
+      - nano
+      - vim
+    state: present
+
+- name: Ensure build dependencies are installed (RedHat).
+  ansible.builtin.package:
+    name:
+      - openssh-server
+      - openssh-clients
+      - ncurses
+      - procps-ng
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Ensure coreutils is installed (RedHat).
+  ansible.builtin.dnf:
+    name: coreutils
+    state: latest # noqa package-latest
+    allowerasing: true
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Ensure coreutils is installed (Debian).
+  ansible.builtin.apt:
+    name: coreutils
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Ensure build dependencies are installed (Debian).
+  ansible.builtin.apt:
+    name:
+      - openssh-server
+      - openssh-client
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+# main tasks
+- name: Include os-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+
+- name: Ensure jail directories exist.
+  ansible.builtin.file: # noqa risky-file-permissions
+    path: "{{ ssh_chroot_jail_path }}/{{ item }}"
+    state: directory
+    recurse: "{{ ssh_chroot_jail_dirs_recurse }}"
+  with_items: "{{ ssh_chroot_jail_dirs }}"
+
+- name: Ensure jail devices exist.
+  ansible.builtin.command: mknod -m 0666 {{ ssh_chroot_jail_path }}/dev/{{ item.dev }} {{ item.type | default('c') }} {{ item.major }} {{ item.minor }}
+  args:
+    creates: "{{ ssh_chroot_jail_path }}/dev/{{ item.dev }}"
+  with_items: "{{ ssh_chroot_jail_devs }}"
+
+- name: Ensure jail devices get created after reboot
+  ansible.builtin.template:
+    src: ssh-chroot.conf.j2
+    dest: "{{ ssh_chroot_tmpfiles_conf_path }}"
+    mode: "0644"
+  when: "ansible_facts['service_mgr'] == 'systemd'"
+
+- name: Ensure l2chroot is installed.
+  ansible.builtin.template:
+    src: "{{ ssh_chroot_l2chroot_template }}"
+    dest: "{{ ssh_chroot_l2chroot_path }}"
+    mode: "0755"
+
+- name: Ensure binaries are copied into the jail.
+  ansible.builtin.copy:
+    src: "{{ item.bin | default(item) }}"
+    dest: "{{ ssh_chroot_jail_path }}{{ item.bin | default(item) }}"
+    remote_src: true
+    mode: "{{ item.mode | default('0755') }}"
+  with_items: "{{ ssh_chroot_bins }}"
+  notify:
+    - Copy ssh-chroot-jail extra items
+    - Add binary libs via l2chroot
+    - Copy extra libraries for whoami
+
+- name: Ensure an ssh jail group exists.
+  ansible.builtin.group:
+    name: "{{ ssh_chroot_jail_group_name }}"
+    state: present
+
+- name: Ensure sshd config contains jail configuration.
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config
+    block: "{{ ssh_chroot_sshd_chroot_jail_config }}"
+    insertafter: EOF
+  notify: Restart ssh daemon
+
+- name: Import Jail-User
+  ansible.builtin.include_tasks: jail-user.yml
+  with_items: "{{ ssh_chroot_jail_users }}"

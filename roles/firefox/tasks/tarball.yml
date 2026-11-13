@@ -1,0 +1,48 @@
+---
+- name: tarball | Download firefox package
+  ansible.builtin.get_url:
+    url: "{{ firefox_url }}"
+    dest: /tmp/firefox-{{ firefox_version }}.tar.xz
+    mode: "0755"
+    checksum: "{{ firefox_checksum }}"
+
+- name: tarball | Install firefox
+  become: true
+  block:
+    - name: tarball | Remove the firefox package
+      ansible.builtin.package:
+        name: firefox
+        state: absent
+
+    - name: tarball | Install dependencies
+      ansible.builtin.package:
+        name: "{{ item }}"
+      with_items: "{{ firefox_dependencies }}"
+
+    - name: tarball | Create install directory
+      ansible.builtin.file:
+        path: "{{ firefox_home }}"
+        state: directory
+        mode: "0755"
+
+    - name: tarball | Unarchive package
+      ansible.builtin.unarchive:
+        src: "{{ firefox_download }}"
+        dest: "{{ firefox_home }}"
+        remote_src: true
+        creates: "{{ firefox_bin }}"
+
+    - name: tarball | Symlink package
+      ansible.builtin.file:
+        src: "{{ firefox_bin }}"
+        dest: /usr/bin/firefox
+        state: link
+
+- name: tarball | Create desktop icon
+  ansible.builtin.template:
+    src: firefox.desktop.j2
+    dest: /usr/share/applications/firefox.desktop
+    owner: root
+    group: root
+    mode: "0644"
+  when: firefox_desktop_icon

@@ -1,0 +1,115 @@
+---
+- name: assert | Test consul_install_package
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_install_package is defined
+      - consul_install_package is boolean
+- name: assert | Test consul_license
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_license is defined
+      - consul_license is string
+      - consul_license is not none
+- name: assert | Test consul_datacenter
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_datacenter is defined
+      - consul_datacenter is string
+      - consul_datacenter is not none
+- name: assert | Test consul_data_dir
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_data_dir is defined
+      - consul_data_dir is string
+      - consul_data_dir is not none
+- name: assert | Test consul_client_addr
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_client_addr is defined
+      - consul_client_addr is string
+      - consul_client_addr is not none
+- name: assert | Test consul_ui
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_ui is defined
+      - consul_ui is boolean
+- name: assert | Test consul_server
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_server is defined
+      - consul_server is boolean
+- name: assert | Test consul_bootstrap_expect
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_bootstrap_expect | int in [ 1, 3, 5 ]
+  when:
+    - consul_bootstrap_expect is defined
+- name: assert | Test consul_encrypt
+  ansible.builtin.assert:
+    fail_msg: consul_encrypt must be a 32-byte key encoded with base64 resulting in 44 characters, but it's {{ consul_encrypt | length }}.
+    quiet: true
+    that:
+      - consul_encrypt is string
+      - consul_encrypt | length == 44
+  when:
+    - consul_encrypt is defined
+- name: assert | Test consul_retry_join
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_retry_join is iterable
+  when:
+    - consul_retry_join is defined
+- name: assert | Test consul_bind_addr
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_bind_addr is string
+      - consul_bind_addr is not none
+  when:
+    - consul_bind_addr is defined
+- name: assert | Test consul_advertise_addr
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_advertise_addr is string
+      - consul_advertise_addr is not none
+  when:
+    - consul_advertise_addr is defined
+- name: assert | Test consul_services
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consul_services is iterable
+  when:
+    - consul_services is defined
+- name: assert | Test item in consul_services
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+      - item.port is defined
+      - item.port is number
+      - item.port > 0
+      - item.port <= 65536
+  loop: "{{ consul_services }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - consul_services is defined
+- name: assert | Test consule_service_started_and_enabled
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - consule_service_started_and_enabled is defined
+      - consule_service_started_and_enabled is boolean

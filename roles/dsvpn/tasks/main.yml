@@ -1,0 +1,71 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ dsvpn_requirements }}"
+    state: present
+- name: Unarchive
+  ansible.builtin.unarchive:
+    creates: "{{ dsvpn_temporary_directory }}/dsvpn-{{ dsvpn_version }}"
+    dest: "{{ dsvpn_temporary_directory }}"
+    mode: "0755"
+    remote_src: true
+    src: "{{ dsvpn_release_url }}"
+- name: Make
+  community.general.make:
+    chdir: "{{ dsvpn_temporary_directory }}/dsvpn-{{ dsvpn_version }}"
+- name: Install
+  ansible.builtin.copy:
+    dest: "{{ dsvpn_install_directory }}/dsvpn"
+    mode: "750"
+    remote_src: true
+    src: "{{ dsvpn_temporary_directory }}/dsvpn-{{ dsvpn_version }}/dsvpn"
+- name: Generate key
+  ansible.builtin.command:
+    cmd: dd if=/dev/urandom of={{ dsvpn_key_directory }}/vpn.key count=1 bs=32
+    creates: "{{ dsvpn_key_directory }}/vpn.key"
+  delegate_to: localhost
+- name: Set permissions on key
+  ansible.builtin.file:
+    mode: "644"
+    path: "{{ dsvpn_key_directory }}/vpn.key"
+  delegate_to: localhost
+- name: Copy key
+  ansible.builtin.copy:
+    dest: "{{ dsvpn_key_directory }}/vpn.key"
+    group: root
+    mode: "640"
+    owner: root
+    src: "{{ dsvpn_key_directory }}/vpn.key"
+  notify:
+    - Restart dsvpn-server
+    - Restart dsvpn-client
+# Separator for the pre-commit handler parser.
+- name: Load tun module
+  community.general.modprobe:
+    name: tun
+    state: present
+  when:
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
+- name: Create /dev/net directory
+  ansible.builtin.file:
+    mode: "0755"
+    path: /dev/net
+    state: directory
+- name: Create character device /dev/net/tun
+  ansible.builtin.command:
+    cmd: mknod /dev/net/tun c 10 200
+    creates: /dev/net/tun
+- name: Create server
+  ansible.builtin.include_tasks:
+    file: server.yml
+  when:
+    - dsvpn_role == "server"
+- name: Create client
+  ansible.builtin.include_tasks:
+    file: client.yml
+  when:
+    - dsvpn_role == "client"

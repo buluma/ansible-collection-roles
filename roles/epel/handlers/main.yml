@@ -1,0 +1,6 @@
+---
+# handlers file for epel
+
+- name: Update package cache
+  ansible.builtin.package:
+    update_cache: true

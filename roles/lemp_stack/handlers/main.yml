@@ -1,0 +1,11 @@
+---
+- name: Restart nginx
+  ansible.builtin.service:
+    enabled: true
+    name: nginx
+    state: restarted
+- name: Restart php-fpm
+  ansible.builtin.service:
+    enabled: true
+    name: "{{ lemp_php_fpm_service }}"
+    state: restarted

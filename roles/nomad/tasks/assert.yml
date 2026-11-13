@@ -1,0 +1,106 @@
+---
+- name: assert | Test if nomad_install_package is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_install_package is defined
+      - nomad_install_package is boolean
+- name: assert | Test if nomad_server is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_server is defined
+      - nomad_server is boolean
+- name: assert | Test if nomad_server_bind_addr is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_server_bind_addr is defined
+      - nomad_server_bind_addr is string
+  when:
+    - nomad_server | bool
+- name: assert | Test if nomad_server_log_level is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_server_log_level is defined
+      - nomad_server_log_level is string
+      - nomad_server_log_level in [ "DEBUG", "INFO", "WARN" ]
+  when:
+    - nomad_server | bool
+- name: assert | Test if nomad_server_data_dir is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_server_data_dir is defined
+      - nomad_server_data_dir is string
+  when:
+    - nomad_server | bool
+- name: assert | Test if nomad_server_bootstrap_expect is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_server_bootstrap_expect is defined
+      - nomad_server_bootstrap_expect is number
+  when:
+    - nomad_server | bool
+- name: assert | Test if nomad_server_bootstrap_expect is odd
+  ansible.builtin.assert:
+    fail_msg: This parameter should be odd, it's even.
+    quiet: true
+    that:
+      - nomad_server_bootstrap_expect is not divisibleby 2
+  when:
+    - nomad_server | bool
+- name: assert | Test if nomdad_agent is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_agent is defined
+      - nomad_agent is boolean
+- name: assert | Test if nomad_agent_log_level is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_agent_log_level is defined
+      - nomad_agent_log_level is string
+      - nomad_agent_log_level in [ "DEBUG", "INFO", "WARN" ]
+  when:
+    - nomad_agent | bool
+- name: assert | Test if nomad_agent_data_dir is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_agent_data_dir is defined
+      - nomad_agent_data_dir is string
+  when:
+    - nomad_agent | bool
+- name: assert | Test if nomad_agent_servers is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - nomad_agent_servers is defined
+      - nomad_agent_servers is iterable
+  when:
+    - nomad_agent | bool
+- name: assert | Test if item in nomad_agent_servers is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.port is defined
+      - item.port is number
+      - item.port > 0
+      - item.port < 65536
+  loop: "{{ nomad_agent_servers }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - nomad_agent | bool
+- name: assert | Test if nomad_server and nomad_agent are set correctly
+  ansible.builtin.assert:
+    fail_msg: Either nomad_server or nomad_agent can be enabled.
+    quiet: true
+    that:
+      - nomad_server != nomad_agent

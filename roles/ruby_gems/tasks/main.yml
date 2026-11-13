@@ -1,0 +1,38 @@
+---
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+- name: Define ruby_packages.
+  ansible.builtin.set_fact:
+    ruby_packages: "{{ __ruby_packages }}"
+  when: ruby_packages is not defined
+- name: Include RedHat setup tasks
+  ansible.builtin.include_tasks: setup-RedHat.yml
+  when:
+    - not ruby_install_from_source
+    - ansible_facts['os_family'] == 'RedHat'
+- name: Include Debian setup tasks
+  ansible.builtin.include_tasks: setup-Debian.yml
+  when:
+    - not ruby_install_from_source
+    - ansible_facts['os_family'] == 'Debian'
+- name: Include source installation tasks
+  ansible.builtin.include_tasks: install-from-source.yml
+  when: ruby_install_from_source
+- name: Add user installed RubyGems bin directory to global $PATH.
+  ansible.builtin.copy:
+    dest: /etc/profile.d/rubygems.sh
+    mode: "0644"
+    src: rubygems.sh
+- name: Install Bundler.
+  community.general.gem:
+    name: bundler
+    state: present
+    user_install: "no"
+  when: ruby_install_bundler
+- name: Install configured gems.
+  become: true
+  become_user: "{{ ruby_install_gems_user }}"
+  community.general.gem:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ruby_install_gems }}"

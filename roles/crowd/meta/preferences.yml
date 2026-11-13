@@ -1,0 +1,23 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # Bumped to Crowd 6.3 (see SHA-175): needs java_version 17 (see
+  # molecule/default/prepare.yml).
+  # Excludes EL10: no java-17-openjdk package (confirmed in CI, same as
+  # ansible-role-bamboo).
+  - name: EL
+    versions:
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 13: no openjdk-17-jre/-jdk package (confirmed in CI, same
+      # as ansible-role-bamboo/-kibana/-openjdk).
+      # Excludes 11: EOL, and nothing in this role requires it over 12.
+      - "12"
+  # Fedora excluded entirely: java-17-openjdk was only ever packaged
+  # through Fedora 41 (already EOL) - confirmed still missing on 43/44 in
+  # CI, same as ansible-role-bamboo.
+  - name: Ubuntu
+    versions:
+      - all

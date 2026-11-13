@@ -1,0 +1,10 @@
+---
+# handlers file for hostname
+
+- name: Reboot
+  ansible.builtin.reboot:
+  when:
+    - hostname_reboot | bool
+
+- name: Gather facts
+  ansible.builtin.setup:

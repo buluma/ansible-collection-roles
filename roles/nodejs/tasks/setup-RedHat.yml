@@ -1,0 +1,49 @@
+---
+- name: setup-RedHat | Set up the Nodesource RPM directory.
+  ansible.builtin.set_fact:
+    nodejs_rhel_rpm_dir: "pub_{{ nodejs_version }}"
+
+- name: setup-RedHat | Import Nodesource RPM key (CentOS < 7).
+  ansible.builtin.rpm_key:
+    key: http://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
+    state: present
+  when: ansible_facts['distribution_major_version'] | int < 7
+
+- name: setup-RedHat | Import Nodesource RPM key (CentOS 7+).
+  ansible.builtin.rpm_key:
+    key: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
+    state: present
+  when: ansible_facts['distribution_major_version'] | int >= 7
+
+- name: setup-RedHat | Add Nodesource repositories for Node.js (CentOS < 7).
+  ansible.builtin.dnf:
+    name: "http://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_facts['distribution_major_version'] }}/{{ ansible_facts['architecture'] }}/nodesource-release-el{{
+      ansible_facts['distribution_major_version'] }}-1.noarch.rpm"
+    state: present
+  when: ansible_facts['distribution_major_version'] | int < 7
+  register: node_repo
+
+- name: setup-RedHat | Add Nodesource repositories for Node.js (CentOS 7+).
+  ansible.builtin.dnf:
+    name: "https://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_facts['distribution_major_version'] }}/{{ ansible_facts['architecture'] }}/nodesource-release-el{{
+      ansible_facts['distribution_major_version'] }}-1.noarch.rpm"
+    state: present
+  when: ansible_facts['distribution_major_version'] | int >= 7
+  register: node_repo
+
+- name: setup-RedHat | Update package cache if repo was added.
+  ansible.builtin.yum: update_cache=true
+  when: node_repo is changed
+  tags: ["skip_ansible_lint"]
+
+- name: setup-RedHat | Ensure Node.js AppStream module is disabled (CentOS 8+).
+  ansible.builtin.command: dnf module disable -y nodejs
+  register: module_disable
+  changed_when: "'Nothing to do.' not in module_disable.stdout"
+  when: ansible_facts['distribution_major_version'] | int >= 8
+
+- name: setup-RedHat | Ensure Node.js and npm are installed.
+  ansible.builtin.dnf:
+    name: "nodejs-{{ nodejs_version | regex_replace('x', '') }}*"
+    state: present
+    enablerepo: nodesource

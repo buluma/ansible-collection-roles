@@ -1,0 +1,17 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      # Excludes 10: authselect's nsswitch.conf symlink handling still
+      # breaks sudo's PAM account phase here even with follow:true on the
+      # template task - root cause not fully pinned down, unlike Fedora
+      # 43/44 (same authselect setup) which pass.
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  - name: Ubuntu
+    versions:
+      - all

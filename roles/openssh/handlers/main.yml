@@ -1,0 +1,7 @@
+---
+# handlers file for openssh
+
+- name: Restart openssh
+  ansible.builtin.service:
+    name: "{{ openssh_service }}"
+    state: restarted

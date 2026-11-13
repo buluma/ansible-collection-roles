@@ -1,0 +1,11 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: Build and install a kernel
+  galaxy_tags:
+    - kernel
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  role_name: kernel

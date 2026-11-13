@@ -1,8 +1,8 @@
 ---
+collections: []
 roles:
   - name: buluma.bootstrap
   - name: buluma.core_dependencies
   - name: buluma.epel
   - name: buluma.npm
   - name: buluma.service
-collections:

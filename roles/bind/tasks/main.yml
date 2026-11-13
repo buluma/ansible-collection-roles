@@ -1,119 +1,103 @@
 ---
-# tasks file for bind
-
-# Initialise distribution-specific variables
 - name: Incluse source specific variables
   ansible.builtin.include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
-    - "{{ ansible_distribution }}.yml"
-    - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
-    - "{{ ansible_os_family }}.yml"
-    - "{{ ansible_distribution_file_variety }}-{{ ansible_distribution_major_version }}.yml"
-    - "{{ ansible_distribution_file_variety }}.yml"
   tags: bind
-
+  with_first_found:
+    - "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "{{ ansible_facts['distribution'] }}.yml"
+    - "{{ ansible_facts['os_family'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "{{ ansible_facts['os_family'] }}.yml"
+    - "{{ ansible_distribution_file_variety }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "{{ ansible_distribution_file_variety }}.yml"
 - name: Check `primaries` or `forwarders` was set for each zone
   ansible.builtin.assert:
+    quiet: true
     that:
       - item.primaries is defined or item.forwarders is defined
-    quiet: true
   loop: "{{ bind_zones }}"
   loop_control:
     label: "{{ item.name }}"
   tags: bind
-
 - name: Update package cache for Debian based distros
   ansible.builtin.apt:
     update_cache: true
   become: true
   changed_when: false
-  when: ansible_os_family == 'Debian'
   tags: bind
-
-# TODO: Move to assert
+  when: ansible_facts['os_family'] == 'Debian'
 - name: Assert that all XFR keys exist in the key list
   ansible.builtin.assert:
     that: bind_dns_keys | selectattr("name","equalto",bind_key_mapping[item]) | list | count > 0
   loop: "{{ bind_key_mapping.keys() | list }}"
   when: bind_key_mapping | list | count > 0
-
 - name: Install BIND
   ansible.builtin.package:
     pkg: "{{ item }}"
     state: present
   become: true
+  tags: bind
   with_items:
     - "{{ bind_packages }}"
-  tags: bind
-
 - name: Ensure runtime directories referenced in config exist
   ansible.builtin.file:
+    group: "{{ bind_group }}"
+    mode: "0770"
+    owner: "{{ bind_owner }}"
     path: "{{ item }}"
     state: directory
-    owner: "{{ bind_owner }}"
-    group: "{{ bind_group }}"
-    mode: 0770
   become: true
+  tags: bind
   with_items:
     - "{{ bind_dir }}/dynamic"
     - "{{ bind_dir }}/data"
     - "{{ bind_zone_dir }}"
-  tags: bind
-
 - name: Ensure Directory for Cached Secondary Zones exists
   ansible.builtin.file:
-    path: "{{ bind_secondary_dir }}"
-    state: directory
-    owner: "{{ bind_owner }}"
     group: "{{ bind_group }}"
-    mode: 0770
+    mode: "0770"
+    owner: "{{ bind_owner }}"
+    path: "{{ bind_secondary_dir }}"
     setype: named_cache_t
+    state: directory
   become: true
   tags: bind
-
 - name: Create serial, based on UTC UNIX time
   ansible.builtin.command: date -u +%s
-  register: timestamp
   changed_when: false
-  run_once: true
   check_mode: false
+  register: timestamp
+  run_once: true
   tags: bind
-
-# file to set keys for XFR authentication
 - name: Create extra config for authenticated XFR request
   ansible.builtin.template:
-    src: auth_transfer.j2
     dest: "{{ bind_conf_dir }}/{{ auth_file }}"
-    mode: 0640
-    owner: root
     group: "{{ bind_group }}"
+    mode: "0640"
+    owner: root
+    src: auth_transfer.j2
   become: true
-  when: bind_dns_keys is defined and bind_dns_keys|length > 0
   notify: Reload bind
   tags: bind
-
+  when: bind_dns_keys is defined and bind_dns_keys|length > 0
 - name: Configure zones
   ansible.builtin.include_tasks: zones.yml
   tags: bind
-
 - name: Main BIND config file
   ansible.builtin.template:
-    src: etc_named.conf.j2
     dest: "{{ bind_config }}"
-    owner: "{{ bind_owner }}"
     group: "{{ bind_group }}"
-    mode: 0640
+    mode: "0640"
+    owner: "{{ bind_owner }}"
     setype: named_conf_t
-    validate: 'named-checkconf %s'
+    src: etc_named.conf.j2
+    validate: named-checkconf %s
   become: true
   notify: Reload bind
   tags: bind
-
 - name: Start BIND service
   ansible.builtin.systemd:
+    enabled: true
     name: "{{ bind_service }}"
     state: started
-    enabled: true
   become: true
   tags: bind

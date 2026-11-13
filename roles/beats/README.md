@@ -1,55 +1,91 @@
-# [beats](#beats)
+# [Ansible role beats](#ansible-role-beats)
 
 Deploys and configure Elastic beats
 
-|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
-|------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-beats/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-beats/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-beats/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-beats)|[![quality](https://img.shields.io/ansible/quality/)](https://galaxy.ansible.com/buluma/beats)|[![downloads](https://img.shields.io/ansible/role/d/)](https://galaxy.ansible.com/buluma/beats)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-beats.svg)](https://github.com/buluma/ansible-role-beats/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-beats.svg)](https://github.com/buluma/ansible-role-beats/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-beats.svg)](https://github.com/buluma/ansible-role-beats/pulls/)|
+|GitHub|Issues|Pull Requests|Version|Downloads|
+|------|------|-------------|-------|---------|
+|[![github](https://github.com/buluma/ansible-role-beats/actions/workflows/molecule.yml/badge.svg)](https://github.com/buluma/ansible-role-beats/actions/workflows/molecule.yml)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-beats.svg)](https://github.com/buluma/ansible-role-beats/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-beats.svg)](https://github.com/buluma/ansible-role-beats/pulls/)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-beats.svg)](https://github.com/buluma/ansible-role-beats/releases/)|[![Ansible Role](https://img.shields.io/ansible/role/d/buluma/beats)](https://galaxy.ansible.com/ui/standalone/roles/buluma/beats/documentation)|
 
 ## [Example Playbook](#example-playbook)
 
-This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+This example is taken from [`molecule/default/converge.yml`](https://github.com/buluma/ansible-role-beats/blob/master/molecule/default/converge.yml) and is tested on each push, pull request and release.
+
 ```yaml
 ---
 - name: Converge
   hosts: all
   become: true
+  gather_facts: true
 
   vars:
     adminer_add_apache_config: true
 
   pre_tasks:
     - name: Update apt cache.
-      apt: update_cache=yes cache_valid_time=600
-      when: ansible_os_family == 'Debian'
+      ansible.builtin.apt:
+
+        update_cache: true
+
+        cache_valid_time: 600
+      when: ansible_facts['os_family'] == 'Debian'
       changed_when: false
 
   roles:
-    # - role: buluma.bootstrap
-    # - role: buluma.apache
     - role: buluma.beats
 ```
 
-The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-beats/blob/master/molecule/default/prepare.yml):
+
 ```yaml
 ---
-- name: prepare
+- name: Prepare
   hosts: all
-  become: yes
-  gather_facts: no
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Install sudo if missing
+      ansible.builtin.raw: "{{ ansible_pkg_mgr | default('dnf') }} install -y sudo"
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Install python3 if missing
+      ansible.builtin.raw: >-
+        if [ -x /usr/bin/python3 ]; then exit 0; fi;
+        if command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y python3;
+        elif command -v dnf >/dev/null 2>&1; then dnf install -y python3;
+        elif command -v yum >/dev/null 2>&1; then yum install -y python3;
+        elif command -v zypper >/dev/null 2>&1; then zypper -n install python3;
+        else exit 1; fi
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Configure passwordless sudo
+      ansible.builtin.raw: >-
+        if ! grep -q '^%wheel ALL=(ALL) NOPASSWD: ALL' /etc/sudoers; then
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers;
+        fi;
+        visudo -cf /etc/sudoers
+      become: false
+      changed_when: false
+      failed_when: false
 
   roles:
     - role: buluma.bootstrap
+    - role: buluma.ca_certificates
 ```
 
+Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
-The default values for the variables are set in `defaults/main.yml`:
+The default values for the variables are set in [`defaults/main.yml`](https://github.com/buluma/ansible-role-beats/blob/master/defaults/main.yml):
+
 ```yaml
 ---
-
-#### PACKAGING #################################################################
+# ### PACKAGING #################################################################
 
 # The libbeat packages to install.
 # Options: www.elastic.co/guide/en/beats/libbeat/master/installing-beats.html
@@ -58,28 +94,27 @@ beats_client_beats_packages:
   - metricbeat
 
 # Identifier for host sending logs. Sane default as hostname.
-beats_client_shipper_name: "{{ ansible_hostname }}"
+beats_client_shipper_name: "{{ ansible_facts['hostname'] }}"
 
-beats_client_version: 6.1.2
+beats_client_version: ""
 # The apt repo URL pegs minor versions (e.g. 5.x) to avoid unexpected upgrades
-beats_client_major_version_abbreviated: 6.x
+beats_client_major_version_abbreviated: "8.x"
 
 beats_client_beats_prereq:
   - apt-transport-https
 
-# Elastic's PGP key for signing their repository
-beats_client_elastic_pgp_key: "46095ACC8548582C1A2699A9D27D666CD88E42B4"
+# Elastic's GPG key URL for signing their repository
 beats_client_elastic_gpg_key_url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
 
 # Elastic's beats debian repository
-beats_client_elastic_repo_url: "deb https://artifacts.elastic.co/packages/{{ beats_client_major_version_abbreviated }}/apt stable main"
+beats_client_elastic_repo_url: "deb [signed-by=/usr/share/keyrings/elastic-beats.gpg] https://artifacts.elastic.co/packages/{{ beats_client_major_version_abbreviated
+  }}/apt stable main"
 
 # Whether to inject templates (should really only be run on the same system that
 # has direct elasticsearch access
-beats_client_inject_templates: no
+beats_client_inject_templates: false
 
 #### FILEBEAT ##################################################################
-
 
 # Sane default of localhost. Override to set to the IP address/DNS of the Logstash server.
 beats_client_logserver: "127.0.0.1"
@@ -92,27 +127,26 @@ beats_client_logfiles:
   - paths:
       - /var/log/syslog
       - /var/log/auth.log
-    tags: ['syslog']
+    tags: ["syslog"]
 
   - paths:
       - /var/log/dpkg.log
-    tags: ['dpkg']
+    tags: ["dpkg"]
 
   - paths:
       - /var/log/apache2/*log
-    tags: ['apache']
+    tags: ["apache"]
 
   - paths:
       - /var/log/mail.info
       - /var/log/mail.warn
       - /var/log/mail.err
-    tags: ['postfix']
+    tags: ["postfix"]
 
 # To send additional logfiles, override the following list.
 # See
 # https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html#_literal_tags_literal
 beats_client_extra_logfiles: []
-
 beats_client_filebeat_combined_logfiles: "{{ beats_client_logfiles + beats_client_extra_logfiles }}"
 
 beats_client_filebeat_logging:
@@ -150,7 +184,7 @@ beats_client_metricbeat_modules:
       - socket
     enabled: true
     period: "{{ beats_client_topbeat_period }}s"
-    processes: ['.*']
+    processes: [".*"]
 
 beats_client_metricbeat_logging:
   level: warning
@@ -172,11 +206,9 @@ beats_client_metricbeat_config:
 #### PACKETBEAT ##################################################################
 # See: www.elastic.co/guide/en/beats/packetbeat/master/configuring-packetbeat.html
 beats_client_packetbeat_config: {}
-
-#### HEARTBEAT ##################################################################
+# ### HEARTBEAT ##################################################################
 beats_client_heartbeat_config: {}
-
-#### KIBANA ##################################################################
+# ### KIBANA ##################################################################
 
 # Section more for testing at this point. Previously for <=5.x this role was
 # assisting with dashboard import. Now that the feature is integrated into the
@@ -193,14 +225,14 @@ beats_client_heartbeat_config: {}
 #        enabled: true
 #        index: "{{ beats_client_kibana_indices['metricbeat'] }}"
 
-beats_client_kibana_url_base: http://localhost:9200
+beats_client_kibana_url_base: "http://localhost:9200"
 beats_client_kibana_url: "{{ beats_client_kibana_url_base }}/.kibana"
 beats_client_kibana_indices:
   metricbeat: metrics-logstash-*
   filebeat: syslog-*
-beats_client_kibana_dash_search:
-  metricbeat: Metricbeat*
-  filebeat: Filebeat*
+# beats_client_kibana_dash_search:
+#   metricbeat: Metricbeat*
+#   filebeat: Filebeat*
 
 #### SHARED ##################################################################
 
@@ -218,7 +250,6 @@ beats_client_output:
 # https://www.elastic.co/guide/en/beats/filebeat/current/configuration-dashboards.html
 beats_client_filebeat_setup: {}
 beats_client_metricbeat_setup: {}
-
 # Master config dictionary variable.
 beats_clients_configs:
   filebeat: "{{ beats_client_filebeat_config }}"
@@ -229,20 +260,20 @@ beats_clients_configs:
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-beats/blob/main/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-beats/blob/master/requirements.txt).
 
-## [Status of used roles](#status-of-requirements)
+## [State of used roles](#state-of-used-roles)
 
 The following roles are used to prepare a system. You can prepare your system in another way.
 
-| Requirement | GitHub | GitLab |
-|-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
-|[buluma.apache](https://galaxy.ansible.com/buluma/apache)|[![Build Status GitHub](https://github.com/buluma/ansible-role-apache/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-apache/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-apache/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-apache)|
+| Requirement | GitHub |
+|-------------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|
+|[buluma.ca_certificates](https://galaxy.ansible.com/buluma/ca_certificates)|[![Build Status GitHub](https://github.com/buluma/ansible-role-ca_certificates/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-ca_certificates/actions)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
+This role is part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -254,25 +285,22 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|debian|all|
+|[EL](https://hub.docker.com/r/buluma/docker-molecule-images)|10, 9|
+|[Debian](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
+|[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
+|[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.10, tests have been done to:
+The minimum version of Ansible required is 2.12, tests have been done on:
 
 - The previous version.
 - The current version.
 - The development version.
 
-
-
-If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-beats/issues)
-
-## [Changelog](#changelog)
-
-[Role History](https://github.com/buluma/ansible-role-beats/blob/master/CHANGELOG.md)
+If you find issues, please register them on [GitHub](https://github.com/buluma/ansible-role-beats/issues).
 
 ## [License](#license)
 
-MIT
+[Apache-2.0](https://github.com/buluma/ansible-role-beats/blob/master/LICENSE).
 
 ## [Author Information](#author-information)
 

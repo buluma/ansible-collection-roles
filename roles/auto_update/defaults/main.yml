@@ -12,7 +12,7 @@ auto_update_message: false
 auto_update_download_updates: true
 
 # Whether updates should be applied when they are available.  Note
-# that download_updates must also be true for the update to be applied.
+# that download_updates must also be yes for the update to be applied.
 auto_update_apply_updates: false
 
 # Maximum amout of time to randomly sleep, in minutes.

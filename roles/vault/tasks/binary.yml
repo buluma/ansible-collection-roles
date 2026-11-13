@@ -1,0 +1,139 @@
+---
+- name: binary | Create Vault group
+  ansible.builtin.group:
+    name: "{{ vault_group }}"
+    system: true
+- name: binary | Create Vault user
+  ansible.builtin.user:
+    create_home: false
+    group: "{{ vault_group }}"
+    name: "{{ vault_user }}"
+    shell: "{{ vault_user_shell }}"
+    system: true
+- name: binary | Create Vault download directory
+  ansible.builtin.file:
+    group: "{{ vault_group }}"
+    mode: "0755"
+    owner: "{{ vault_user }}"
+    path: "{{ vault_download_path }}"
+    state: directory
+- name: binary | Download Vault binary
+  ansible.builtin.unarchive:
+    creates: "{{ vault_download_path }}/vault"
+    dest: "{{ vault_download_path }}"
+    group: root
+    mode: "0644"
+    owner: root
+    remote_src: true
+    src: https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_{{ vault_architecture }}.zip
+- name: binary | Check if vault_path exists
+  ansible.builtin.stat:
+    path: "{{ vault_path }}"
+  register: vault_check_path
+- name: binary | Create vault_path if it does not exists
+  ansible.builtin.file:
+    group: "{{ vault_group }}"
+    mode: "0755"
+    owner: "{{ vault_user }}"
+    path: "{{ vault_path }}"
+    state: directory
+  when:
+    - not vault_check_path.stat.exists
+    - vault_path | length > 0
+- name: binary | Create directory in vault_path
+  ansible.builtin.file:
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    path: "{{ item.name }}"
+    state: directory
+  loop: "{{ vault_directories }}"
+  loop_control:
+    label: "{{ item.name }}"
+- name: binary | Create data directory
+  ansible.builtin.file:
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    path: "{{ item.name }}"
+    state: directory
+  loop: "{{ vault_data_directories }}"
+  loop_control:
+    label: "{{ item.name }}"
+- name: binary | Generate TLS key and certificate
+  ansible.builtin.command:
+    chdir: "{{ vault_data_directory }}/tls/"
+    cmd: openssl req -out tls.crt -new -keyout tls.key -newkey rsa:4096 -nodes -sha256 -x509 -subj "/O=HashiCorp/CN=Vault" -days 1095
+    creates: "{{ vault_data_directory }}/tls/tls.key"
+  notify:
+    - Restart vault
+# Separator for the pre-commit handler parser.
+- name: binary | Set ownership of tls material
+  ansible.builtin.file:
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    path: "{{ item.name }}"
+  loop: "{{ vault_tls_files }}"
+  loop_control:
+    label: "{{ item.name }}"
+- name: binary | Copy Vault binary
+  ansible.builtin.copy:
+    dest: "{{ vault_path }}/usr/bin/vault"
+    group: root
+    mode: "0755"
+    owner: root
+    remote_src: true
+    src: "{{ vault_download_path }}/vault"
+  notify:
+    - Restart vault
+# Separator for the pre-commit handler parser.
+- name: binary | Set cap_ipc_lock=ep on /usr/bin/vault
+  changed_when: false
+  community.general.capabilities:
+    capability: cap_ipc_lock+ep
+    path: "{{ vault_path }}/usr/bin/vault"
+- name: binary | Touch vault.env
+  ansible.builtin.file:
+    access_time: preserve
+    group: "{{ vault_group }}"
+    mode: "0644"
+    modification_time: preserve
+    owner: "{{ vault_user }}"
+    path: "{{ vault_path }}/etc/vault.d/vault.env"
+    state: touch
+  notify:
+    - Restart vault
+# Separator for the pre-commit handler parser.
+- name: binary | Create /usr/lib/systemd/system
+  ansible.builtin.file:
+    group: root
+    mode: "0755"
+    owner: root
+    path: /usr/lib/systemd/system
+    state: directory
+- name: binary | Copy Vault service file
+  ansible.builtin.template:
+    dest: /usr/lib/systemd/system/vault.service
+    group: root
+    mode: "0644"
+    owner: root
+    src: vault.service.j2
+  notify:
+    - Daemon reload
+  # Separator for the pre-commit handler parser.
+  when:
+    - ansible_facts['service_mgr'] == "systemd"
+- name: binary | Copy vault configuration
+  ansible.builtin.copy:
+    dest: "{{ vault_path }}/etc/vault.d/vault.hcl"
+    force: false
+    group: root
+    mode: "0644"
+    owner: root
+    src: vault.hcl
+  notify:
+    - Restart vault
+# Separator for the pre-commit handler parser.
+- name: binary | Flush handlers
+  ansible.builtin.meta: flush_handlers

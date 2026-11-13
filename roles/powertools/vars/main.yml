@@ -1,0 +1,25 @@
+---
+# vars file for powertools
+
+_powertools_repo_name:
+  RedHat: powertools
+  AlmaLinux_9: crb
+  AlmaLinux_10: crb
+  Rocky_9: crb
+  Rocky_10: crb
+
+powertools_repo_name: "{{ _powertools_repo_name[ansible_facts['distribution'] ~ '_' ~ ansible_facts['distribution_major_version']] | default( _powertools_repo_name[ansible_facts['distribution']]
+  ) | default( _powertools_repo_name[ansible_facts['os_family']] ) }}"
+
+_powertools_repo_file:
+  RedHat: "{{ ansible_facts['distribution'] }}-PowerTools.repo"
+  Rocky: "{{ ansible_facts['distribution'] }}-PowerTools.repo"
+  Rocky_9: "rocky.repo"
+  Rocky_10: "rocky.repo"
+  AlmaLinux_8: "almalinux-PowerTools.repo"
+  AlmaLinux_9: "almalinux-crb.repo"
+  AlmaLinux_10: "almalinux-crb.repo"
+  CentOS: "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_release'] }}-PowerTools.repo"
+
+powertools_repo_file: "{{ _powertools_repo_file[ansible_facts['distribution'] ~ '_' ~ ansible_facts['distribution_major_version']] | default( _powertools_repo_file[ansible_facts['distribution']]
+  ) | default( _powertools_repo_file[ansible_facts['os_family']] ) }}"

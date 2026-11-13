@@ -1,0 +1,8 @@
+---
+collections:
+  - name: ansible.posix
+roles:
+  - name: buluma.bootstrap
+  - name: enix.postgresql
+    src: https://github.com/buluma/ansible-postgresql.git
+    version: v2.1.2-signed-by

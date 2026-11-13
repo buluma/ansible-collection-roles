@@ -1,0 +1,4 @@
+---
+_yum:
+  - name: fontconfig
+    state: latest

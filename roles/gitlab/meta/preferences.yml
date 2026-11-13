@@ -1,0 +1,17 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  # Fedora excluded: GitLab's package repo doesn't support Fedora at all
+  # (the el/$version URL scheme its RedHat-family repo setup uses doesn't
+  # apply there).
+  - name: Ubuntu
+    versions:
+      - all

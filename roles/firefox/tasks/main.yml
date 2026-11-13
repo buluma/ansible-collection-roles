@@ -1,59 +1,30 @@
 ---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
 - name: Include distribution specific variables
   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:
     params:
       files:
-        - "{{ ansible_facts.os_family }}-{{ ansible_facts.distribution_major_version }}.yml"
-        - "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_version }}.yml"
-        - "{{ ansible_facts.distribution }}.yml"
-        - "{{ ansible_facts.os_family }}.yml"
+        - "{{ ansible_facts['os_family'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}.yml"
+        - "{{ ansible_facts['os_family'] }}.yml"
       paths:
         - vars
 
-- name: Download firefox package
-  ansible.builtin.get_url:
-    url: "{{ firefox_url }}"
-    dest: /tmp/firefox-{{ firefox_version }}.tar.bz2
-    mode: 0755
-    checksum: "{{ firefox_checksum }}"
+- name: Install via tarball
+  ansible.builtin.import_tasks:
+    file: tarball.yml
+  when:
+    - ansible_facts['os_family'] != "Debian"
 
-- block:
-    - name: Remove the firefox package
-      ansible.builtin.package:
-        name: firefox
-        state: absent
-
-    - name: Install dependencies
-      ansible.builtin.package:
-        name: "{{ item }}"
-      with_items: "{{ firefox_dependencies }}"
-
-    - name: Create install directory
-      ansible.builtin.file:
-        path: "{{ firefox_home }}"
-        state: directory
-        mode: 0755
-
-    - name: Unarchive package
-      ansible.builtin.unarchive:
-        src: "{{ firefox_download }}"
-        dest: "{{ firefox_home }}"
-        remote_src: true
-        creates: "{{ firefox_bin }}"
-
-    - name: Symlink package
-      ansible.builtin.file:
-        src: "{{ firefox_bin }}"
-        dest: /usr/bin/firefox
-        state: link
-  become: true
-
-- name: Create desktop icon
-  ansible.builtin.template:
-    src: firefox.desktop.j2
-    dest: /usr/share/applications/firefox.desktop
-    owner: root
-    group: root
-    mode: 0644
-  when: firefox_desktop_icon
+- name: Install via deb
+  ansible.builtin.import_tasks:
+    file: deb.yml
+  when:
+    - ansible_facts['os_family'] == "Debian"

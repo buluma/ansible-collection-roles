@@ -1,0 +1,22 @@
+---
+vector_bin_path: /usr/bin/{{ vector_exec_name }}
+vector_config_path: /etc/vector
+vector_config_template_path: templates/config/
+vector_configs_folder: "{{ vector_config_path }}"
+vector_data_dir: /var/lib/vector
+vector_deb_package: "https://apt.vector.dev/pool/v/ve/vector_{{ vector_version }}-1_{{ vector_package_architecture }}.deb"
+vector_documentation_link: "https://vector.dev/docs/about/what-is-vector/"
+vector_env_path: /etc/default/vector
+vector_exec_name: vector
+vector_force_reinstall: false
+vector_group: vector
+vector_log_output: journal
+vector_package_architecture: amd64
+vector_service_enabled: true
+vector_service_state: started
+vector_service_template_path: vector.service.j2
+vector_skeleton_paths: "{{ vector_skeleton_paths_base + vector_skeleton_paths_extend | default([]) }}"
+vector_skeleton_paths_base:
+  - "{{ vector_config_path }}"
+vector_user: vector
+vector_version: "0.60.0"

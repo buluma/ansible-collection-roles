@@ -1,0 +1,5 @@
+---
+- name: setup-RedHat | Install ruby, rubygems, and development tools.
+  ansible.builtin.dnf:
+    name: "{{ ruby_packages }}"
+    state: present

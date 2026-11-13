@@ -1,0 +1,101 @@
+---
+- name: instance | Ensure instance group exists
+  ansible.builtin.group:
+    name: "{{ instance.group | default(tomcat_group) }}"
+    state: present
+- name: instance | Ensure instance user exists
+  ansible.builtin.user:
+    createhome: false
+    group: "{{ instance.group | default(tomcat_group) }}"
+    name: "{{ instance.user | default(tomcat_user) }}"
+    state: present
+    system: true
+- name: instance | Ensure instance directory exists
+  ansible.builtin.file:
+    group: "{{ instance.group | default(tomcat_group) }}"
+    mode: "0755"
+    owner: "{{ instance.user | default(tomcat_user) }}"
+    path: "{{ tomcat_directory }}/{{ instance.name }}"
+    state: directory
+- name: instance | Download tomcat source
+  ansible.builtin.get_url:
+    dest: "{{ tomcat_directory }}/{{ instance.name }}/tomcat_src.tar.gz"
+    mode: "440"
+    url: "{{ tomcat_unarchive_url }}"
+- name: instance | Install tomcat instance
+  ansible.builtin.unarchive:
+    creates: "{{ tomcat_directory }}/{{ instance.name }}/bin"
+    dest: "{{ tomcat_directory }}/{{ instance.name }}"
+    extra_opts: --strip-components=1
+    group: "{{ instance.group | default(tomcat_group) }}"
+    mode: "0755"
+    owner: "{{ instance.user | default(tomcat_user) }}"
+    remote_src: true
+    src: "{{ tomcat_directory }}/{{ instance.name }}/tomcat_src.tar.gz"
+- name: instance | Save instance name
+  ansible.builtin.set_fact:
+    instance_name: "{{ instance.name }}"
+- name: instance | Configure tomcat instance - server.xml
+  ansible.builtin.template:
+    dest: "{{ tomcat_directory }}/{{ instance.name }}/conf/server.xml"
+    mode: "0644"
+    src: server.xml.j2
+  notify:
+    - Restart tomcat instance
+# Separator for the pre-commit handler parser.
+- name: instance | Configure tomcat instance - setenv.sh
+  ansible.builtin.template:
+    dest: "{{ tomcat_directory }}/{{ instance.name }}/bin/setenv.sh"
+    mode: "0644"
+    src: setenv.sh.j2
+  notify:
+    - Restart tomcat instance
+  # Separator for the pre-commit handler parser.
+  when:
+    - (instance.java_opts is defined) or (instance.xms is defined) or (instance.xmx is defined)
+- name: instance | Place neutral default page
+  ansible.builtin.copy:
+    content: Please select an application by adding the context to the URL.
+    dest: "{{ tomcat_directory }}/{{ instance.name }}/webapps/ROOT/index.html"
+    group: "{{ instance.group | default(tomcat_group) }}"
+    mode: "0640"
+    owner: "{{ instance.user | default(tomcat_user) }}"
+- name: instance | Loop over config_files
+  ansible.builtin.include_tasks:
+    file: config_file.yml
+  loop: "{{ instance.config_files }}"
+  loop_control:
+    loop_var: config_file
+  when:
+    - instance.config_files is defined
+- name: instance | Create service instance
+  ansible.builtin.import_role:
+    name: buluma.roles.service
+  vars:
+    service_list:
+      - description: "{{ instance.name | default(tomcat_name) }}"
+        group_name: "{{ instance.group | default(tomcat_group) }}"
+        name: "{{ instance.name | default(tomcat_name) }}"
+        start_command: /bin/bash {{ tomcat_directory }}/{{ instance.name | default(tomcat_directory) }}/bin/catalina.sh run
+        user_name: "{{ instance.user | default(tomcat_user) }}"
+- name: instance | Manage tomcat service
+  ansible.builtin.service:
+    enabled: "{{ instance.service_enabled | default(tomcat_service_enabled) }}"
+    name: "{{ instance.name }}"
+    state: "{{ instance.service_state | default(tomcat_service_state) }}"
+- name: instance | Loop over wars
+  ansible.builtin.include_tasks:
+    file: war.yml
+  loop: "{{ instance.wars }}"
+  loop_control:
+    loop_var: war
+  when:
+    - instance.wars is defined
+- name: instance | Loop over libs
+  ansible.builtin.include_tasks:
+    file: lib.yml
+  loop: "{{ instance.libs }}"
+  loop_control:
+    loop_var: lib
+  when:
+    - instance.libs is defined

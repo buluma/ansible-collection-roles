@@ -1,37 +1,39 @@
 ---
-- name: Configure apache.
+- name: configure-RedHat | Configure apache.
   ansible.builtin.lineinfile:
     dest: "{{ apache_server_root }}/conf/{{ apache_daemon }}.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
-    mode: 0644
+    mode: "0644"
   with_items: "{{ apache_ports_configuration_items }}"
   notify: Restart apache
 
-- name: Check whether certificates defined in vhosts exist.
-  ansible.builtin.stat: path={{ item.certificate_file }}
+- name: configure-RedHat | Check whether certificates defined in vhosts exist.
+  ansible.builtin.stat:
+    path: "{{ item.certificate_file }}"
   register: apache_ssl_certificates
   with_items: "{{ apache_vhosts_ssl }}"
 
-- name: Add apache vhosts configuration.
+- name: configure-RedHat | Add apache vhosts configuration.
   ansible.builtin.template:
     src: "{{ apache_vhosts_template }}"
     dest: "{{ apache_conf_path }}/{{ apache_vhosts_filename }}"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: Restart apache
   when: apache_create_vhosts | bool
 
-- name: Check if localhost cert exists (RHEL 8 and later).
+- name: configure-RedHat | Check if localhost cert exists (RHEL 8 and later).
   ansible.builtin.stat:
     path: /etc/pki/tls/certs/localhost.crt
   register: localhost_cert
-  when: ansible_distribution_major_version | int >= 8
+  when: ansible_facts['distribution_major_version'] | int >= 8
 
-- name: Ensure httpd certs are installed (RHEL 8 and later).
+- name: configure-RedHat | Ensure httpd certs are installed (RHEL 8 and later).
   ansible.builtin.command: /usr/libexec/httpd-ssl-gencerts
+  changed_when: false
   when:
-    - ansible_distribution_major_version | int >= 8
+    - ansible_facts['distribution_major_version'] | int >= 8
     - not localhost_cert.stat.exists

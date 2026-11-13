@@ -1,0 +1,12 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.centos_base
+  - name: bngsudheer.ruby
+  - name: buluma.mysql
+  - name: buluma.nginx
+    # - name: buluma.postgresql
+collections:
+  - name: community.general
+  - name: ansible.posix

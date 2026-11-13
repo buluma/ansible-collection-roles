@@ -1,0 +1,26 @@
+---
+- name: kubelet-setup | Check for existence of kubelet environment file. (deprecated)
+  ansible.builtin.stat:
+    path: "{{ kubelet_environment_file_path }}"
+  register: kubelet_environment_file
+- name: kubelet-setup | Set facts for KUBELET_EXTRA_ARGS task if environment file exists. (deprecated)
+  ansible.builtin.set_fact:
+    kubelet_args_line: "{{ 'KUBELET_EXTRA_ARGS=' + kubernetes_kubelet_extra_args }}"
+    kubelet_args_path: "{{ kubelet_environment_file_path }}"
+    kubelet_args_regexp: ^KUBELET_EXTRA_ARGS=
+  when: kubelet_environment_file.stat.exists
+- name: kubelet-setup | Set facts for KUBELET_EXTRA_ARGS task if environment file doesn't exist. (deprecated)
+  ansible.builtin.set_fact:
+    kubelet_args_line: '{{ ''Environment="KUBELET_EXTRA_ARGS='' + kubernetes_kubelet_extra_args + ''"'' }}'
+    kubelet_args_path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    kubelet_args_regexp: ^Environment="KUBELET_EXTRA_ARGS=
+  when: not kubelet_environment_file.stat.exists
+- name: kubelet-setup | Configure KUBELET_EXTRA_ARGS. (deprecated)
+  ansible.builtin.lineinfile:
+    line: "{{ kubelet_args_line }}"
+    mode: "0644"
+    path: "{{ kubelet_args_path }}"
+    regexp: "{{ kubelet_args_regexp }}"
+    state: present
+  notify: Restart kubelet
+  when: kubernetes_kubelet_extra_args|length > 0

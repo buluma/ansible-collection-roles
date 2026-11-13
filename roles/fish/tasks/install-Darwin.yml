@@ -1,5 +1,5 @@
 ---
-- name: MACOS | install fish
+- name: install-Darwin | Install fish
   community.general.homebrew:
     name: fish
     state: latest

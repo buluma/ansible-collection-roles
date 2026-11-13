@@ -1,55 +1,56 @@
 ---
-- name: Configure apache.
+- name: configure-Debian | Configure apache.
   ansible.builtin.lineinfile:
     dest: "{{ apache_server_root }}/ports.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
-    mode: 0644
+    mode: "0644"
   with_items: "{{ apache_ports_configuration_items }}"
   notify: Restart apache
 
-- name: Enable apache mods.
+- name: configure-Debian | Enable apache mods.
   ansible.builtin.file:
     src: "{{ apache_server_root }}/mods-available/{{ item }}"
     dest: "{{ apache_server_root }}/mods-enabled/{{ item }}"
     state: link
-    mode: 0644
+    mode: "0644"
   with_items: "{{ apache_mods_enabled }}"
   notify: Restart apache
 
-- name: Disable apache mods.
+- name: configure-Debian | Disable apache mods.
   ansible.builtin.file:
     path: "{{ apache_server_root }}/mods-enabled/{{ item }}"
     state: absent
   with_items: "{{ apache_mods_disabled }}"
   notify: Restart apache
 
-- name: Check whether certificates defined in vhosts exist.
-  ansible.builtin.stat: "path={{ item.certificate_file }}"
+- name: configure-Debian | Check whether certificates defined in vhosts exist.
+  ansible.builtin.stat:
+    path: "{{ item.certificate_file }}"
   register: apache_ssl_certificates
   with_items: "{{ apache_vhosts_ssl }}"
 
-- name: Add apache vhosts configuration.
+- name: configure-Debian | Add apache vhosts configuration.
   ansible.builtin.template:
     src: "{{ apache_vhosts_template }}"
     dest: "{{ apache_conf_path }}/sites-available/{{ apache_vhosts_filename }}"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: Restart apache
   when: apache_create_vhosts | bool
 
-- name: Add vhost symlink in sites-enabled.
+- name: configure-Debian | Add vhost symlink in sites-enabled.
   ansible.builtin.file:
     src: "{{ apache_conf_path }}/sites-available/{{ apache_vhosts_filename }}"
     dest: "{{ apache_conf_path }}/sites-enabled/{{ apache_vhosts_filename }}"
     state: link
-    mode: 0644
+    mode: "0644"
   notify: Restart apache
   when: apache_create_vhosts | bool
 
-- name: Remove default vhost in sites-enabled.
+- name: configure-Debian | Remove default vhost in sites-enabled.
   ansible.builtin.file:
     path: "{{ apache_conf_path }}/sites-enabled/{{ apache_default_vhost_filename }}"
     state: absent

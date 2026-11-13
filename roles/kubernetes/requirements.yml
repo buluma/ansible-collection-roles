@@ -1,0 +1,10 @@
+---
+collections:
+  - name: ansible.posix
+  - name: community.general
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.docker
+  - name: buluma.docker_ce
+  - name: buluma.setuptools
+  - name: buluma.core_dependencies

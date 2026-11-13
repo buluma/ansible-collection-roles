@@ -1,0 +1,3 @@
+---
+terraform_unarchive_src: "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip"
+# Additional Terraform vars can be added here when needed.

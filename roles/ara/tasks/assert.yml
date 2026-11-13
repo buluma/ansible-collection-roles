@@ -1,20 +1,19 @@
 ---
-
-- name: test if ara_configuration_file is set correctly
+- name: assert | Test if ara_configuration_file is set correctly
   ansible.builtin.assert:
     that:
       - ara_configuration_file is defined
       - ara_configuration_file is string
     quiet: true
 
-- name: test if ara_user is set correctly
+- name: assert | Test if ara_user is set correctly
   ansible.builtin.assert:
     that:
       - ara_user is defined
       - ara_user is string
     quiet: true
 
-- name: test if ara_python_plugins_path is set correctly
+- name: assert | Test if ara_python_plugins_path is set correctly
   ansible.builtin.assert:
     that:
       - ara_python_plugins_path is iterable
@@ -22,7 +21,7 @@
   when:
     - ara_python_plugins_path is defined
 
-- name: test if ara_configuration is set correctly
+- name: assert | Test if ara_configuration is set correctly
   ansible.builtin.assert:
     that:
       - ara_configuration is iterable
@@ -30,7 +29,7 @@
   when:
     - ara_configuration is defined
 
-- name: test if item in ara_configuration is set correctly
+- name: assert | Test if item in ara_configuration is set correctly
   ansible.builtin.assert:
     that:
       - item.option is defined

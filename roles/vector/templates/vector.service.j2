@@ -1,0 +1,38 @@
+{{ ansible_managed | comment }}
+{% if vector_config_files is defined %}
+    {% set params_exec_start = '--config "' + vector_config_files | join('" --config "') + '"' %}
+    {% set params_exec_start_pre = '"' + vector_config_files | join('" "') + '"' %}
+{% elif vector_configs_folder is defined %}
+    {% set params_exec_start = '--config-dir "' + vector_configs_folder + '"' %}
+    {% set params_exec_start_pre = params_exec_start %}
+{% endif %}
+
+[Unit]
+Description=Vector
+Documentation={{ vector_documentation_link }}
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User={{ vector_user }}
+Group={{ vector_group }}
+ExecStartPre={{ vector_bin_path }} validate {{ params_exec_start_pre | default('') }}
+ExecStart={{ vector_bin_path }} {{ params_exec_start | default('') }}
+ExecReload={{ vector_bin_path }} validate {{ params_exec_start_pre | default('') }}
+ExecReload=/bin/kill -HUP $MAINPID
+EnvironmentFile=-{{ vector_env_path }}
+
+StandardOutput={{ vector_log_output_stdout | default(vector_log_output) }}
+StandardError={{ vector_log_output_stderr | default(vector_log_output) }}
+
+{% if vector_syslog_identifier is defined %}
+SyslogIdentifier={{ vector_syslog_identifier }}
+{% endif %}
+
+{# KillSignal=SIGTERM #}
+Restart=always
+StartLimitInterval=10
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

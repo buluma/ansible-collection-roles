@@ -1,0 +1,18 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: revealmd
+  description: Install and configure revealmd on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - revealmd
+    - presentation
+    - html
+    - markdown
+    - nodejs
+    - git
+    - npm
+    - slides
+dependencies: []

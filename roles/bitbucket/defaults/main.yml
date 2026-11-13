@@ -1,37 +1,19 @@
 ---
-
-# Bitbucket release.
-bitbucket_release: "8.3"
-
-# Bitbucket version.
-bitbucket_version: "{{ _bitbucket_version[bitbucket_release] }}"
-
-# Owner and group for Bitbucket.
-bitbucket_owner: "bitbucket"
-bitbucket_group: "bitbucket"
-
-# Bitbucket home directory.
-bitbucket_home: "/var/atlassian/application-data/bitbucket"
-
-# Bitbucket installation directory.
-bitbucket_catalina: "/opt/atlassian/bitbucket"
-
-# JVM minimal and maximum memory usage.
-bitbucket_jvm_minimum_memory: "2048m"
-bitbucket_jvm_maximum_memory: "2048m"
-
-# Proxy and context path setup.
-bitbucket_catalina_connector_proxyname: ~
-bitbucket_catalina_connector_proxyport: ~
-bitbucket_catalina_connector_scheme: "http"
-bitbucket_catalina_connector_secure: "false"
-bitbucket_catalina_context_path: ~
-
-# Atlassian Support recommended JVM arguments.
-bitbucket_jvm_support_recommended_args: >-
-  -Datlassian.plugins.enable.wait=300
-  -XX:+UnlockExperimentalVMOptions
-  -XX:+UseCGroupMemoryLimitForHeap
-  -XX:MaxRAMFraction=1
-# Session timeout (in mintues).
+bitbucket_autologin_cookie_age: "10080"
+bitbucket_catalina: /opt/atlassian/bitbucket
+bitbucket_catalina_connector_port: "7990"
+bitbucket_catalina_connector_proxyname:
+bitbucket_catalina_connector_proxyport:
+bitbucket_catalina_connector_scheme:
+bitbucket_catalina_connector_secure:
+bitbucket_catalina_context_path:
+bitbucket_group: bitbucket
+bitbucket_home: /var/atlassian/application-data/bitbucket
+bitbucket_jvm_maximum_memory: 2048m
+bitbucket_jvm_minimum_memory: 2048m
+bitbucket_jvm_reserved_code_cache_size: 512m
+bitbucket_jvm_support_recommended_args: -Datlassian.plugins.enable.wait=300 -XX:+IgnoreUnrecognizedVMOptions -XX:+UnlockExperimentalVMOptions
+bitbucket_owner: bitbucket
+bitbucket_release: "10.2"
 bitbucket_session_timeout: "120"
+bitbucket_version: "{{ _bitbucket_version[bitbucket_release] }}"

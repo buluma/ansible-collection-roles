@@ -1,0 +1,72 @@
+---
+# tasks file for bareos_fd
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install packages
+  ansible.builtin.package:
+    name: bareos-filedaemon
+
+- name: Install debug packages
+  ansible.builtin.package:
+    name: "{{ bareos_fd_debug_packages }}"
+  when:
+    - bareos_fd_install_debug_packages
+
+- name: Place myself.conf
+  ansible.builtin.template:
+    src: myself.conf.j2
+    dest: "/etc/bareos/bareos-fd.d/client/myself.conf"
+    owner: bareos
+    group: bareos
+    mode: "0640"
+    backup: "{{ bareos_fd_backup_configurations }}"
+  notify:
+    - Check configuration
+    - Restart bareos-filedaemon
+
+- name: Place director
+  ansible.builtin.template:
+    src: director.conf.j2
+    dest: "/etc/bareos/bareos-fd.d/director/{{ item.name }}.conf"
+    owner: bareos
+    group: bareos
+    mode: "0640"
+    backup: "{{ bareos_fd_backup_configurations }}"
+  loop: "{{ bareos_fd_directors }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify:
+    - Check configuration
+    - Restart bareos-filedaemon
+
+- name: Place message
+  ansible.builtin.template:
+    src: message.conf.j2
+    dest: "/etc/bareos/bareos-fd.d/messages/{{ item.name }}.conf"
+    owner: bareos
+    group: bareos
+    mode: "0640"
+    backup: "{{ bareos_fd_backup_configurations }}"
+  loop: "{{ bareos_fd_messages }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify:
+    - Check configuration
+    - Restart bareos-filedaemon
+
+- name: Import encryption tasklist
+  ansible.builtin.import_tasks:
+    file: encryption.yml
+  when:
+    - bareos_fd_encryption_enabled
+
+- name: Start bareos-filedaemon
+  ansible.builtin.service:
+    name: "{{ bareos_fd_service }}"
+    state: started
+    enabled: true

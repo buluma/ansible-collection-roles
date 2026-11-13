@@ -1,0 +1,178 @@
+---
+- name: configure_linux | Retrieve ec2 facts
+  amazon.aws.ec2_metadata_facts:
+  when:
+    - telegraf_agent_aws_tags
+- name: configure_linux | "Add prefix path"
+  ansible.builtin.set_fact:
+    telegraf_agent_config_path: /usr/local/etc
+  when:
+    - ansible_facts['os_family'] == "FreeBSD"
+- name: configure_linux | Retrieve all ec2 tags on the instance
+  amazon.aws.ec2_tag:
+    region: "{{ ansible_ec2_placement_region }}"
+    resource: "{{ ansible_ec2_instance_id }}"
+    state: list
+  register: ec2_tags
+  when:
+    - telegraf_agent_aws_tags
+- name: configure_linux | "Copy the template for versions < 0.10.0"
+  ansible.builtin.template:
+    dest: /etc/opt/telegraf/telegraf.conf
+    group: telegraf
+    mode: "0640"
+    owner: telegraf
+    src: etc-opt-telegraf-telegraf.conf.j2
+  become: true
+  notify:
+    - Restart Telegraf
+    - Restart Telegraf container
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_agent_version is version('0.10.0', '<')
+- name: configure_linux | "Copy the template for versions >= 0.10.0"
+  ansible.builtin.template:
+    dest: "{{ telegraf_agent_config_path }}/telegraf.conf"
+    group: telegraf
+    mode: "0640"
+    owner: telegraf
+    src: telegraf.conf.j2
+  become: true
+  notify:
+    - Restart Telegraf
+    - Restart Telegraf container
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_agent_version is version('0.10.0', '>=')
+- name: configure_linux | "Check if extra plugins directory exists in case of exclusive"
+  ansible.builtin.stat:
+    path: "{{ telegraf_agent_config_path }}/telegraf.d"
+  register: telegraf_directory
+  when:
+    - telegraf_plugins_extra_exclusive
+- name: configure_linux | "Delete telegraf extra plugin path"
+  ansible.builtin.file:
+    path: "{{ telegraf_agent_config_path }}/telegraf.d/"
+    state: absent
+  become: true
+  notify:
+    - Restart Telegraf
+    - Restart Telegraf container
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_plugins_extra_exclusive
+    - telegraf_directory.stat.exists
+- name: configure_linux | "Create telegraf extra plugin path"
+  ansible.builtin.file:
+    group: telegraf
+    mode: "0755"
+    owner: telegraf
+    path: "{{ telegraf_agent_config_path }}/telegraf.d/"
+    state: directory
+  become: true
+  notify:
+    - Restart Telegraf
+    - Restart Telegraf container
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_plugins_extra_exclusive
+    - telegraf_directory.stat.exists
+- name: configure_linux | "Copy telegraf extra plugins"
+  ansible.builtin.template:
+    dest: "{{ telegraf_agent_config_path }}/telegraf.d/{{ item.key }}.conf"
+    group: telegraf
+    mode: "0640"
+    owner: telegraf
+    src: telegraf-extra-plugin.conf.j2
+  become: true
+  loop_control:
+    label: "{{ item.key }}"
+  notify:
+    - Restart Telegraf
+    - Restart Telegraf container
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_plugins_extra is defined
+    - telegraf_plugins_extra is iterable
+    - item.value.state|default('present') != 'absent'
+  with_dict: "{{ telegraf_plugins_extra }}"
+- name: configure_linux | "Remove telegraf extra plugins"
+  ansible.builtin.file:
+    path: "{{ telegraf_agent_config_path }}/telegraf.d/{{ item.key }}.conf"
+    state: absent
+  become: true
+  loop_control:
+    label: "{{ item.key }}"
+  notify:
+    - Restart Telegraf
+    - Restart Telegraf container
+  when:
+    - telegraf_plugins_extra is defined
+    - telegraf_plugins_extra is iterable
+    - item.value.state|default('present') == 'absent'
+  with_dict: "{{ telegraf_plugins_extra }}"
+- name: configure_linux | "Force restart service after reread config"
+  ansible.builtin.meta: flush_handlers
+- name: configure_linux | "Start Telegraf (If it wasn't running)"
+  ansible.builtin.service:
+    enabled: "{{ telegraf_enabled }}"
+    name: telegraf
+    state: "{{ telegraf_enabled | ternary('started', 'stopped') }}"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: not telegraf_agent_docker
+- name: configure_linux | Configure system for for docker plugin
+  when: "'docker' in telegraf_plugins_extra and not telegraf_agent_docker"
+  block:
+    - name: configure_linux | Add telegraf user to docker group
+      ansible.builtin.user:
+        append: true
+        groups: docker
+        name: telegraf
+      become: true
+      notify:
+        - Restart Telegraf
+# Separator for the pre-commit handler parser.
+- name: configure_linux | Configure system for for smart plugin
+  when: "'smart' in telegraf_plugins_extra and not telegraf_agent_docker"
+  block:
+    - name: configure_linux | Install smartmontools
+      ansible.builtin.package:
+        name: smartmontools
+      become: true
+    - name: configure_linux | Find path of smartctl
+      ansible.builtin.command: which smartctl
+      become: true
+      changed_when: false
+      ignore_errors: true
+      register: which_smartctl
+    - name: configure_linux | Ensure telegraf user can execute smartctl
+      ansible.builtin.blockinfile:
+        block: "telegraf ALL=(root) NOPASSWD: {{ which_smartctl.stdout }}"
+        create: true
+        dest: /etc/sudoers.d/telegraf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK (Ensure telegraf user can execute smartctl)"
+        mode: "0400"
+      become: true
+      notify:
+        - Restart Telegraf
+# Separator for the pre-commit handler parser.
+- name: configure_linux | Configure system for for sensors plugin
+  when: "'sensors' in telegraf_plugins_extra and not telegraf_agent_docker"
+  block:
+    - name: configure_linux | Debian | Install lm-sensors
+      ansible.builtin.package:
+        name: lm-sensors
+      become: true
+      notify:
+        - Restart Telegraf
+      # Separator for the pre-commit handler parser.
+      when: ansible_facts['os_family'] == "Debian"
+    - name: configure_linux | RedHat | Install lm-sensors
+      ansible.builtin.package:
+        name: lm_sensors
+      become: true
+      notify:
+        - Restart Telegraf
+      # Separator for the pre-commit handler parser.
+      when: ansible_facts['os_family'] == "RedHat"

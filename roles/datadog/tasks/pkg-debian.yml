@@ -1,0 +1,132 @@
+---
+- name: pkg-debian | Install apt-transport-https
+  ansible.builtin.apt:
+    update_cache: true
+    name: apt-transport-https
+    state: present
+  when: not ansible_check_mode
+
+- name: pkg-debian | Install gnupg
+  ansible.builtin.apt:
+    update_cache: true
+    name: gnupg
+    state: present
+  when: not ansible_check_mode
+
+- name: pkg-debian | Check if keyring exists with correct mode, keyring={{ datadog_apt_usr_share_keyring }}
+  ansible.builtin.stat:
+    path: "{{ datadog_apt_usr_share_keyring }}"
+  register: agent_apt_keyring_file
+
+- name: pkg-debian | Ensure keyring exists, keyring={{ datadog_apt_usr_share_keyring }}
+  ansible.builtin.file:
+    path: "{{ datadog_apt_usr_share_keyring }}"
+    owner: root
+    group: root
+    mode: "0644"
+    state: touch
+  when: not ansible_check_mode and (not agent_apt_keyring_file.stat.exists or not agent_apt_keyring_file.stat.mode == "0644")
+
+- name: pkg-debian | Install apt keys from default URLs
+  ansible.builtin.include_tasks: _apt-key-import.yml
+  with_items: "{{ datadog_apt_default_keys }}"
+  when: datadog_apt_key_url_new is not defined and not ansible_check_mode
+
+- name: pkg-debian | Install apt keys from custom URL
+  ansible.builtin.include_tasks: _apt-key-import.yml
+  with_items:
+    - key: A2923DFF56EDA6E76E55E492D3A80E30382E94DE
+      value: "{{ datadog_apt_key_url_new }}"
+    - key: D75CEA17048B9ACBF186794B32637D44F14F620E
+      value: "{{ datadog_apt_key_url_new }}"
+    - key: 5F1E256061D813B125E156E8E6266D4AC0962C7D
+      value: "{{ datadog_apt_key_url_new }}"
+  when: datadog_apt_key_url_new is defined and not ansible_check_mode
+
+- name: pkg-debian | Ensure keyring1 exists with same contents as keyring2 for older distro versions. keyring1,keyring2= {{ datadog_apt_trusted_d_keyring,
+    datadog_apt_usr_share_keyring }}
+  ansible.builtin.copy:
+    src: "{{ datadog_apt_usr_share_keyring }}"
+    dest: "{{ datadog_apt_trusted_d_keyring }}"
+    mode: "0644"
+    remote_src: true
+  when: ((ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version']|int < 9) or (ansible_facts['distribution'] == 'Ubuntu' and
+    ansible_facts['distribution_major_version'] | int < 16)) and not ansible_check_mode
+
+- name: pkg-debian | Ensure Datadog non-https repositories and repositories not using signed-by option are deprecated
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: absent
+    update_cache: true
+  with_items:
+    - deb http://apt.datadoghq.com/ stable main
+    - deb http://apt.datadoghq.com/ stable 6
+    - deb http://apt.datadoghq.com/ stable 7
+    - deb https://apt.datadoghq.com/ stable main
+    - deb https://apt.datadoghq.com/ stable 6
+    - deb https://apt.datadoghq.com/ stable 7
+  when: not ansible_check_mode
+
+- name: pkg-debian | Ensure Datadog repository is up-to-date
+  ansible.builtin.apt_repository:
+    filename: ansible_datadog_{{ item.key }}
+    repo: "{{ item.value }}"
+    state: "{% if item.key == agent_datadog_agent_major_version | int and datadog_apt_repo | length == 0 %}present{% else %}absent{% endif %}"
+    update_cache: true
+  when: (not ansible_check_mode)
+  with_dict:
+    5: "{{ datadog_agent5_apt_repo }}"
+    6: "{{ datadog_agent6_apt_repo }}"
+    7: "{{ datadog_agent7_apt_repo }}"
+
+- name: pkg-debian | Initialize custom repo file deletion flag to False
+  ansible.builtin.set_fact:
+    agent_datadog_remove_custom_repo_file: "False"
+
+- name: pkg-debian | Check if custom repository file exists
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/ansible_datadog_custom.list
+  register: agent_datadog_custom_repo_file
+
+- name: pkg-debian | Fetch custom repository file
+  ansible.builtin.slurp:
+    src: /etc/apt/sources.list.d/ansible_datadog_custom.list
+  register: agent_datadog_custom_repo_file_contents
+  when: agent_datadog_custom_repo_file.stat.exists
+
+- name: pkg-debian | Flag custom repository file for deletion if different from current repository config
+  ansible.builtin.set_fact:
+    agent_datadog_remove_custom_repo_file: "{{ agent_datadog_repo_file_contents != datadog_apt_repo }}"
+  vars:
+    agent_datadog_repo_file_contents: "{{ agent_datadog_custom_repo_file_contents['content'] | b64decode | trim }}"
+  when: agent_datadog_custom_repo_file.stat.exists
+
+- name: pkg-debian | (Custom) Remove Datadog custom repository file when not set or updated
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/ansible_datadog_custom.list
+    state: absent
+  when: (datadog_apt_repo | length == 0) or agent_datadog_remove_custom_repo_file and (not ansible_check_mode)
+
+- name: pkg-debian | (Custom) Ensure Datadog repository is up-to-date
+  ansible.builtin.apt_repository:
+    filename: ansible_datadog_custom
+    repo: "{{ datadog_apt_repo }}"
+    state: present
+    update_cache: true
+  when: (datadog_apt_repo | length > 0) and (not ansible_check_mode)
+
+- name: pkg-debian | Include debian pinned version install task
+  ansible.builtin.include_tasks: pkg-debian/install-pinned.yml
+  when: agent_datadog_agent_debian_version is defined
+
+- name: pkg-debian | Include debian latest version install task
+  ansible.builtin.include_tasks: pkg-debian/install-latest.yml
+  when: agent_datadog_agent_debian_version is not defined
+
+- name: pkg-debian | Install latest datadog-signing-keys package
+  ansible.builtin.apt:
+    name: datadog-signing-keys
+    state: latest # noqa package-latest
+    # we don't use update_cache: true, as that was just done by the install-pinned/install-latest
+  register: agent_datadog_signing_keys_install
+  when: not ansible_check_mode

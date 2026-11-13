@@ -1,0 +1,54 @@
+---
+# Based on instructions at https://support.mozilla.org/en-US/kb/install-firefox-linux#w_install-firefox-deb-package-for-debian-based-distributions
+- name: deb | Ensure the directory to store APT repository keys exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: deb | Get gpg key
+  ansible.builtin.get_url:
+    url: "https://packages.mozilla.org/apt/repo-signing-key.gpg"
+    dest: /etc/apt/keyrings/packages.mozilla.org.asc
+    mode: "0644"
+
+- name: deb | Ensure gpg homedir exists
+  # Without this, gpg auto-creates ~/.gnupg/pubring.kbx on first use and
+  # exits 2 for it (a benign warning printed to stderr), which then trips
+  # `set -o pipefail` in the next task despite stdout being correct.
+  ansible.builtin.file:
+    path: /root/.gnupg
+    state: directory
+    mode: "0700"
+
+- name: deb | Verify key fingerprint
+  ansible.builtin.shell: |
+    set -o pipefail
+    gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | awk '/pub/{getline; gsub(/^ +| +$/,""); print $0}'
+  args:
+    executable: /bin/bash
+  register: gpg
+  changed_when: false
+
+- name: deb | Assert signing key
+  ansible.builtin.assert:
+    that: gpg.stdout == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3"
+    fail_msg: Mozilla repo signing key fingerprint is not what we expect, cannot safely install firefox
+
+- name: deb | Add apt repository
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main
+    update_cache: true
+
+- name: deb | Prioritize mozilla repo
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/mozilla
+    content: |
+      Package: *
+      Pin: origin packages.mozilla.org
+      Pin-Priority: 1000
+    mode: "0644"
+
+- name: deb | Install firefox
+  ansible.builtin.apt:
+    name: firefox

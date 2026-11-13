@@ -1,6 +1,6 @@
 ---
-- name: Yum install
-  ansible.builtin.yum:
+- name: redhat | Yum install
+  ansible.builtin.dnf:
     name: "{{ item.name }}"
     state: "{{ item.state }}"
   loop: "{{ _yum }}"

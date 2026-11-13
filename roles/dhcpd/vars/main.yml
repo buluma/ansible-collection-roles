@@ -1,0 +1,32 @@
+---
+_dhcpd_confdir:
+  Suse: /etc
+  default: /etc/dhcp
+_dhcpd_defaults_dest:
+  Debian: /etc/default/isc-dhcp-server
+  Suse: /etc/sysconfig/dhcpd
+_dhcpd_defaults_src:
+  Debian: isc-dhcp-server.j2
+  Suse: dhcpd.j2
+_dhcpd_packages:
+  CentOS-7:
+    - dhcp
+  Debian:
+    - isc-dhcp-server
+  Red Hat Enterprise Linux-7:
+    - dhcp
+  RedHat:
+    - dhcp-server
+  Suse:
+    - dhcp-server
+  default:
+    - dhcp
+_dhcpd_service:
+  Debian: isc-dhcp-server
+  default: dhcpd
+dhcpd_confdir: "{{ _dhcpd_confdir[ansible_facts['os_family']] | default(_dhcpd_confdir['default']) }}"
+dhcpd_defaults_dest: "{{ _dhcpd_defaults_dest[ansible_facts['os_family']] }}"
+dhcpd_defaults_src: "{{ _dhcpd_defaults_src[ansible_facts['os_family']] }}"
+dhcpd_packages: "{{ _dhcpd_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default(_dhcpd_packages[ansible_facts['distribution']]
+  | default(_dhcpd_packages[ansible_facts['os_family']] | default(_dhcpd_packages['default'] ))) }}"
+dhcpd_service: "{{ _dhcpd_service[ansible_facts['os_family']] | default(_dhcpd_service['default']) }}"

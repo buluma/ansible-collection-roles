@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: ad_auth
+  description: "Bind a system to Active Directory."
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - adauth
+    - activedirectory
+    - authentication
+dependencies: []

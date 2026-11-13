@@ -1,0 +1,33 @@
+---
+# ownCloud 'classic' (the PHP-based server this role used to install) hard-
+# rejects PHP 8.0+ and never will support it - a permanent vendor
+# incompatibility (see meta/preferences.yml history). ownCloud's PHP8-
+# compatible successor is Infinite Scale (oCIS): a single Go binary, no
+# PHP/Apache/MySQL/Redis involved. This role now installs that instead.
+
+# oCIS release to install.
+ocis_version: "8.2.2"
+
+# Owner and group for oCIS.
+ocis_owner: "ocis"
+ocis_group: "ocis"
+
+# Where the oCIS binary, config, and data live.
+ocis_binary_path: "/usr/bin/ocis"
+ocis_config_dir: "/etc/ocis"
+ocis_data_path: "/var/lib/ocis"
+
+# Public URL and bind address (see OCIS_URL / PROXY_HTTP_ADDR).
+ocis_url: "https://{{ ansible_facts['default_ipv4'].address | default(ansible_facts['all_ipv4_addresses'][0]) }}:9200"
+ocis_http_addr: "0.0.0.0:9200"
+
+# This role doesn't manage TLS certificates, so oCIS falls back to its own
+# auto-generated self-signed certificate out of the box - set false only
+# once you've put a real certificate in front of it.
+ocis_insecure: true
+
+ocis_log_level: "error"
+
+# Admin account. oCIS generates a random admin password on init unless
+# IDM_ADMIN_PASSWORD is set - this role always sets it explicitly.
+ocis_admin_pass: OwnCl0uD

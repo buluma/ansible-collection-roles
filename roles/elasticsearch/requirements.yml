@@ -1,0 +1,6 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.core_dependencies
+  - name: buluma.elastic_repo
+    src: https://github.com/buluma/ansible-role-elastic_repo.git

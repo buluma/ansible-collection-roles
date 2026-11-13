@@ -1,0 +1,20 @@
+---
+# handlers file for zabbix_repository
+
+- name: Update cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Switch back to default crypto policy
+  ansible.builtin.command:
+    cmd: update-crypto-policies --set DEFAULT
+  changed_when: true
+  when:
+    - zabbix_repository_revert_crypto_policy
+
+- name: Uninstall crypto-policies-scripts
+  ansible.builtin.package:
+    name: crypto-policies-scripts
+    state: absent
+  when:
+    - zabbix_repository_cleanup_requirements

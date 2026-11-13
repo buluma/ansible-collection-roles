@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: buluma
+  namespace: buluma
+  role_name: lynis
+  description: Install and configure lynis on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - lynis
+dependencies: []

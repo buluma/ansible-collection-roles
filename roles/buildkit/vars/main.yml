@@ -1,0 +1,12 @@
+---
+buildkit_arch: "{{ buildkit_arch_map[ansible_facts['architecture']] }}"
+buildkit_archive: '{{ buildkit_name }}.{{ buildkit_archive_type | default("tar.gz") }}'
+buildkit_bin_dir: "{{ buildkit_install_dir }}/bin"
+buildkit_checksum: "{{ buildkit_checksums[buildkit_ver][buildkit_platform] }}"
+buildkit_install_dir: "{{ buildkit_parent_install_dir }}/{{ buildkit_name }}"
+buildkit_link_dir: "{{ buildkit_parent_install_dir }}/bin"
+buildkit_name: buildkit-v{{ buildkit_ver }}.{{ buildkit_platform }}
+buildkit_os: "{{ ansible_facts['system'] | lower }}"
+buildkit_platform: "{{ buildkit_os }}-{{ buildkit_arch }}"
+buildkit_tmp_archive: /tmp/{{ buildkit_archive }}
+buildkit_url: "{{ buildkit_mirror }}/v{{ buildkit_ver }}/{{ buildkit_archive }}"

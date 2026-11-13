@@ -1,12 +1,10 @@
 ---
-# handlers file for dns
-
 - name: Restart dns
   ansible.builtin.service:
     name: "{{ dns_service }}"
     state: restarted
-
 - name: Rndc reload
   ansible.builtin.command:
     cmd: rndc reload
+  changed_when: true
   failed_when: false

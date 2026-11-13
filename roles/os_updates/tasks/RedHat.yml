@@ -1,0 +1,56 @@
+---
+- name: RedHat | Install yum-utils for needs-restarting
+  ansible.builtin.dnf:
+    name: yum-utils
+    state: present
+
+- name: RedHat | Install OS Updates
+  ansible.builtin.yum:
+    name: "*"
+    update_cache: true
+    state: latest
+    exclude: "{{ os_updates_yum_exclude }}"
+  # package-latest: Package installs should not use latest
+  # we are updating systems, so latest packages is what we want
+  tags:
+    - skip_ansible_lint
+    - molecule-idempotence-notest
+
+- name: RedHat | Ensure dbus is running (a full update can leave its socket unit inactive)
+  ansible.builtin.systemd:
+    name: dbus.socket
+    state: started
+  become: false
+  ignore_errors: true
+  tags:
+    - skip_ansible_lint
+    - molecule-idempotence-notest
+
+- name: RedHat | Check if a reboot is required
+  ansible.builtin.shell: needs-restarting -r
+  register: redhat_needs_restart
+  ignore_errors: true
+  changed_when: false
+  tags:
+    - skip_ansible_lint
+    - molecule-idempotence-notest
+
+- name: RedHat | Reboot machine if needed or forced
+  ansible.builtin.reboot:
+    post_reboot_delay: "{{ os_updates_reboot_delay | default('0') }}"
+    reboot_timeout: "{{ os_updates_reboot_timeout }}"
+  when:
+    - (redhat_needs_restart.rc == 1 and os_updates_reboot != "NEVER") or os_updates_reboot == "ALWAYS"
+  # Docker COntainer cant reboot
+  tags:
+    - molecule-notest
+    - molecule-idempotence-notest
+
+# there is no idempotent way to clean yum cache
+# https://github.com/ansible/ansible/pull/31450#issuecomment-352889579
+- name: RedHat | Clean yum cache
+  ansible.builtin.command: "yum clean all"
+  when: os_updates_yum_clean_cache
+  tags:
+    - molecule-idempotence-notest
+    - skip_ansible_lint

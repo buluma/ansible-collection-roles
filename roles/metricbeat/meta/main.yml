@@ -1,0 +1,11 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: Install and configure Metricbeat, manage Metricbeat modules.
+  galaxy_tags:
+    - metricbeat
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  role_name: metricbeat

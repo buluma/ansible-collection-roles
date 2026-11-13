@@ -1,0 +1,4 @@
+---
+exceptions:
+  - reason: "Shutting down rundeck: "
+    variation: alpine

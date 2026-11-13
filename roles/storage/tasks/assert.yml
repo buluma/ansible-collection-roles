@@ -1,0 +1,302 @@
+---
+- name: assert | Test storage_default_fstype
+  ansible.builtin.assert:
+    that:
+      - storage_default_fstype is defined
+      - storage_default_fstype is string
+      - storage_default_fstype in [ "btrfs", "cramfs", "ext2", "ext3", "ext4", "fat", "msdos", "ntfs", "vfat", "xfs" ]
+    quiet: true
+
+- name: assert | Test storage_partitions
+  ansible.builtin.assert:
+    that:
+      - storage_partitions is iterable
+    quiet: true
+  when:
+    - storage_partitions is defined
+
+- name: assert | Test storage_partitions.name
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ storage_partitions }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_partitions is defined
+
+- name: assert | Test storage_partitions.number
+  ansible.builtin.assert:
+    that:
+      - item.number is defined
+      - item.number is number
+      - item.number > 0
+    quiet: true
+  loop: "{{ storage_partitions }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_partitions is defined
+
+- name: assert | Test storage_partitions.part_end
+  ansible.builtin.assert:
+    that:
+      - item.part_end is defined
+      - item.part_end is string
+      - item.part_end is not none
+    quiet: true
+  loop: "{{ storage_partitions }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_partitions is defined
+
+- name: assert | Test storage_volumegroups
+  ansible.builtin.assert:
+    that:
+      - storage_volumegroups is iterable
+    quiet: true
+  when:
+    - storage_volumegroups is defined
+
+- name: assert | Test storage_volumegroups.name
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ storage_volumegroups }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_volumegroups is defined
+
+- name: assert | Test storage_volumegroups.devices
+  ansible.builtin.assert:
+    that:
+      - item.devices is defined
+      - item.devices is iterable
+    quiet: true
+  loop: "{{ storage_volumegroups }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_volumegroups is defined
+
+- name: assert | Test storage_volumegroups.size
+  ansible.builtin.assert:
+    that:
+      - item.size is number
+    quiet: true
+  loop: "{{ storage_volumegroups }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_volumegroups is defined
+    - item.size is defined
+
+- name: assert | Test storage_volumes
+  ansible.builtin.assert:
+    that:
+      - storage_volumes is iterable
+    quiet: true
+  when:
+    - storage_volumes is defined
+
+- name: assert | Test storage_volumes.name
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ storage_volumes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_volumes is defined
+
+- name: assert | Test storage_volumes.vg
+  ansible.builtin.assert:
+    that:
+      - item.vg is defined
+      - item.vg is string
+      - item.vg is not none
+    quiet: true
+  loop: "{{ storage_volumes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_volumes is defined
+
+- name: assert | Test storage_volumes.size
+  ansible.builtin.assert:
+    that:
+      - item.size is defined
+    quiet: true
+  loop: "{{ storage_volumes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_volumes is defined
+
+- name: assert | Test storage_filesystems
+  ansible.builtin.assert:
+    that:
+      - storage_filesystems is iterable
+    quiet: true
+  when:
+    - storage_filesystems is defined
+
+- name: assert | Test storage_filesystems.name
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ storage_filesystems }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_filesystems is defined
+
+- name: assert | Test storage_filesystems.fstype
+  ansible.builtin.assert:
+    that:
+      - item.fstype is defined
+      - item.fstype is string
+    quiet: true
+  loop: "{{ storage_filesystems }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_filesystems is defined
+
+- name: assert | Test storage_mounts
+  ansible.builtin.assert:
+    that:
+      - storage_mounts is iterable
+    quiet: true
+  when:
+    - storage_mounts is defined
+
+- name: assert | Test storage_mounts.name
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name is not none
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+
+- name: assert | Test storage_mounts.src
+  ansible.builtin.assert:
+    that:
+      - item.src is defined
+      - item.src is string
+      - item.src is not none
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+
+- name: assert | Test storage_mounts.owner
+  ansible.builtin.assert:
+    that:
+      - item.owner is defined
+      - item.owner is string
+      - item.owner is not none
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+
+- name: assert | Test storage_mounts.group
+  ansible.builtin.assert:
+    that:
+      - item.group is defined
+      - item.group is string
+      - item.group is not none
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+
+- name: assert | Test storage_mounts.mode
+  ansible.builtin.assert:
+    that:
+      - item.mode is defined
+      - item.mode is string
+      - item.mode is not none
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+
+- name: assert | Test storage_mounts.opts
+  ansible.builtin.assert:
+    that:
+      - item.opts is string
+      - item.opts is not none
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+    - item.opts is defined
+
+- name: assert | Test storage_mounts.boot
+  ansible.builtin.assert:
+    that:
+      - item.boot is boolean
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+    - item.boot is defined
+
+- name: assert | Test storage_mounts.dump
+  ansible.builtin.assert:
+    that:
+      - item.dump is number
+      - item.dump in [0, 1]
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+    - item.dump is defined
+
+- name: assert | Test storage_mounts.passno
+  ansible.builtin.assert:
+    that:
+      - item.passno is number
+      - item.passno in [0, 1, 2]
+    quiet: true
+  loop: "{{ storage_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - storage_mounts is defined
+    - item.passno is defined

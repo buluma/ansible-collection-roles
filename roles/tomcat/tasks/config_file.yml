@@ -1,0 +1,11 @@
+---
+- name: config_file | Deploy config_file
+  ansible.builtin.template:
+    dest: "{{ tomcat_directory }}/{{ instance.name }}/conf/{{ config_file.dest }}"
+    group: "{{ instance.group | default(tomcat_group) }}"
+    mode: "{{ config_file.mode }}"
+    owner: "{{ instance.user | default(tomcat_user) }}"
+    src: "{{ config_file.src }}"
+  notify:
+    - Restart tomcat instance
+  # Separator for the pre-commit handler parser.

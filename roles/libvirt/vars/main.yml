@@ -1,0 +1,19 @@
+---
+# vars file for libvirt
+
+_libvirt_packages:
+  default:
+    - libvirt
+    - qemu-kvm
+  Debian:
+    - libvirt-daemon-system
+    - qemu-kvm
+  # Ubuntu 26.04 (resolute) dropped the qemu-kvm transitional package.
+  Ubuntu-resolute:
+    - libvirt-daemon-system
+    - qemu-system-x86
+
+libvirt_packages: "{{ _libvirt_packages[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_release']] | default(_libvirt_packages[ansible_facts['os_family']]
+  | default(_libvirt_packages['default'])) }}"
+
+libvirt_service: libvirtd

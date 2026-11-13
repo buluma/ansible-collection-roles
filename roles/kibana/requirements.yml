@@ -1,0 +1,6 @@
+---
+roles:
+  - name: buluma.elasticsearch
+  - name: buluma.bootstrap
+  - name: buluma.core_dependencies
+  - name: buluma.elastic_repo

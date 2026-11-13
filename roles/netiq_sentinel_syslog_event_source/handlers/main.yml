@@ -1,0 +1,15 @@
+---
+- name: Restart syslog
+  ansible.builtin.service:
+    name: syslog
+    state: restarted
+  become: true
+- name: Restart rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted
+  become: true
+- name: Send magic message
+  ansible.builtin.command:
+    cmd: logger -t kernel {{ sentinel_collector_magic }}
+  changed_when: false

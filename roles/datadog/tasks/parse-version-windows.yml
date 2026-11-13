@@ -1,0 +1,15 @@
+---
+# NOTE: This won't work with rc / beta builds.
+- name: parse-version-windows | Get Windows Agent version
+  win_ansible.builtin.shell:
+    "": ""
+    ? "Agent\"\n$version"
+    : Get-ItemProperty
+    cmd: "$product_name \"Datadog HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\ Uninstall\\* |\nSelect-Object DisplayName,DisplayVersion,PSChildName -unique
+      |\nWhere-Object {$_.DisplayName -clike $product_name} |\nSelect-Object DisplayVersion -ExpandProperty DisplayVersion\n\nif (!$version) {\n  Write-Host \"\"\n\
+      } else {\n  $ddmaj, $ddmin, $ddpatch, $ddbuild $version.split(\".\")\n  Write-Host \"$($ddmaj).$($ddmin).$($ddpatch)\"\n}"
+  register: agent_datadog_version_check_win
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: ansible_facts['os_family'] == "Windows"

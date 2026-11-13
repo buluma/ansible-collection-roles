@@ -1,0 +1,72 @@
+---
+# tasks file for openssl
+
+- name: Check if python is installed
+  ansible.builtin.command: which python
+  register: python_executable
+  ignore_errors: true
+  changed_when: false
+
+- name: Check if python3 is installed
+  ansible.builtin.command: which python3
+  register: python3_executable
+  ignore_errors: true
+  changed_when: false
+
+- name: Debug Python executable path
+  ansible.builtin.debug:
+    var: python_executable.stdout
+
+- name: Debug Python3 executable path
+  ansible.builtin.debug:
+    var: python3_executable.stdout
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ openssl_requirements }}"
+    state: present
+
+- name: Install pip packages
+  ansible.builtin.pip:
+    name: "{{ openssl_pip_packages }}"
+    # break_system_packages: true
+  when: openssl_pip_packages | length > 0
+
+- name: Create key directory
+  ansible.builtin.file:
+    path: "{{ openssl_key_directory }}"
+    state: directory
+    mode: "750"
+    owner: "{{ openssl_file_owner }}"
+    group: "{{ openssl_file_group }}"
+
+- name: Create csr directory
+  ansible.builtin.file:
+    path: "{{ openssl_csr_directory }}"
+    state: directory
+    mode: "755"
+    owner: "{{ openssl_file_owner }}"
+    group: "{{ openssl_file_group }}"
+
+- name: Create crt directory
+  ansible.builtin.file:
+    path: "{{ openssl_crt_directory }}"
+    state: directory
+    mode: "755"
+    owner: "{{ openssl_file_owner }}"
+    group: "{{ openssl_file_group }}"
+
+- name: Include create.yml
+  ansible.builtin.include_tasks:
+    file: create.yml
+  loop: "{{ openssl_items }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - openssl_items is defined
+    - openssl_items | length > 0

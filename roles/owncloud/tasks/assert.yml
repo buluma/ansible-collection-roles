@@ -1,0 +1,25 @@
+---
+- name: assert | Test if ocis_version is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ocis_version is defined
+      - ocis_version is string
+- name: assert | Test if ocis_url is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ocis_url is defined
+      - ocis_url is string
+- name: assert | Test if ocis_http_addr is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ocis_http_addr is defined
+      - ocis_http_addr is string
+- name: assert | Test if ocis_admin_pass is set correctly
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ocis_admin_pass is defined
+      - ocis_admin_pass is string

@@ -1,0 +1,9 @@
+---
+_kibana_package:
+  elastic:
+    - kibana
+  oss:
+    - kibana-oss
+kibana_package: "{{ _kibana_package[kibana_type] }}"
+kibana_requirements:
+  - findutils

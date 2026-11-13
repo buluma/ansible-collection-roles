@@ -5,6 +5,8 @@ docker_requirements:
   - docker
 
 ubuntu_images:
+  - name: ubuntu-23.04
+    image: buluma/ubuntu:23.04
   - name: ubuntu-22.04
     image: buluma/ubuntu:22.04
   - name: ubuntu-21.04

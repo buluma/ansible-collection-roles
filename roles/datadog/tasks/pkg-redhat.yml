@@ -1,0 +1,213 @@
+---
+- name: pkg-redhat | Fail early if Python 3 is used on CentOS / RHEL < 8 with old Ansible
+  ansible.builtin.fail:
+    msg: "The installation of the Agent on RedHat family systems using yum is not compatible with Python 3 with older Ansible versions. To run this role, use a Python
+      2 interpreter on hosts running CentOS / RHEL < 8 or upgrade Ansible to version 2.11+"
+  # We can't compare ansible_version.full with 2.11 in the condition below, because ansible's
+  # `semver` and `strict` version_type don't recognize it as a valid version and the `loose`
+  # version_type considers it to be a post-release. It seems that the best course of action
+  # is to explicitly use just major.minor for comparison with 2.11.
+  # See https://github.com/ansible/ansible/issues/78288
+  when: (not datadog_ignore_old_centos_python3_error) and ("{}.{}".format(ansible_version.major, ansible_version.minor) is version("2.11", operator="lt",
+    strict=True)) and (ansible_facts['pkg_mgr'] == "yum") and (ansible_facts['python'].version.major | int >= 3)
+
+- name: pkg-redhat | If yum repo configuration is enabled
+  when: datadog_yum_repo_config_enabled | bool
+  block:
+    - name: pkg-redhat | Find out whether to set repo_gpgcheck or not
+      # We turn off repo_gpgcheck on custom repos and on RHEL/CentOS 8.1 because
+      # of https://bugzilla.redhat.com/show_bug.cgi?id=1792506
+      ansible.builtin.set_fact:
+        agent_do_yum_repo_gpgcheck: >-
+          {{ datadog_yum_repo_gpgcheck if datadog_yum_repo_gpgcheck != '' else (
+            'false' if (
+              ansible_facts['distribution_version'].startswith('8.1.') or ansible_facts['distribution_version']
+          == '8.1' or
+              datadog_yum_repo != ''
+            ) else 'true'
+          ) }}
+
+    - name: pkg-redhat | Download current RPM key
+      ansible.builtin.get_url:
+        url: "{{ datadog_yum_gpgkey_current }}"
+        dest: /tmp/DATADOG_RPM_KEY_CURRENT.public
+        mode: 600
+        force: true
+
+    - name: pkg-redhat | Import current RPM key
+      ansible.builtin.rpm_key:
+        key: /tmp/DATADOG_RPM_KEY_CURRENT.public
+        state: present
+      when: not ansible_check_mode
+
+    # The 2022 and 2024 legacy signing keys are only needed to verify
+    # signatures on old, already-published packages, not the current
+    # release this role installs. Both have now genuinely expired:
+    # EL10's stricter crypto policy rejects importing them outright
+    # ("No binding signature at time"), while on other platforms the
+    # import succeeds but rpm_key never recognizes the expired key as
+    # already present, re-importing (and reporting changed) every run.
+    # Skip them entirely rather than tolerate either failure mode.
+    - name: pkg-redhat | Download new RPM key (Expires in 2022)
+      ansible.builtin.get_url:
+        url: "{{ datadog_yum_gpgkey_e09422b3 }}"
+        dest: /tmp/DATADOG_RPM_KEY_E09422B3.public
+        mode: 600
+        checksum: "sha256:{{ datadog_yum_gpgkey_e09422b3_sha256sum }}"
+      when: false
+
+    - name: pkg-redhat | Import new RPM key (Expires in 2022)
+      ansible.builtin.rpm_key:
+        key: /tmp/DATADOG_RPM_KEY_E09422B3.public
+        state: present
+      when: false
+
+    - name: pkg-redhat | Download new RPM key (Expires in 2024)
+      ansible.builtin.get_url:
+        url: "{{ datadog_yum_gpgkey_20200908 }}"
+        dest: /tmp/DATADOG_RPM_KEY_20200908.public
+        mode: 600
+        checksum: "sha256:{{ datadog_yum_gpgkey_20200908_sha256sum }}"
+      when: false
+
+    - name: pkg-redhat | Import new RPM key (Expires in 2024)
+      ansible.builtin.rpm_key:
+        key: /tmp/DATADOG_RPM_KEY_20200908.public
+        state: present
+      when: false
+
+    - name: pkg-redhat | Download new RPM key (Expires in 2028)
+      ansible.builtin.get_url:
+        url: "{{ datadog_yum_gpgkey_20280418 }}"
+        dest: /tmp/DATADOG_RPM_KEY_20280418.public
+        mode: 600
+        checksum: "sha256:{{ datadog_yum_gpgkey_20280418_sha256sum }}"
+
+    - name: pkg-redhat | Import new RPM key (Expires in 2028)
+      ansible.builtin.rpm_key:
+        key: /tmp/DATADOG_RPM_KEY_20280418.public
+        state: present
+      when: not ansible_check_mode
+
+    - name: pkg-redhat | Set versioned includepkgs variable
+      ansible.builtin.set_fact:
+        agent_datadog_includepkgs: "{{ datadog_agent_flavor }}-{{ agent_datadog_agent_redhat_version | regex_replace('^\\d+:', '') }} {{ datadog_inject_apm_flavor
+          }}"
+      when: agent_datadog_agent_redhat_version is defined
+
+    - name: pkg-redhat | Set plain includepkgs variable
+      ansible.builtin.set_fact:
+        agent_datadog_includepkgs: "{{ datadog_agent_flavor }} {{ datadog_inject_apm_flavor }}"
+      when: agent_datadog_agent_redhat_version is not defined
+
+    - name: pkg-redhat | Install Datadog Agent 5 yum repo
+      ansible.builtin.yum_repository:
+        name: datadog
+        description: Datadog, Inc.
+        baseurl: "{{ datadog_agent5_yum_repo }}"
+        enabled: true
+        includepkgs: "{{ agent_datadog_includepkgs }}"
+        repo_gpgcheck: false # we don't sign Agent 5 repodata
+        gpgcheck: "{{ datadog_yum_gpgcheck }}"
+        gpgkey:
+          - "{{ datadog_yum_gpgkey_current }}"
+          - "{{ datadog_yum_gpgkey_20280418 }}"
+          - "{{ datadog_yum_gpgkey_20200908 }}"
+          - "{{ datadog_yum_gpgkey_e09422b3 }}"
+        proxy: "{{ datadog_yum_repo_proxy if datadog_yum_repo_proxy != '' else omit }}"
+        proxy_username: "{{ datadog_yum_repo_proxy_username if datadog_yum_repo_proxy_username != '' else omit }}"
+        proxy_password: "{{ datadog_yum_repo_proxy_password if datadog_yum_repo_proxy_password != '' else omit }}"
+      register: agent_repofile5
+      when: (agent_datadog_agent_major_version | int == 5) and (datadog_yum_repo | length == 0) and (not ansible_check_mode)
+
+    - name: pkg-redhat | Install Datadog Agent 6 yum repo
+      ansible.builtin.yum_repository:
+        name: datadog
+        description: Datadog, Inc.
+        baseurl: "{{ datadog_agent6_yum_repo }}"
+        enabled: true
+        includepkgs: "{{ agent_datadog_includepkgs }}"
+        repo_gpgcheck: "{{ agent_do_yum_repo_gpgcheck }}"
+        gpgcheck: "{{ datadog_yum_gpgcheck }}"
+        gpgkey:
+          - "{{ datadog_yum_gpgkey_current }}"
+          - "{{ datadog_yum_gpgkey_20280418 }}"
+          - "{{ datadog_yum_gpgkey_20200908 }}"
+          - "{{ datadog_yum_gpgkey_e09422b3 }}"
+        proxy: "{{ datadog_yum_repo_proxy if datadog_yum_repo_proxy != '' else omit }}"
+        proxy_username: "{{ datadog_yum_repo_proxy_username if datadog_yum_repo_proxy_username != '' else omit }}"
+        proxy_password: "{{ datadog_yum_repo_proxy_password if datadog_yum_repo_proxy_password != '' else omit }}"
+      register: agent_repofile6
+      when: (agent_datadog_agent_major_version | int == 6) and (datadog_yum_repo | length == 0) and (not ansible_check_mode)
+
+    - name: pkg-redhat | Install Datadog Agent 7 yum repo
+      ansible.builtin.yum_repository:
+        name: datadog
+        description: Datadog, Inc.
+        baseurl: "{{ datadog_agent7_yum_repo }}"
+        enabled: true
+        includepkgs: "{{ agent_datadog_includepkgs }}"
+        repo_gpgcheck: "{{ agent_do_yum_repo_gpgcheck }}"
+        gpgcheck: "{{ datadog_yum_gpgcheck }}"
+        gpgkey:
+          - "{{ datadog_yum_gpgkey_current }}"
+          - "{{ datadog_yum_gpgkey_20280418 }}"
+          - "{{ datadog_yum_gpgkey_20200908 }}"
+          - "{{ datadog_yum_gpgkey_e09422b3 }}"
+        proxy: "{{ datadog_yum_repo_proxy if datadog_yum_repo_proxy != '' else omit }}"
+        proxy_username: "{{ datadog_yum_repo_proxy_username if datadog_yum_repo_proxy_username != '' else omit }}"
+        proxy_password: "{{ datadog_yum_repo_proxy_password if datadog_yum_repo_proxy_password != '' else omit }}"
+      register: agent_repofile7
+      when: (agent_datadog_agent_major_version | int == 7) and (datadog_yum_repo | length == 0) and (not ansible_check_mode)
+
+    - name: pkg-redhat | Install Datadog Custom yum repo
+      ansible.builtin.yum_repository:
+        name: datadog
+        description: Datadog, Inc.
+        baseurl: "{{ datadog_yum_repo }}"
+        enabled: true
+        includepkgs: "{{ agent_datadog_includepkgs }}"
+        repo_gpgcheck: "{{ agent_do_yum_repo_gpgcheck }}"
+        gpgcheck: "{{ datadog_yum_gpgcheck }}"
+        gpgkey:
+          - "{{ datadog_yum_gpgkey_current }}"
+          - "{{ datadog_yum_gpgkey_20280418 }}"
+          - "{{ datadog_yum_gpgkey_20200908 }}"
+          - "{{ datadog_yum_gpgkey_e09422b3 }}"
+        proxy: "{{ datadog_yum_repo_proxy if datadog_yum_repo_proxy != '' else omit }}"
+        proxy_username: "{{ datadog_yum_repo_proxy_username if datadog_yum_repo_proxy_username != '' else omit }}"
+        proxy_password: "{{ datadog_yum_repo_proxy_password if datadog_yum_repo_proxy_password != '' else omit }}"
+      register: agent_repofilecustom
+      when: (datadog_yum_repo | length > 0) and (not ansible_check_mode)
+
+    - name: pkg-redhat | Clean repo metadata if repo changed # noqa false-handler args[module] (args.warn is deprecated since Ansible 2.11)
+      ansible.builtin.command: yum clean metadata --disablerepo="*" --enablerepo=datadog
+      failed_when: false # Cleaning the metadata is only needed when downgrading a major version of the Agent, don't fail because of this
+      when: agent_repofile5.changed or agent_repofile6.changed or agent_repofile7.changed or agent_repofilecustom.changed
+      changed_when: true
+
+    # On certain version of dnf, gpg keys aren't imported into the local db with the package install task.
+    # This rule assures that they are correctly imported into the local db and users won't have to manually accept
+    # them if running dnf commands on the hosts.
+    - name: pkg-redhat | Refresh Datadog repository cache
+      ansible.builtin.dnf:
+        disable_repo: "*"
+        enablerepo: "datadog"
+        state: present
+      failed_when: false
+      when: agent_repofile5.changed or agent_repofile6.changed or agent_repofile7.changed or agent_repofilecustom.changed
+      changed_when: true
+
+    - name: pkg-redhat | Remove old yum repo files
+      ansible.builtin.yum_repository:
+        name: ansible_datadog_{{ item }}
+        state: absent
+      with_items: [5, 6, 7, custom]
+
+- name: pkg-redhat | Include redhat agent pinned version install task
+  ansible.builtin.include_tasks: pkg-redhat/install-pinned.yml
+  when: agent_datadog_agent_redhat_version is defined
+
+- name: pkg-redhat | Include redhat agent latest version install task
+  ansible.builtin.include_tasks: pkg-redhat/install-latest.yml
+  when: agent_datadog_agent_redhat_version is not defined

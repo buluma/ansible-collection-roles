@@ -1,0 +1,116 @@
+---
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+- name: Setup RedHat
+  ansible.builtin.include_tasks: setup-RedHat.yml
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: Setup Debian
+  ansible.builtin.include_tasks: setup-Debian.yml
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Check if curl is available
+  ansible.builtin.stat:
+    path: /usr/bin/curl
+  register: kubernetes_curl_check
+- name: Ensure dependencies are installed.
+  ansible.builtin.package:
+    name: curl
+    state: present
+  when:
+    - not kubernetes_curl_check.stat.exists
+- name: Install Kubernetes packages.
+  ansible.builtin.package:
+    name: "{{ item.name | default(item) }}"
+    state: "{{ item.state | default('present') }}"
+  notify: Restart kubelet
+  with_items: "{{ kubernetes_packages }}"
+- name: Setup Sysctl
+  ansible.builtin.include_tasks: sysctl-setup.yml
+- name: Setup Kubelet
+  ansible.builtin.include_tasks: kubelet-setup.yml
+  when: kubernetes_kubelet_extra_args|length > 0
+- name: Ensure /etc/containerd exists.
+  ansible.builtin.file:
+    group: root
+    mode: "0755"
+    owner: root
+    path: /etc/containerd
+    state: directory
+- name: Check if containerd has already been configured for kubelet.
+  ansible.builtin.command: grep -qF "SystemdCgroup = true" /etc/containerd/config.toml
+  register: kubernetes_containerd_configured
+  changed_when: false
+  failed_when: false
+- name: Generate default containerd config with the CRI plugin enabled.
+  ansible.builtin.command: containerd config default
+  register: kubernetes_containerd_default_config
+  changed_when: false
+  when: kubernetes_containerd_configured.rc != 0
+- name: Deploy containerd config.
+  ansible.builtin.copy:
+    content: "{{ kubernetes_containerd_default_config.stdout }}"
+    dest: /etc/containerd/config.toml
+    group: root
+    mode: "0644"
+    owner: root
+  when: kubernetes_containerd_configured.rc != 0
+  notify: Restart containerd
+# Separator for the pre-commit handler parser.
+- name: Enable the systemd cgroup driver in containerd.
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: "SystemdCgroup = false"
+    replace: "SystemdCgroup = true"
+  notify: Restart containerd
+# Separator for the pre-commit handler parser.
+- name: Configure containerd's CRI snapshotter.
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: "snapshotter = (['\"])overlayfs\\1"
+    replace: 'snapshotter = "{{ kubernetes_containerd_snapshotter }}"'
+  when: kubernetes_containerd_snapshotter is defined
+  notify: Restart containerd
+# Separator for the pre-commit handler parser.
+- name: Register the overridden snapshotter for image unpacking.
+  ansible.builtin.blockinfile:
+    path: /etc/containerd/config.toml
+    block: |
+      [[plugins."io.containerd.transfer.v1.local".unpack_config]]
+        platform = "linux/{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_facts['architecture']] | default(ansible_facts['architecture'], true) }}"
+        snapshotter = "{{ kubernetes_containerd_snapshotter }}"
+  when: kubernetes_containerd_snapshotter is defined
+  notify: Restart containerd
+# Separator for the pre-commit handler parser.
+- name: Ensure containerd is started and enabled at boot.
+  ansible.builtin.service:
+    enabled: true
+    name: containerd
+    state: started
+- name: Flush handlers so containerd is running before kubeadm init.
+  ansible.builtin.meta: flush_handlers
+- name: Ensure kubelet is started and enabled at boot.
+  ansible.builtin.service:
+    enabled: true
+    name: kubelet
+    state: started
+- name: Check if Kubernetes has already been initialized.
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_init_stat
+- name: Setup Master
+  ansible.builtin.include_tasks: master-setup.yml
+  when: kubernetes_role == 'master'
+- name: Get the kubeadm join command from the Kubernetes master.
+  ansible.builtin.command: kubeadm token create --print-join-command
+  changed_when: false
+  register: kubernetes_join_command_result
+  when: kubernetes_role == 'master'
+- name: Set the kubeadm join command globally.
+  ansible.builtin.set_fact:
+    kubernetes_join_command: "{{ kubernetes_join_command_result.stdout }} {{ kubernetes_join_command_extra_opts }}\n"
+  delegate_facts: true
+  delegate_to: "{{ item }}"
+  when: kubernetes_join_command_result.stdout is defined
+  with_items: "{{ groups['all'] }}"
+- name: Setup Node
+  ansible.builtin.include_tasks: node-setup.yml
+  when: kubernetes_role == 'node'

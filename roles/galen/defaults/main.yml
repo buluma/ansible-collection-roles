@@ -1,0 +1,16 @@
+---
+# defaults file for galen
+
+galen_packages:
+  - unzip
+
+galen_version: "2.4.4"
+galen_url: "https://github.com/galenframework/galen/releases/download/galen-{{ galen_version }}/galen-bin-{{ galen_version }}.zip"
+galen_tmp: "/tmp/galen.zip"
+
+galen_path: /usr/bin/galen
+galen_home_path: /opt/galen
+# galen_home_path: "~/.galen"
+
+galen_owner: "{{ ansible_ssh_user }}"
+galen_group: "{{ ansible_ssh_user }}"

@@ -1,0 +1,17 @@
+---
+__apache_packages:
+  - httpd
+  - httpd-devel
+  - mod_ssl
+  - openssh
+apache_conf_path: /etc/httpd/conf.d
+apache_daemon: httpd
+apache_daemon_path: /usr/sbin/
+apache_ports_configuration_items:
+  - line: Listen {{ apache_listen_port }}
+    regexp: "^Listen "
+  - line: NameVirtualHost {{ apache_listen_ip }}:{{ apache_listen_port }}
+    regexp: "^#?NameVirtualHost "
+apache_server_root: /etc/httpd
+apache_service: httpd
+apache_vhosts_version: "2.2"

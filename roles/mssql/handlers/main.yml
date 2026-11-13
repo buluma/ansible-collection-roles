@@ -1,0 +1,21 @@
+---
+- name: Stop mssql-server
+  ansible.builtin.service:
+    name: mssql-server
+    state: stopped
+- name: Restart mssql-server
+  ansible.builtin.service:
+    name: mssql-server
+    state: restarted
+- name: Configure mssql-server using mssql-conf
+  ansible.builtin.command:
+    cmd: /opt/mssql/bin/mssql-conf -n setup
+  changed_when: true
+  environment:
+    ACCEPT_EULA: true
+    MSSQL_PID: "{{ mssql_pid }}"
+    MSSQL_SA_PASSWORD: "{{ mssql_sa_password }}"
+- name: Set network.ipaddress
+  ansible.builtin.command:
+    cmd: /opt/mssql/bin/mssql-conf set network.ipaddress {{ ansible_facts['default_ipv4'].address | default(ansible_facts['all_ipv4_addresses'][0]) }}
+  changed_when: true

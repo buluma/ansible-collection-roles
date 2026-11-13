@@ -1,0 +1,46 @@
+---
+- name: Include assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Intall metricbeat
+  ansible.builtin.package:
+    name: "{{ metricbeat_package }}"
+    state: present
+- name: Configure metricbeat
+  ansible.builtin.template:
+    dest: /etc/metricbeat/metricbeat.yml
+    group: root
+    mode: "0600"
+    owner: root
+    src: metricbeat.yml.j2
+  notify:
+    - Restart metricbeat
+# Separator for the pre-commit handler parser.
+- name: Enable metricbeat module
+  ansible.builtin.command:
+    cmd: metricbeat modules enable {{ item.name }}
+    creates: /etc/metricbeat/modules.d/{{ item.name }}.yml
+  loop: "{{ metricbeat_modules }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify:
+    - Metricbeat setup
+    - Restart metricbeat
+  # Separator for the pre-commit handler parser.
+  when:
+    - item.state is not defined or item.state == "enabled"
+- name: Disable metricbeat module
+  ansible.builtin.command:
+    cmd: metricbeat modules disable {{ item.name }}
+    creates: /etc/metricbeat/modules.d/{{ item.name }}.yml.disabled
+  loop: "{{ metricbeat_modules }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.state == "disabled"
+- name: Start and enable metricbeat
+  ansible.builtin.service:
+    enabled: true
+    name: metricbeat
+    state: started

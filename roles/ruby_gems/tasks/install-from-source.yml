@@ -1,0 +1,86 @@
+---
+- name: install-from-source | Define ruby_build_packages.
+  ansible.builtin.set_fact:
+    ruby_build_packages: "{{ __ruby_build_packages }}"
+  when: ruby_build_packages is not defined
+- name: install-from-source | Ensure dnf-plugins-core is installed (provides config-manager on dnf4).
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+  failed_when: false
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution'] != 'Fedora'
+- name: install-from-source | Enable CodeReady Builder/PowerTools (EL only, provides libyaml-devel, gdbm-devel, etc.)
+  ansible.builtin.command: >-
+    dnf config-manager --set-enabled
+    {{ 'crb' if ansible_facts['distribution_major_version'] | int >= 9 else 'powertools' }}
+  changed_when: false
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution'] != 'Fedora'
+- name: install-from-source | Install packages required to build ruby.
+  ansible.builtin.dnf:
+    name: "{{ ruby_build_packages }}"
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: install-from-source | Update apt cache (Debian).
+  ansible.builtin.apt:
+    update_cache: "true"
+    cache_valid_time: "86400"
+  when: ansible_facts['os_family'] == 'Debian'
+- name: install-from-source | Install packages required to build ruby (Debian).
+  ansible.builtin.apt:
+    name: "{{ ruby_build_packages }}"
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+- name: install-from-source | Ensure that /var/cache/ansible/ exists
+  ansible.builtin.file:
+    mode: "0755"
+    path: /var/cache/ansible/
+    state: directory
+- name: install-from-source | Check if ruby is up-to-date
+  ansible.builtin.stat:
+    path: /var/cache/ansible/ruby-{{ ruby_version }}.check
+  register: ruby_version_marker
+- name: install-from-source | Download, extract, and install ruby
+  when: not ruby_version_marker.stat.exists
+  block:
+    - name: install-from-source | Download ruby.
+      ansible.builtin.get_url:
+        dest: "{{ workspace }}/ruby-{{ ruby_version }}.tar.gz"
+        mode: "0644"
+        url: "{{ ruby_download_url }}"
+    - name: install-from-source | Extract ruby.
+      ansible.builtin.unarchive:
+        copy: false
+        dest: "{{ workspace }}/"
+        mode: "0755"
+        src: "{{ workspace }}/ruby-{{ ruby_version }}.tar.gz"
+    - name: install-from-source | Build ruby.
+      ansible.builtin.command:
+        chdir: "{{ workspace }}/ruby-{{ ruby_version }}"
+        cmd: "{{ item }}"
+      changed_when: true
+      with_items:
+        - "{{ ruby_source_configure_command }}"
+        - make
+        - make install
+    - name: install-from-source | Touch install-marker
+      ansible.builtin.file:
+        mode: "0755"
+        path: /var/cache/ansible/ruby-{{ ruby_version }}.check
+        state: touch
+- name: install-from-source | Add ruby symlinks.
+  ansible.builtin.file:
+    dest: /usr/bin/{{ item }}
+    force: true
+    src: /usr/local/bin/{{ item }}
+    state: link
+  with_items:
+    - erb
+    - gem
+    - irb
+    - rake
+    - rdoc
+    - ruby

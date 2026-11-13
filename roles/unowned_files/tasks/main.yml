@@ -1,0 +1,49 @@
+---
+# tasks file for unowned_files
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Find files
+  ansible.builtin.find:
+    paths: "{{ unowned_files_directories }}"
+  register: unowned_files_find_files
+
+- name: Delete unowned files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  when:
+    - item.pw_name | length == 0 or item.gr_name | length == 0
+    - unowned_files_delete
+  loop: "{{ unowned_files_find_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Configure unowned files delete
+  when:
+    - not unowned_files_delete
+  block:
+    - name: Set owner to unowned files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        owner: "{{ unowned_files_default_owner }}"
+        mode: "0644"
+      when:
+        - item.pw_name | length == 0
+      loop: "{{ unowned_files_find_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Set group to unowned files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        group: "{{ unowned_files_default_group }}"
+        mode: "0644"
+      when:
+        - item.gr_name | length == 0
+      loop: "{{ unowned_files_find_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"

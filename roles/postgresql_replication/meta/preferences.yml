@@ -1,0 +1,21 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # No EL/Fedora: enix.postgresql (the external role this role delegates
+  # actual PostgreSQL install to) has zero RHEL/Fedora support - no install
+  # task exists for that family at all.
+  - name: Debian
+    versions:
+      # 11 (bullseye) dropped (EOL). enix.postgresql pinned to a fork
+      # (buluma/ansible-postgresql@v2.1.2-signed-by) that replaces the
+      # removed apt-key module with a signed-by keyring, so 12/13 work.
+      # ansible-generator's Debian mapping keys these by codename, not
+      # release number.
+      - "bookworm"
+      - "trixie"
+  - name: Ubuntu
+    versions:
+      # ansible-generator's Ubuntu mapping keys by codename now, not
+      # release number - "22.04" silently broke generation.
+      - "jammy"

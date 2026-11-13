@@ -1,0 +1,23 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+#
+# EL and Fedora are excluded entirely: Jitsi Meet has never published RPM
+# packages (download.jitsi.org is apt-only) - this role only ever supports
+# Debian-family targets.
+#
+# Debian 11 and Ubuntu 22.04 are excluded too: both distros' own archives
+# permanently ship prosody < 0.12 (confirmed via Launchpad), while
+# jitsi-meet-prosody now requires prosody >= 0.12.0 - a structural
+# incompatibility, not something this role can work around. If
+# ansible-generator regenerates the workflow matrix from this file, it
+# needs manual re-editing to drop debian11/ubuntu2204 again since the
+# generator's version-exclusion syntax for a single version within a
+# Debian/Ubuntu "all" block isn't confirmed here.
+platforms:
+  - name: Debian
+    versions:
+      - all
+  - name: Ubuntu
+    versions:
+      - all

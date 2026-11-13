@@ -1,0 +1,54 @@
+---
+- name: Update apt cache.
+  ansible.builtin.apt:
+    cache_valid_time: "600"
+    update_cache: "true"
+  changed_when: false
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Ensure unzip is installed.
+  ansible.builtin.package:
+    name: unzip
+    state: present
+- name: Ensure SQLite is installed (Red Hat).
+  ansible.builtin.package:
+    name: sqlite
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: Ensure SQLite is installed (Debian).
+  ansible.builtin.package:
+    name: sqlite3
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Import Install
+  ansible.builtin.import_tasks:
+    file: install.yml
+- name: Create fathom directory.
+  ansible.builtin.file:
+    mode: "0755"
+    path: "{{ fathom_directory }}"
+    state: directory
+- name: Copy fathom config into place.
+  ansible.builtin.template:
+    dest: "{{ fathom_directory }}/.env"
+    mode: "0644"
+    src: fathom-config.j2
+  notify:
+    - Restart fathom
+# Separator for the pre-commit handler parser.
+- name: Copy fathom systemd unit file into place (for systemd systems).
+  ansible.builtin.template:
+    dest: /etc/systemd/system/fathom.service
+    group: root
+    mode: "0755"
+    owner: root
+    src: fathom.unit.j2
+  notify:
+    - Restart fathom
+  # Separator for the pre-commit handler parser.
+  when: ansible_facts['service_mgr'] == 'systemd'
+- name: Ensure fathom service is in the correct state.
+  ansible.builtin.service:
+    enabled: "{{ fathom_service_enabled }}"
+    name: fathom
+    state: "{{ fathom_service_state }}"
+  when: fathom_manage_service

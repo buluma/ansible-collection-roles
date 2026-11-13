@@ -3,10 +3,10 @@
 
 - name: Add apt repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_distribution_release }} main"
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ azure_cli_apt_codename }} main"
     state: present
   when:
-    - ansible_pkg_mgr in [ "apt" ]
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
 
 - name: Add yum repository
   ansible.builtin.yum_repository:
@@ -17,26 +17,35 @@
     gpgcheck: true
     gpgkey: "https://packages.microsoft.com/keys/microsoft.asc"
   when:
-    - ansible_pkg_mgr in [ "yum", "dnf" ]
+    - ansible_facts['pkg_mgr'] in [ "yum", "dnf", "dnf5" ]
 
 - name: Add zypper repository
   community.general.zypper_repository:
     name: AzureCLI
-    repo: 'https://packages.microsoft.com/yumrepos/azure-cli'
+    repo: "https://packages.microsoft.com/yumrepos/azure-cli"
     state: present
   when:
-    - ansible_pkg_mgr in [ "zypper" ]
+    - ansible_facts['pkg_mgr'] in [ "zypper" ]
 
 - name: Install using pip
   ansible.builtin.pip:
     name: azure-cli
     state: present
   when:
-    - ansible_pkg_mgr not in [ "apt", "yum", "dnf", "zypper" ]
+    - ansible_facts['pkg_mgr'] not in [ "apt", "yum", "dnf", "dnf5", "zypper" ]
+
+- name: Install azure_cli on EL (disable EPEL to avoid python3-knack conflict)
+  ansible.builtin.dnf:
+    name: azure-cli
+    state: present
+    disablerepo: "epel*"
+  when:
+    - ansible_facts['pkg_mgr'] in [ "dnf", "dnf5" ]
+    - ansible_facts['os_family'] == 'RedHat'
 
 - name: Install azure_cli
   ansible.builtin.package:
     name: azure-cli
     state: present
   when:
-    - ansible_pkg_mgr in [ "apt", "yum", "dnf", "zypper" ]
+    - ansible_facts['pkg_mgr'] in [ "apt", "yum", "zypper" ]

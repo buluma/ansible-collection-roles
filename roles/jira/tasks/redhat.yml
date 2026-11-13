@@ -1,0 +1,9 @@
+---
+- name: redhat | Yum install
+  ansible.builtin.dnf:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    allowerasing: true
+  loop: "{{ _yum }}"
+  register: result
+  until: result is succeeded

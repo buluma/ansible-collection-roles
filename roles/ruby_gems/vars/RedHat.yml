@@ -1,0 +1,25 @@
+---
+# Explicit packages instead of the "@development" group: ansible's dnf
+# module has known group-install incompatibilities under dnf5 (Fedora
+# 41+), which fail with "No package development available".
+__ruby_build_packages:
+  - gcc
+  - gcc-c++
+  - make
+  - bison
+  - autoconf
+  - automake
+  - libtool
+  - patch
+  - redhat-rpm-config
+  - zlib-devel
+  - openssl-devel
+  - readline-devel
+  - libyaml-devel
+  - libffi-devel
+  - gdbm-devel
+  - ncurses-devel
+__ruby_packages:
+  - ruby
+  - ruby-devel
+  - "{{ ruby_rubygems_package_name }}"

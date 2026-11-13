@@ -1,0 +1,32 @@
+---
+- name: redhat | Rpm --import
+  ansible.builtin.rpm_key:
+    key: "{{ item.key }}"
+    fingerprint: "{{ item.fingerprint }}"
+    state: "{{ item.state }}"
+  loop: "{{ _rpm_key[openjdk_release] }}"
+  register: result
+  until: result is succeeded
+
+- name: redhat | Yum-config-manager --add-repo
+  ansible.builtin.yum_repository:
+    file: "{{ item.file }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    enabled: "{{ item.enabled }}"
+    priority: "{{ item.priority }}"
+    module_hotfixes: "{{ item.module_hotfixes }}"
+    gpgcheck: "{{ item.gpgcheck }}"
+    gpgkey: "{{ item.gpgkey }}"
+    state: "{{ item.state }}"
+  loop: "{{ _yum_repository[openjdk_release] }}"
+
+- name: redhat | Yum install
+  ansible.builtin.package:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  loop: "{{ _yum[openjdk_release] }}"
+  when: item.name != 'maven' or openjdk_install_maven
+  register: result
+  until: result is succeeded

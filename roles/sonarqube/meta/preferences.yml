@@ -1,0 +1,23 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 12: its repos top out at openjdk-17-jre, but SonarQube
+      # 26.1.0.118079 (see defaults/main.yml) requires Java 21 or 25 --
+      # no native package on Debian 12 satisfies that.
+      - "13"
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

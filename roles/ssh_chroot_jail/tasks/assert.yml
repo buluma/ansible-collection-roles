@@ -1,0 +1,14 @@
+---
+- name: assert | Test if ssh_chroot_jail_path is set correctly
+  ansible.builtin.assert:
+    that:
+      - ssh_chroot_jail_path is defined
+      - ssh_chroot_jail_path is string
+    quiet: true
+
+- name: assert | Test if ssh_chroot_jail_devs is set correctly
+  ansible.builtin.assert:
+    that:
+      - ssh_chroot_jail_devs is defined
+      - ssh_chroot_jail_devs is iterable
+    quiet: true

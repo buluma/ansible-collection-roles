@@ -1,0 +1,36 @@
+---
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+- name: Include overrides specific to Fedora.
+  ansible.builtin.include_vars: Fedora.yml
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution'] == "Fedora"
+- name: Setup/install tasks RedHat.
+  ansible.builtin.import_tasks: setup-RedHat.yml
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: Setup/install tasks Debian
+  ansible.builtin.import_tasks: setup-Debian.yml
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Ensure directories to export exist
+  ansible.builtin.file:
+    mode: "0755"
+    path: "{{ item.strip().split()[0] }}"
+    state: directory
+  with_items: "{{ nfs_exports }}"
+- name: Copy exports file.
+  ansible.builtin.template:
+    dest: /etc/exports
+    group: root
+    mode: "0644"
+    owner: root
+    src: exports.j2
+  notify:
+    - Reload nfs
+# Separator for the pre-commit handler parser.
+- name: Ensure nfs is running.
+  ansible.builtin.service:
+    name: "{{ nfs_server_daemon }}"
+    state: started
+    enabled: "true"
+  when: nfs_exports | length > 0

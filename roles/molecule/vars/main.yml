@@ -1,0 +1,21 @@
+---
+# vars file for molecule
+
+_molecule_requirements:
+  default: []
+  Alpine:
+    - linux-headers
+    - rust
+  RedHat:
+    - python3-devel
+    - openssl-devel
+    # Molecule's pip dependencies provide ansible-core. Installing the RPM
+    # first can leave pip unable to replace it when resolving a newer version.
+  Suse:
+    - python3-devel
+    - ansible
+
+molecule_requirements: "{{ _molecule_requirements[ansible_facts['os_family']] | default(_molecule_requirements['default']) }}"
+
+molecule_break_system_packages: "{{ (ansible_facts['os_family'] == 'Debian' and ((ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version']
+  | int >= 24) or (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] | int >= 12))) | bool }}"

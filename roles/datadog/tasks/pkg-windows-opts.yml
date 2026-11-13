@@ -1,0 +1,119 @@
+---
+- name: pkg-windows-opts | Set agent_datadog_windows_config_root default value
+  ansible.builtin.set_fact:
+    agent_datadog_windows_config_root: "{{ datadog_windows_config_root }}"
+
+- name: pkg-windows-opts | Initialize force reinstall value
+  ansible.builtin.set_fact:
+    agent_datadog_force_reinstall: false
+
+- name: pkg-windows-opts | Initialize internal agent_win_install_args variable
+  ansible.builtin.set_fact:
+    agent_win_install_args: "{{ win_install_args }}"
+
+- name: pkg-windows-opts | Set DD Username Arg
+  ansible.builtin.set_fact:
+    agent_win_install_args: "{{ win_install_args }} DDAGENTUSER_NAME={{ datadog_windows_ddagentuser_name }}"
+  when: datadog_windows_ddagentuser_name | default('', true) | length > 0
+
+- name: pkg-windows-opts | Get Windows Agent features
+  win_ansible.builtin.shell:
+    "": ""
+    cmd: "$installer new-object -comobject WindowsInstaller.Installer\n$uninstall_key \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\"\n$agent_item
+      (Get-ItemProperty $uninstall_key -EA 0 | Where { $_.DisplayName -like \"Datadog Agent*\" }).PSChildName\nif (!$agent_item) {\n  return\n}\n$features $installer.features($agent_item)\n\
+      ForEach ($f in $features) {\n  if (($f -ieq 'MainApplication') -or ($installer.FeatureState($agent_item, $f) -ne 3)) {\n    continue\n  }\n  Write-Host $f\n\
+      }"
+  register: agent_windows_active_features
+
+# NOTE: We don't set DD Password Arg here to prevent it from being printed;
+# we set it right before using agent_win_install_args
+
+# check the registry. On upgrade, the location of the config file root will
+# be set here.
+- name: pkg-windows-opts | Check existing config file Directory
+  ansible.windows.win_reg_stat:
+    path: HKLM:\SOFTWARE\Datadog\Datadog Agent
+    name: ConfigRoot
+  register: agent_config_root_from_registry
+
+# check the registry. On upgrade, the location of the installation root directory will
+# be set here.
+
+- name: pkg-windows-opts | Check existing installPath Directory
+  ansible.windows.win_reg_stat:
+    path: HKLM:\SOFTWARE\Datadog\Datadog Agent
+    name: InstallPath
+  register: agent_install_path_from_registry
+
+## validate the config path.  Only necessary if it's set in the registry already (i.e. upgrade)
+## Will fail the install if the caller has set the config root to a non-standard root, and that
+## root is different than what's already present.
+- name: pkg-windows-opts | Validate config path
+  ansible.builtin.fail:
+    msg: "Incompatible configuration option {{ agent_config_root_from_registry.value }} != {{ datadog_windows_config_files_dir }}"
+  when: ( (agent_config_root_from_registry.exists) and (datadog_windows_config_files_dir | length > 0 ) and (agent_config_root_from_registry.value |
+    regex_replace('\\\\$','') | lower != datadog_windows_config_files_dir | lower ) )
+
+- name: pkg-windows-opts | Validated config path
+  ansible.builtin.debug:
+    msg: "Allowing configuration option {{ agent_config_root_from_registry.value }} == {{ datadog_windows_config_files_dir }}"
+  when: ( (agent_config_root_from_registry.exists) and (datadog_windows_config_files_dir | length > 0 ) and (agent_config_root_from_registry.value |
+    regex_replace('\\\\$','') | lower == datadog_windows_config_files_dir | lower ) )
+
+## validate the binary install path.  Only necessary if it's set in the registry alread (i.e. upgrade)
+## Will fail the install if the caller has set the binary install path to a non-standard root, and that
+## root is different than what's already present.
+- name: pkg-windows-opts | Validate install path
+  ansible.builtin.fail:
+    msg: "Incompatible configuration option {{ agent_install_path_from_registry.value }} != {{ datadog_windows_program_files_dir }}"
+  when: ( (agent_install_path_from_registry.exists) and (datadog_windows_program_files_dir | length > 0 ) and (agent_install_path_from_registry.value |
+    regex_replace('\\\\$','') | lower != datadog_windows_program_files_dir | lower ) )
+
+- name: pkg-windows-opts | Validated install path
+  ansible.builtin.debug:
+    msg: "Allowing configuration option {{ agent_install_path_from_registry.value }} == {{ datadog_windows_program_files_dir }}"
+  when: ( (agent_install_path_from_registry.exists) and (datadog_windows_program_files_dir | length > 0 ) and (agent_install_path_from_registry.value |
+    regex_replace('\\\\$','') | lower == datadog_windows_program_files_dir | lower ) )
+
+- name: pkg-windows-opts | Set Program Files Target Directory
+  ansible.builtin.set_fact:
+    agent_win_install_args: '{{ agent_win_install_args }} PROJECTLOCATION="{{ datadog_windows_program_files_dir }}" '
+  when: datadog_windows_program_files_dir | length > 0
+
+- name: pkg-windows-opts | Set Config Files Target Directory
+  ansible.builtin.set_fact:
+    agent_win_install_args: '{{ agent_win_install_args }} APPLICATIONDATADIRECTORY="{{ datadog_windows_config_files_dir }}" '
+  when: datadog_windows_config_files_dir | length > 0
+
+# if the current installation was set to a non-standard config root, and that config root is not
+# presented here, then update accordingly, so that any config file modifications will be made
+# in the right place
+- name: pkg-windows-opts | Set config root for config Files
+  ansible.builtin.set_fact:
+    agent_datadog_windows_config_root: "{{ datadog_windows_config_files_dir }}"
+  when: ((datadog_windows_config_files_dir | length > 0) and (not agent_config_root_from_registry.exists))
+
+- name: pkg-windows-opts | Set config root for config files from current location
+  ansible.builtin.set_fact:
+    agent_datadog_windows_config_root: "{{ agent_config_root_from_registry.value | regex_replace('\\\\$', '') }}"
+  when: agent_config_root_from_registry.exists
+
+# Add the installation arguments to install Windows NPM.
+- name: pkg-windows-opts | Set Windows NPM flag
+  ansible.builtin.set_fact:
+    agent_win_install_args: "{{ agent_win_install_args }} ADDLOCAL=MainApplication,NPM"
+  when: agent_datadog_sysprobe_enabled
+
+# Check for potential config changes that require a reinstall:
+- name: pkg-windows-opts | Check NPM feature change to force a reinstallation if enabled features have changed
+  ansible.builtin.set_fact:
+    agent_datadog_skip_install: false
+    agent_datadog_force_reinstall: true
+  # Starting from agent 7.45 the NPM driver is installed by default and gets
+  # reported as such regardless of the provided parameters. Since we don't
+  # want to force the install for nothing in those version, we skip the step
+  # when the agent is 7.45+
+  when: >-
+    (agent_datadog_skip_install and (agent_datadog_major | int <= 7) and (agent_datadog_minor
+    | int < 45)) and
+    (("NPM" in agent_windows_active_features.stdout_lines) != agent_datadog_sysprobe_enabled)

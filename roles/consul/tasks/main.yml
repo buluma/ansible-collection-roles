@@ -1,0 +1,72 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install consul
+  ansible.builtin.package:
+    name: consul
+    state: present
+  when:
+    - consul_install_package
+- name: Create consul data directory
+  ansible.builtin.file:
+    group: consul
+    mode: "0750"
+    owner: consul
+    path: "{{ consul_data_dir }}"
+    state: directory
+- name: Create consul.env
+  ansible.builtin.file:
+    access_time: preserve
+    group: consul
+    mode: "0644"
+    modification_time: preserve
+    owner: consul
+    path: /etc/consul.d/consul.env
+    state: touch
+- name: Configure consul
+  ansible.builtin.template:
+    dest: /etc/consul.d/consul.hcl
+    group: consul
+    mode: "0644"
+    owner: consul
+    src: consul.hcl.j2
+  notify: Restart consul
+
+- name: Configure a service in consul
+  ansible.builtin.template:
+    dest: /etc/consul.d/service-{{ item.name }}-{{ item.port }}.hcl
+    group: consul
+    mode: "0644"
+    owner: consul
+    src: service.hcl.j2
+  loop: "{{ consul_services }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: Restart consul
+  when:
+    - consul_services is defined
+
+- name: Place license
+  ansible.builtin.copy:
+    content: "{{ consul_license }}"
+    dest: /etc/consul.d/license.json
+    group: consul
+    mode: "0644"
+    owner: consul
+  notify: Restart consul
+  when:
+    - consul_license is defined
+    - consul_license != ""
+
+- name: Start and enable consul
+  ansible.builtin.service:
+    enabled: true
+    name: consul
+    state: started
+  when:
+    - consule_service_started_and_enabled
+    - consul_license is defined
+    - consul_license != ""

@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: storage
+  description: Create partitions, volume groups, volumes, filesystems and mounts
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - storage
+    - system
+dependencies: []

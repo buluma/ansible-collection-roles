@@ -1,0 +1,60 @@
+#!/bin/sh
+set -e
+### BEGIN INIT INFO
+# Provides: bamboo
+# Required-Start: $local_fs $remote_fs $network $time
+# Required-Stop: $local_fs $remote_fs $network $time
+# Should-Start: $syslog
+# Should-Stop: $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Atlassian Bamboo Server
+### END INIT INFO
+# INIT Script
+######################################
+
+# Define some variables
+# Name of app
+APP=bamboo
+# Name of the user to run as
+USER={{ bamboo_master_user }}
+# Location of application's bin directory
+BASE={{ bamboo_master_binary_folder }}
+BAMBOO_HOME={{ bamboo_master_data_folder }}
+CATALINA_PID="$BASE/bin/catalina.pid"
+
+case "$1" in
+  # Start command
+  start)
+    echo "Starting $APP"
+    export BAMBOO_HOME=${BAMBOO_HOME}
+    export CATALINA_PID=${CATALINA_PID}
+    export CATALINA_OPTS=${CATALINA_OPTS}
+    {% if bamboo_master_jvm_memory is defined %}
+    export JVM_MINIMUM_MEMORY={{ bamboo_master_jvm_memory }}
+    export JVM_MAXIMUM_MEMORY={{ bamboo_master_jvm_memory }}
+    {% endif %}
+    start-stop-daemon --start --chuid $USER --pidfile $CATALINA_PID --background --exec "$BASE/bin/catalina.sh" -- start
+    ;;
+  # Stop command
+  stop)
+    echo "Stopping $APP"
+    start-stop-daemon --stop --chuid $USER --pidfile $CATALINA_PID
+    echo "$APP stopped successfully"
+    ;;
+   # Restart command
+   restart)
+        $0 stop
+        sleep 5
+        $0 start
+        ;;
+    status)
+        start-stop-daemon --status --user $USER --pidfile $CATALINA_PID
+        ;;
+  *)
+    echo "Usage: /etc/init.d/$APP {start|restart|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

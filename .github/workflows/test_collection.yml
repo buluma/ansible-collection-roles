@@ -4,12 +4,70 @@ name: Test Collection
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   schedule:
-    - cron: '27 * * * *'
+    - cron: '27 3 * * 1'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
-  test_collection:
-    runs-on: "Ubuntu-20.04"
+  test_build:
+    runs-on: ubuntu-latest
     steps:
-      - run: ansible-galaxy collection install buluma.roles
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      - name: install ansible-core
+        run: pip install "ansible-core>=2.19"
+      # galaxy.yml dependencies are what users actually get installed, so they must cover requirements.yml.
+      - name: check galaxy.yml dependencies cover requirements.yml
+        run: |
+          python - <<'EOF'
+          import sys
+          import yaml
+          deps = set(yaml.safe_load(open("galaxy.yml"))["dependencies"])
+          reqs = {c["name"] for c in yaml.safe_load(open("requirements.yml"))["collections"]}
+          missing = sorted(reqs - deps)
+          if missing:
+              sys.exit(f"Missing from galaxy.yml dependencies: {', '.join(missing)}")
+          EOF
+      - name: build collection
+        run: ansible-galaxy collection build
+      - name: install collection with dependencies
+        run: ansible-galaxy collection install buluma-roles-*.tar.gz
+      - name: syntax-check every role
+        run: |
+          {
+            echo "---"
+            for role in roles/*/ ; do
+              short=$(basename "${role}")
+              printf -- '- name: %s\n  hosts: all\n  gather_facts: false\n  roles:\n    - buluma.roles.%s\n' "${short}" "${short}"
+            done
+          } > all_roles.yml
+          ansible-playbook -i localhost, all_roles.yml --syntax-check
+
+  test_galaxy:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      - name: install ansible-core
+        run: pip install "ansible-core>=2.19"
+      - name: install published collection
+        run: ansible-galaxy collection install buluma.roles

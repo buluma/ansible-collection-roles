@@ -1,0 +1,17 @@
+---
+apache_allow_override: All
+apache_global_vhost_settings: "DirectoryIndex index.php index.html\n"
+apache_ignore_missing_ssl_certificate: true
+apache_listen_ip: "*"
+apache_listen_port: 80
+apache_listen_port_ssl: 443
+apache_options: -Indexes +FollowSymLinks
+apache_restart_state: restarted
+apache_ssl_cipher_suite: "AES256+EECDH:AES256+EDH"
+apache_ssl_protocol: All -SSLv2 -SSLv3
+apache_vhosts:
+  - documentroot: /var/www/html
+    servername: local.dev
+apache_vhosts_ssl: []
+apt_autostart_state: enabled
+users_ssh_key_directory: ssh_keys

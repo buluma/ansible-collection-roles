@@ -1,5 +1,10 @@
 ---
-#
-# Ansible managed
-#
-tox_parallel: true
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # Debian, Ubuntu, and Fedora excluded: this role is EL-only by design
+  # (ansible.builtin.dnf calls, EPEL integration, EL-specific package sets).
+  - name: EL
+    versions:
+      - "10"
+      - "9"

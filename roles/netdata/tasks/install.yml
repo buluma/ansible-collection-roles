@@ -1,0 +1,97 @@
+---
+- name: install | Defining auto update CLI option.
+  ansible.builtin.set_fact:
+    auto_update_cli_option: "{{ netdata_auto_updates['enabled'] | ternary('--auto-update', '') }}"
+
+- name: install | Cloning repository to {{ netdata_git_repo ~ ' -> ' ~ netdata_source_dir }}
+  ansible.builtin.git:
+    repo: "{{ netdata_git_repo }}"
+    dest: "{{ netdata_source_dir }}"
+    depth: 1
+    version: "{{ netdata_git_version_tag }}"
+    recursive: true
+  become: true
+  tags:
+    - molecule-idempotence-notest
+  # Without this, netdata's own bundled dependencies (mqtt_websockets,
+  # h2o, etc.) are registered but never checked out -- the build fails
+  # much later with things like "No rule to make target
+  # 'mqtt_websockets/c-rbuf/src/ringbuffer.c'" and "fatal error:
+  # h2o/memory.h: No such file or directory", which read like missing
+  # packages but are actually missing submodules.
+
+- name: install | Ensure the full build dependency set is installed (Fedora).
+  ansible.builtin.package:
+    name:
+      - gcc
+      - gcc-c++
+      - make
+      - autoconf
+      - automake
+      - autoconf-archive
+      - cmake
+      - pkgconfig
+      - bison
+      - flex
+      - zlib-devel
+      - libuuid-devel
+      - libmnl-devel
+      - json-c-devel
+      - libyaml-devel
+      - systemd-devel
+      - libuv-devel
+      - lz4-devel
+      - openssl-devel
+      - elfutils-libelf-devel
+    state: present
+  become: true
+  when: ansible_facts['distribution'] == "Fedora"
+  # netdata's own install-required-packages.sh doesn't recognize Fedora
+  # releases newer than netdata_git_version_tag's era (43/44): its
+  # distro/tree detection falls through silently for each dependency in
+  # turn rather than erroring, so packages just never get installed.
+  # Patching this one missing package at a time as netdata-installer.sh
+  # died further and further into the build (autotools, then a C
+  # compiler, then libelf, then libuv...) turned into whack-a-mole, so
+  # this installs the whole list install-required-packages.sh would have
+  # installed had it recognized the release, sourced directly from its
+  # pkg_* tables at netdata_git_version_tag. Scoped to Fedora only --
+  # RHEL/CentOS/Rocky/Alma are already correctly detected and these
+  # extra packages (libmnl-devel, json-c-devel, libyaml-devel,
+  # libuv-devel) aren't in their base repos without EPEL, which this
+  # fixture doesn't enable for them.
+
+- name: install | Use netdata dependencies installation.
+  ansible.builtin.command: "{{ netdata_requirements_installer }} {{ netdata_requirements_installer_options | join(' ') }}"
+  args:
+    chdir: "{{ netdata_source_dir }}"
+  become: true
+  register: netdata_requirements_install
+  changed_when: >
+    'All required packages are already installed. Now proceed to the next step.'
+    not in netdata_requirements_install.stderr_lines
+  tags:
+    - molecule-idempotence-notest
+
+- name: install | Running netdata installer from {{ netdata_installer ~ ' @ ' ~ netdata_source_dir }}
+  ansible.builtin.command: "{{ installer_cli | join(' ') }}"
+  vars:
+    ansible_remote_tmp: /var/tmp
+    installer_cli:
+      - "{{ netdata_installer }}"
+      - "{{ auto_update_cli_option }}"
+      - "--dont-wait"
+  args:
+    chdir: "{{ netdata_source_dir }}"
+    creates: /usr/sbin/netdata
+  async: 3600
+  poll: 10
+  environment:
+    TMPDIR: /var/tmp
+    CFLAGS: "-O2 -pipe -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion"
+    # GCC 14+ (e.g. Ubuntu 26.04 ships 15.2) turned these into hard errors
+    # by default; netdata_git_version_tag's C source predates that and
+    # fails to compile ("initialization of 'void (*)(void *)' from
+    # incompatible pointer type") without them demoted back to warnings.
+  become: true
+  notify: Restart netdata

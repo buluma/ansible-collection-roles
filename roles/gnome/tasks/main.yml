@@ -1,0 +1,39 @@
+---
+# tasks file for gnome
+
+- name: Install software using dnf
+  ansible.builtin.package:
+    name: "{{ gnome_packages }}"
+    state: present
+    exclude: "{{ gnome_exclude | default(omit) }}"
+    allowerasing: true
+  when:
+    - ansible_facts['pkg_mgr'] in [ "dnf", "dnf5" ]
+
+- name: Install software using package
+  ansible.builtin.package:
+    name: "{{ gnome_packages }}"
+    state: present
+  when:
+    - ansible_facts['pkg_mgr'] not in [ "dnf", "dnf5" ]
+
+- name: Start dbus-broker
+  ansible.builtin.service:
+    name: dbus-broker
+    state: started
+    enabled: true
+  when:
+    - ansible_facts['distribution'] == "Fedora"
+    - ansible_facts['distribution_major_version'] | int > 33
+
+  # gdm.service's [Install] section uses Alias=display-manager.service on
+  # newer gdm3 packaging (Ubuntu 26.04+) rather than a WantedBy=, so
+  # `systemctl enable gdm` only ever creates the display-manager.service
+  # alias symlink - `systemctl status gdm` keeps reporting the gdm unit
+  # itself as "disabled", making `enabled: true` perpetually non-idempotent.
+  # The gdm3 package's own postinst already wires up the display-manager
+  # alias at install time, so only manage the running state here.
+- name: Start gnome display manager
+  ansible.builtin.service:
+    name: gdm
+    state: started

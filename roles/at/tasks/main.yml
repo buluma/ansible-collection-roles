@@ -1,0 +1,13 @@
+---
+# tasks file for at
+
+- name: Install at software
+  ansible.builtin.package:
+    name: at
+    state: present
+
+- name: Start and enable at software
+  ansible.builtin.service:
+    name: atd
+    state: started
+    enabled: true

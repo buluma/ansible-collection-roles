@@ -1,0 +1,5 @@
+---
+_metricbeat_package:
+  Debian: metricbeat={{ metricbeat_version }}
+  default: metricbeat-{{ metricbeat_version }}
+metricbeat_package: "{{ _metricbeat_package[ansible_facts['os_family']] | default(_metricbeat_package['default']) }}"

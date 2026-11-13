@@ -1,0 +1,22 @@
+---
+- name: facts | Ensure ansible facts folder exists
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d/
+    state: directory
+    recurse: true
+
+- name: facts | Ensure bamboo facts exists
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d/bamboo.fact
+    state: touch
+    owner: root
+    group: root
+    mode: "0644"
+  changed_when: false
+
+- name: facts | Update bamboo facts
+  ansible.builtin.template:
+    src: bamboo.fact.j2
+    dest: /etc/ansible/facts.d/bamboo.fact
+    mode: "0644"
+  notify: Restart bamboo

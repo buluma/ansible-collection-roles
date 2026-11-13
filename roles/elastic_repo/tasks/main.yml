@@ -1,38 +1,40 @@
 ---
-# tasks file for elastic_repo
-
 - name: Include assert.yml
   ansible.builtin.import_tasks: assert.yml
-  run_once: true
   delegate_to: localhost
-
+  run_once: true
 - name: Run apt steps
+  when:
+    - ansible_facts['pkg_mgr'] == "apt"
   block:
-    - name: Add gpg key (apt)
-      ansible.builtin.apt_key:
-        url: "{{ elastic_repo_gpg_url }}"
+    - name: Ensure gnupg is installed (required for apt-key on newer Debian/Ubuntu)
+      ansible.builtin.package:
+        name: gnupg
         state: present
+      when: ansible_facts['os_family'] == "Debian"
 
+    - name: Add gpg key (apt)
+      ansible.builtin.get_url:
+        url: "{{ elastic_repo_gpg_url }}"
+        dest: /etc/apt/trusted.gpg.d/elastic_repo.asc
+        mode: "0644"
     - name: Apt apt repository
       ansible.builtin.apt_repository:
-        repo: "{{ elastic_repo_apt_repo }}"
         filename: elasic-7.x
+        repo: "{{ elastic_repo_apt_repo }}"
         state: present
-  when:
-    - ansible_pkg_mgr == "apt"
-
 - name: Run yum steps
+  when:
+    - ansible_facts['pkg_mgr'] in [ "dnf", "dnf5", "rpm", "yum" ]
+    - ansible_facts['distribution'] != "Fedora"
   block:
     - name: Add gpg key (rpm)
       ansible.builtin.rpm_key:
         key: "{{ elastic_repo_gpg_url }}"
         state: present
-
     - name: Add yum repository
       ansible.builtin.yum_repository:
-        name: elastic-7.x
-        description: Elastic repository for 7.x packages
         baseurl: "{{ elastic_repo_rpm_repo }}"
+        description: Elastic repository for 7.x packages
         gpgkey: "{{ elastic_repo_gpg_url }}"
-  when:
-    - ansible_pkg_mgr in [ "dnf", "rpm", "yum" ]
+        name: elastic-7.x

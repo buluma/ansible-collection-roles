@@ -1,0 +1,33 @@
+---
+# tasks file for setuptools
+
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ setuptools }}"
+    state: present
+    update_cache: true
+  notify:
+    - Gather facts
+
+- name: Reset connection
+  ansible.builtin.meta: reset_connection
+
+- name: Install pip packages
+  ansible.builtin.pip:
+    name: "{{ setuptools_pip_packages }}"
+    state: present
+  failed_when: false
+
+# TODO: Pinning due to CVE-2024-3094
+- name: Debian | Try to install xz-utils packages
+  ansible.builtin.pip:
+    name: xz-utils==5.4.6
+    state: present
+  when: ansible_facts['os_family'] | lower == "debian"
+  changed_when: false
+  failed_when: false
+  notify:
+    - Gather facts
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

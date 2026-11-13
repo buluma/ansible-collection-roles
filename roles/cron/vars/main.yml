@@ -1,27 +1,20 @@
 ---
-# vars file for cron
-
+_cron_configuration:
+  Archlinux: /etc/conf.d/crond
+  default: /etc/crontab
 _cron_packages:
-  default:
-    - cronie
   Alpine:
     - dcron
   Debian:
     - cron
-
-cron_packages: "{{ _cron_packages[ansible_os_family] | default(_cron_packages['default'] ) }}"
-
-_cron_configuration:
-  default: /etc/crontab
-  Archlinux: /etc/conf.d/crond
-
-cron_configuration: "{{ _cron_configuration[ansible_os_family] | default(_cron_configuration['default'] ) }}"
-
+  default:
+    - cronie
 _cron_service:
-  default: crond
   Alpine: ""
+  Archlinux: cronie
   Debian: cron
   Suse: cron
-  Archlinux: cronie
-
-cron_service: "{{ _cron_service[ansible_os_family] | default(_cron_service['default'] ) }}"
+  default: crond
+cron_configuration: "{{ _cron_configuration[ansible_facts['os_family']] | default(_cron_configuration['default']) }}"
+cron_packages: "{{ _cron_packages[ansible_facts['os_family']] | default(_cron_packages['default']) }}"
+cron_service: "{{ _cron_service[ansible_facts['os_family']] | default(_cron_service['default']) }}"

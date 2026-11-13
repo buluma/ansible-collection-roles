@@ -1,0 +1,5 @@
+---
+# tasks file for demo
+- name: Print ansible version
+  ansible.builtin.debug:
+    msg: "Ansible {{ ansible_version.full }} on {{ ansible_facts['os_family'] }}"

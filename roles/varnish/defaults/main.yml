@@ -1,0 +1,28 @@
+---
+varnish_admin_listen_host: "127.0.0.1"
+varnish_admin_listen_port: "6082"
+varnish_apt_repo: "deb {{ varnish_repository_base_url }}/{{ ansible_facts['distribution'] | lower }}/ {{ ansible_facts['distribution_release'] }} main"
+varnish_apt_use_packagecloud: true
+varnish_config_path: /etc/varnish
+varnish_default_backend_host: "127.0.0.1"
+varnish_default_backend_port: "8080"
+varnish_default_vcl_template_path: default.vcl.j2
+varnish_enabled_services:
+  - varnish
+varnish_limit_nofile: 131072
+varnish_listen_address: ""
+varnish_listen_port: "80"
+varnish_modules_package_name: ""
+varnish_package_name: varnish
+varnish_packagecloud_repo_yum_repository_priority: "1"
+varnish_pidfile: /run/varnishd.pid
+varnish_secret: 14bac2e6-1e34-4770-8078-974373b76c90
+varnish_storage: file,/var/lib/varnish/varnish_storage.bin,256M
+varnish_use_default_vcl: true
+varnish_version: "9.1"
+varnish_yum_repo_baseurl: "{{ varnish_repository_base_url }}/el/{{ ansible_facts['distribution_major_version'] | int }}/$basearch"
+varnishd_extra_options: ""
+
+# Varnish 9+ packages moved from Packagecloud to the upstream repository.
+varnish_repository_base_url: "{{ 'https://packages.varnish-software.com/varnish' if varnish_version is version('9.0', '>=') else 'https://packagecloud.io/varnishcache/' ~ varnish_packagecloud_repo }}"
+varnish_repository_key_url: "{{ varnish_repository_base_url ~ '/varnish.pub.asc' if varnish_version is version('9.0', '>=') else varnish_repository_base_url ~ '/gpgkey' }}"

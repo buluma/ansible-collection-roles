@@ -1,0 +1,12 @@
+---
+# defaults file for sudo
+
+# Do you want to wait for the host to be available?
+sudo_wait_for_host: false
+
+# The number of seconds you want to wait during connection test before failing.
+sudo_timeout: 3
+
+# Should the role gather facts using the setup module?
+# This requires python on the remote host.
+sudo_gather_facts: true

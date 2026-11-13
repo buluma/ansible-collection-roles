@@ -1,0 +1,17 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  # Fedora excluded: buluma.elastic_repo deliberately skips Fedora when
+  # setting up Elastic's yum repo (Elastic doesn't officially support it),
+  # so there's no repo backing elasticsearch-oss there.
+  - name: Ubuntu
+    versions:
+      - all

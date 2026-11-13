@@ -1,0 +1,28 @@
+---
+tfe_capacity_concurrency: 10
+tfe_database_host: tfe.RaNdOm.eu-west-1.rds.amazonaws.com
+tfe_database_name: tfe
+tfe_database_parameters: sslmode=disable
+tfe_database_password: my_pass_c0mpl.x
+tfe_database_user: tfe
+tfe_encryption_password: S0meP@ssword
+tfe_hostname: tfe.example.com
+tfe_iact_subnets: []
+tfe_image: "images.releases.hashicorp.com/hashicorp/terraform-enterprise:v202309-1"
+tfe_license: ""
+tfe_object_storage_s3_access_key_id: ""
+tfe_object_storage_s3_bucket: SomeBucketName
+tfe_object_storage_s3_endpoint: ""
+tfe_object_storage_s3_region: eu-west-1
+tfe_object_storage_s3_secret_access_key: ""
+tfe_object_storage_s3_use_instance_profile: false
+tfe_operational_mode: active-active
+tfe_redis_host: tfe.RaNdOm.0001.euw1.cache.amazonaws.com
+tfe_redis_password: my_pass_c0mpl.x
+tfe_redis_use_auth: false
+tfe_redis_use_tls: false
+tfe_redis_user: tfe
+tfe_tls_bundle: bundle.pem
+tfe_tls_certificate: cert.pem
+tfe_tls_key: key.pem
+tfe_vault_cluster_address: "https://{{ ansible_facts['default_ipv4'].address }}:8201"

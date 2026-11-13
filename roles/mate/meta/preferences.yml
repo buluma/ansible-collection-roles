@@ -1,0 +1,20 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+#
+# EL is excluded entirely: EPEL's own comps.xml (EPEL9 and EPEL10) no
+# longer defines the '@mate-desktop' group this role installs - EPEL
+# removed it, not something this role can work around.
+platforms:
+  - name: Debian
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

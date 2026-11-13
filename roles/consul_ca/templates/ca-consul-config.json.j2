@@ -1,0 +1,18 @@
+{
+  "signing": {
+    "default": {
+      "expiry": "{{ ca_consul_expiry }}"
+    },
+    "profiles": {
+      "default": {
+         "usages": [
+            "signing",
+            "key encipherment",
+            "server auth",
+            "client auth"
+          ],
+          "expiry": "{{ ca_consul_expiry }}"
+      }
+    }
+  }
+}

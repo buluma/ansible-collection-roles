@@ -1,6 +1,5 @@
 ---
-
-- name: Test if  if certbot_system is set correctly
+- name: assert | Test if  if certbot_system is set correctly
   ansible.builtin.assert:
     that:
       - certbot_system is defined
@@ -8,14 +7,14 @@
       - certbot_system in [ "apache", "nginx", "haproxy", "standalone" ]
     quiet: true
 
-- name: Test if  if certbot_domains is set correctly
+- name: assert | Test if  if certbot_domains is set correctly
   ansible.builtin.assert:
     that:
       - certbot_domains is defined
       - certbot_domains is iterable
     quiet: true
 
-- name: Test if  if item in certbot_domains is set correctly
+- name: assert | Test if  if item in certbot_domains is set correctly
   ansible.builtin.assert:
     that:
       - item is defined
@@ -24,7 +23,7 @@
     quiet: true
   loop: "{{ certbot_domains }}"
 
-- name: Test if  if certbot_email is set correctly
+- name: assert | Test if  if certbot_email is set correctly
   ansible.builtin.assert:
     that:
       - certbot_email is defined

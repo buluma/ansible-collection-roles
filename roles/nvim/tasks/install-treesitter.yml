@@ -1,0 +1,30 @@
+---
+- name: "install-treesitter | Landing place for treesitter download exists."
+  ansible.builtin.file:
+    state: directory
+    owner: root
+    group: adm
+    mode: "0750"
+    path: "{{ treesitter_dl_dir }}"
+
+- name: "install-treesitter | TreeSitter compressed binary downloaded. v{{ treesitter_version }}"
+  ansible.builtin.get_url:
+    url: "{{ treesitter_archive_url }}"
+    dest: "{{ treesitter_dl_dir }}/{{ treesitter_dl_name }}"
+    mode: "0555"
+
+- name: "install-treesitter | TreeSitter: download decompressed v{{ treesitter_version }}"
+  ansible.builtin.command:
+    chdir: "{{ treesitter_dl_dir }}"
+    cmd: gunzip --keep {{ treesitter_dl_name }}
+    creates: "{{ treesitter_dl_dir }}/{{ treesitter_filename }}"
+
+- name: "install-treesitter | TreeSitter installed v{{ treesitter_version }}"
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ treesitter_dl_dir }}/{{ treesitter_filename }}"
+    dest: /usr/local/bin/tree-sitter
+    owner: root
+    group: root
+    mode: "0755"
+    # ignore_errors: true

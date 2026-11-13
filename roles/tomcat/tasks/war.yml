@@ -1,0 +1,9 @@
+---
+- name: war | Deploy war url
+  ansible.builtin.get_url:
+    dest: "{{ tomcat_directory }}//{{ instance.name }}/webapps/"
+    mode: "0640"
+    url: "{{ war.url }}"
+    validate_certs: false
+  when:
+    - war.url is defined

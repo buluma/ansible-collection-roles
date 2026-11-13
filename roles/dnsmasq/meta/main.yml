@@ -1,21 +1,14 @@
-# meta file
 ---
 galaxy_info:
   author: buluma
   role_name: dnsmasq
-  company: ShadowNet
-  description: Set up dnsmasq in Debian-like systems.
+  description: "Install and configure dnsmasq on your system."
   license: Apache-2.0
+  company: none
   min_ansible_version: "2.12"
-  platforms:
-    - name: Ubuntu
-      versions:
-        - all
-    - name: Debian
-      versions:
-        - all
   galaxy_tags:
-    - system
-    - networking
+    - dnsmasq
     - dns
+    - dhcp
+    - system
 dependencies: []

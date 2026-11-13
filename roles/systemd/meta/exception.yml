@@ -1,0 +1,4 @@
+---
+exceptions:
+  - variation: Archlinux
+    reason: GLIBC_2.34 not found

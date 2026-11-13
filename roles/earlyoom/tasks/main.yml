@@ -2,7 +2,8 @@
 # tasks file for earlyoom
 
 - name: Import assert.yml
-  ansible.builtin.import_tasks: assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
   run_once: true
   delegate_to: localhost
 
@@ -25,7 +26,7 @@
 
 - name: Create service earlyoom
   ansible.builtin.import_role:
-    name: buluma.service
+    name: buluma.roles.service
   vars:
     service_list:
       - name: earlyoom

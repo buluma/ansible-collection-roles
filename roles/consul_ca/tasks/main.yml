@@ -1,0 +1,58 @@
+---
+- name: Create directory for CA and certificate files
+  ansible.builtin.file:
+    group: "{{ consul_ca_certificate_group }}"
+    mode: "0755"
+    owner: "{{ consul_ca_certificate_owner }}"
+    path: "{{ consul_ca_conf_directory }}"
+    state: directory
+  tags:
+    - consul-ca
+- name: Create Consul CA configuration file
+  ansible.builtin.template:
+    dest: "{{ consul_ca_conf_directory }}/ca-consul-config.json"
+    group: "{{ consul_ca_certificate_group }}"
+    mode: "0600"
+    owner: "{{ consul_ca_certificate_owner }}"
+    src: ca-consul-config.json.j2
+  tags:
+    - consul-ca
+- name: Copy the Consul CA certificate request file (CSR)
+  ansible.builtin.template:
+    dest: "{{ consul_ca_conf_directory }}/ca-consul-csr.json"
+    group: "{{ consul_ca_certificate_group }}"
+    mode: "0600"
+    owner: "{{ consul_ca_certificate_owner }}"
+    src: ca-consul-csr.json.j2
+  tags:
+    - consul-ca
+- name: Include cfssl.yml
+  ansible.builtin.import_tasks: cfssl.yml
+  tags:
+    - consul-ca
+- name: Generate the Consul CA and private key
+  ansible.builtin.shell: "set -euo pipefail\n{{ cfssl_bin_directory }}/cfssl gencert -initca ca-consul-csr.json | {{ cfssl_bin_directory }}/cfssljson -bare ca-consul\n"
+  args:
+    chdir: "{{ consul_ca_conf_directory }}"
+    creates: "{{ consul_ca_conf_directory }}/ca-consul-key.pem"
+    executable: /bin/bash
+  tags:
+    - consul-ca
+- name: Create the Consul key CSR file
+  ansible.builtin.template:
+    dest: "{{ consul_ca_conf_directory }}/cert-consul-csr.json"
+    group: "{{ consul_ca_certificate_group }}"
+    mode: "0600"
+    owner: "{{ consul_ca_certificate_owner }}"
+    src: cert-consul-csr.json.j2
+  tags:
+    - consul-ca
+- name: Generate TLS certificate for Consul
+  ansible.builtin.shell: "set -euo pipefail\n{{ cfssl_bin_directory }}/cfssl gencert -ca=ca-consul.pem -ca-key=ca-consul-key.pem -config=ca-consul-config.json -hostname={{ consul_csr_cn }}
+    -profile=default cert-consul-csr.json | {{ cfssl_bin_directory }}/cfssljson -bare cert-consul\n"
+  args:
+    chdir: "{{ consul_ca_conf_directory }}"
+    creates: "{{ consul_ca_conf_directory }}/cert-consul-key.pem"
+    executable: /bin/bash
+  tags:
+    - consul-ca

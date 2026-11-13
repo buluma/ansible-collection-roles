@@ -1,0 +1,14 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: The purpose of this role is to add users and groups on your system.
+  galaxy_tags:
+    - users
+    - server
+    - sudo
+    - system
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  role_name: users

@@ -1,0 +1,62 @@
+# Name Service Switch configuration file.
+# See nsswitch.conf(5) for details.
+
+{% if nsswitch_passwd is defined %}
+passwd: {{ nsswitch_passwd | join(' ') }}
+{% else %}
+passwd: files mymachines systemd
+{% endif %}
+{% if nsswitch_group is defined %}
+group: {{ nsswitch_group | join(' ') }}
+{% else %}
+group: files mymachines systemd
+{% endif %}
+{% if nsswitch_shadow is defined %}
+shadow: {{ nsswitch_shadow | join(' ') }}
+{% else %}
+shadow: files
+{% endif %}
+
+{% if nsswitch_publickey is defined %}
+publickey: {{ nsswitch_publickey | join(' ') }}
+{% else %}
+publickey: files
+{% endif %}
+
+{% if nsswitch_hosts is defined %}
+hosts: {{ nsswitch_hosts | join(' ') }}
+{% else %}
+hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns
+{% endif %}
+{% if nsswitch_networks is defined %}
+networks: {{ nsswitch_networks | join(' ') }}
+{% else %}
+networks: files
+{% endif %}
+
+{% if nsswitch_protocols is defined %}
+protocols: {{ nsswitch_protocols | join(' ') }}
+{% else %}
+protocols: files
+{% endif %}
+{% if nsswitch_services is defined %}
+services: {{ nsswitch_services | join(' ') }}
+{% else %}
+services: files
+{% endif %}
+{% if nsswitch_ethers is defined %}
+ethers: {{ nsswitch_ethers | join(' ') }}
+{% else %}
+ethers: files
+{% endif %}
+{% if nsswitch_rpc is defined %}
+rpc: {{ nsswitch_rpc | join(' ') }}
+{% else %}
+rpc: files
+{% endif %}
+
+{% if nsswitch_netgroup is defined %}
+netgroup: {{ nsswitch_netgroup | join(' ') }}
+{% else %}
+netgroup: files
+{% endif %}

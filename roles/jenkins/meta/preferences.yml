@@ -1,0 +1,20 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 11 and 12: neither bullseye nor bookworm mainline repos
+      # package openjdk-21, and jenkins needs Java 21+ to start.
+      # openjdk-21 first landed in Debian 13 (trixie).
+      - "13"
+  # Fedora excluded: the jenkins.io yum repo only publishes packages for
+  # RHEL-compatible distros and Debian/Ubuntu, not Fedora. "No package
+  # jenkins available" on every Fedora release.
+  - name: Ubuntu
+    versions:
+      - all

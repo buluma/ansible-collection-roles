@@ -1,0 +1,30 @@
+---
+- name: assert | Test zabbix_repository_version_major
+  ansible.builtin.assert:
+    that:
+      - zabbix_repository_version_major is defined
+      - zabbix_repository_version_major is string
+      - zabbix_repository_version_major is not none
+    quiet: true
+
+- name: assert | Test zabbix_repository_version_minor
+  ansible.builtin.assert:
+    that:
+      - zabbix_repository_version_minor is defined
+      - zabbix_repository_version_minor is number
+      - zabbix_repository_version_minor >= 0
+    quiet: true
+
+- name: assert | Test zabbix_repository_cleanup_requirements
+  ansible.builtin.assert:
+    that:
+      - zabbix_repository_cleanup_requirements is defined
+      - zabbix_repository_cleanup_requirements is boolean
+    quiet: true
+
+- name: assert | Test zabbix_repository_revert_crypto_policy
+  ansible.builtin.assert:
+    that:
+      - zabbix_repository_revert_crypto_policy is defined
+      - zabbix_repository_revert_crypto_policy is boolean
+    quiet: true

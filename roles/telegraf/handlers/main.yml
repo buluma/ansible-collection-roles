@@ -1,0 +1,25 @@
+---
+- name: Restart Telegraf
+  ansible.builtin.service:
+    enabled: true
+    name: telegraf
+    state: restarted
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: not telegraf_agent_docker
+- name: Restart Telegraf container
+  community.docker.docker_container:
+    name: "{{ telegraf_agent_docker_name }}"
+    restart: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: telegraf_agent_docker
+- name: Restart Windows Telegraf
+  ansible.windows.win_service:
+    name: Telegraf
+    start_mode: auto
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Restart MacOS Telegraf
+  ansible.builtin.command: brew services restart telegraf
+  changed_when: true
+  ignore_errors: "{{ ansible_check_mode }}"

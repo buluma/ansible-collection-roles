@@ -1,0 +1,17 @@
+---
+- name: Main | Include lemp-php56 tasks
+  ansible.builtin.import_tasks: lemp-php56.yml
+- name: Main | Include lemp-php70 tasks
+  ansible.builtin.import_tasks: lemp-php70.yml
+  when: php_version == 70
+- name: Main | Include system PHP tasks
+  ansible.builtin.import_tasks: lemp-php-system.yml
+  when: php_version == 'system'
+- name: Main | Include composer tasks
+  ansible.builtin.import_tasks: composer.yml
+- name: Main | Include nginx tasks
+  ansible.builtin.import_tasks: nginx.yml
+- name: Main | Include sendmail tasks
+  ansible.builtin.import_tasks: sendmail.yml
+- name: Main | Include root-config tasks
+  ansible.builtin.import_tasks: root-config.yml

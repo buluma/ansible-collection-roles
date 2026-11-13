@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: kubectl
+  description: Install the latest stable version of kubectl on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - kubectl
+dependencies: []

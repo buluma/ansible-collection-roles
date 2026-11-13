@@ -1,0 +1,10 @@
+{{ ansible_managed | comment }}
+{% if users is defined %}
+{% for user in users %}
+{% if user.cron_allow is defined %}
+{% if user.cron_allow %}
+{{ user.name }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}

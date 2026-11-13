@@ -1,0 +1,15 @@
+---
+dependencies:
+  - role: buluma.roles.httpd
+galaxy_info:
+  author: buluma
+  company: none
+  description: Install and configure mediawiki on your system.
+  galaxy_tags:
+    - mediawiki
+    - server
+    - system
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  namespace: buluma
+  role_name: mediawiki

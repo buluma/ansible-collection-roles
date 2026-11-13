@@ -41,7 +41,7 @@
   ansible.builtin.find:
     paths: "{{ collectd_conf_include_dir }}"
     file_type: file
-    patterns: '*.conf'
+    patterns: "*.conf"
   register: collectd_plugins_configured
 
 - name: Configure collectd plugins

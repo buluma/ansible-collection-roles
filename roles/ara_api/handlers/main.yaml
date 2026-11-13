@@ -1,7 +1,7 @@
 ---
-- name: restart ara-api
+- name: Restart ara-api
   become: true
-  service:
+  ansible.builtin.service:
     name: ara-api
     state: restarted
   when:

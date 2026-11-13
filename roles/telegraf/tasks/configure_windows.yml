@@ -1,0 +1,108 @@
+---
+- name: configure_windows | Create directory structure"
+  ansible.windows.win_file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ telegraf_win_install_dir }}"
+    - "{{ telegraf_win_include }}"
+- name: configure_windows | Check if file is already downloaded"
+  ansible.windows.win_stat:
+    path: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip"
+  register: file_info
+- name: configure_windows | Download Telegraf Agent Zip file"
+  ansible.windows.win_get_url:
+    dest: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip"
+    url: https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_agent_version }}_windows_amd64.zip
+  when:
+    - not file_info.stat.exists
+- name: configure_windows | Unzip file (newer than 1.15)"
+  when: telegraf_agent_version is version('1.15', '>=')
+  win_unzip:
+    creates: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}\\telegraf.exe"
+    dest: "{{ telegraf_win_install_dir }}"
+    src: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip"
+- name: configure_windows | Move extracted directory (newer than 1.15)"
+  ansible.windows.win_copy:
+    dest: "{{ telegraf_win_install_dir }}\\telegraf.exe"
+    remote_src: true
+    src: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}\\telegraf.exe"
+  when: telegraf_agent_version is version('1.15', '>=')
+- name: configure_windows | Unzip file"
+  when: telegraf_agent_version is version('1.15', '<')
+  win_unzip:
+    creates: "{{ telegraf_win_install_dir }}\\telegraf.exe"
+    delete_archive: true
+    dest: "{{ telegraf_win_install_dir }}"
+    src: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip"
+- name: configure_windows | Move extracted executable"
+  ansible.windows.win_copy:
+    dest: "{{ telegraf_win_install_dir }}\\telegraf.exe"
+    remote_src: true
+    src: "{{ telegraf_win_install_dir }}\\telegraf\\telegraf.exe"
+  when: telegraf_agent_version is version('1.15', '<')
+- name: configure_windows | Configure Telegraf"
+  ansible.windows.win_template:
+    dest: "{{ telegraf_win_install_dir }}\\telegraf.conf"
+    src: telegraf.conf.j2
+  notify: Restart Windows Telegraf
+  # Separator for the pre-commit handler parser.
+- name: configure_windows | Copy telegraf extra plugins"
+  ansible.windows.win_template:
+    dest: "{{ telegraf_win_include }}\\{{ item.key }}.conf"
+    src: telegraf-extra-plugin.conf.j2
+  loop_control:
+    label: "{{ item.key }}"
+  notify: Restart Windows Telegraf
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_plugins_extra is defined
+    - telegraf_plugins_extra is iterable
+    - item.value.state|default('present') != 'absent'
+  with_dict: "{{ telegraf_plugins_extra }}"
+- name: configure_windows | Remove telegraf extra plugins"
+  ansible.windows.win_file:
+    path: "{{ telegraf_win_include }}\\{{ item.key }}.conf"
+    state: absent
+  loop_control:
+    label: "{{ item.key }}"
+  notify: Restart Windows Telegraf
+  # Separator for the pre-commit handler parser.
+  when:
+    - telegraf_plugins_extra is defined
+    - telegraf_plugins_extra is iterable
+    - item.value.state|default('present') == 'absent'
+  with_dict: "{{ telegraf_plugins_extra }}"
+- name: configure_windows | Check if Telegraf service is already in place"
+  ansible.windows.win_service:
+    name: telegraf
+  failed_when: service_result is not defined
+  register: service_result
+- name: configure_windows | Debug Results
+  ansible.builtin.debug:
+    msg: "{{ service_result }}"
+- name: configure_windows | Set service startup mode to auto and ensure it is started"
+  ansible.windows.win_service:
+    name: Telegraf
+    start_mode: auto
+    state: stopped
+  when:
+    - service_result.exists
+- name: configure_windows | Unregister Service"
+  ansible.windows.win_command: '"{{ telegraf_win_install_dir }}\telegraf.exe" --service uninstall'
+  register: telegraf_windows_uninstall
+  when:
+    - service_result.exists
+- name: configure_windows | Register Service"
+  ansible.windows.win_command: '"{{ telegraf_win_install_dir }}\telegraf.exe" {{ telegraf_win_service_args | join(" ") }}'
+  register: telegraf_windows_install
+- name: configure_windows | Set service startup mode to auto and ensure it is started"
+  ansible.windows.win_service:
+    name: Telegraf
+    start_mode: auto
+    state: started
+- name: configure_windows | Cleanup"
+  ansible.windows.win_file:
+    path: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}"
+    state: absent
+  when: telegraf_agent_version is version('1.15', '>=')

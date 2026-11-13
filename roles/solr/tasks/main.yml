@@ -1,0 +1,79 @@
+---
+- name: Process Users
+  ansible.builtin.import_tasks: user.yml
+  when: solr_create_user
+
+- name: Set solr_filename for Solr 4+.
+  ansible.builtin.set_fact:
+    solr_filename: "solr-{{ solr_version }}"
+  when: "solr_version.split('.')[0] >= '4'"
+
+- name: Set solr_filename for Solr 3.x.
+  ansible.builtin.set_fact:
+    solr_filename: "apache-solr-{{ solr_version }}"
+  when: "solr_version.split('.')[0] == '3'"
+
+- name: Check if Solr has been installed already.
+  ansible.builtin.stat:
+    path: "{{ solr_install_path }}"
+  register: solr_install_path_status
+
+- name: Download Solr.
+  ansible.builtin.get_url:
+    # Solr became its own Apache top-level project (separate from
+    # Lucene) starting with 9.x, moving the archive path from
+    # lucene/solr to solr/solr.
+    url: "{{ solr_mirror }}/{{ 'solr/solr' if solr_version.split('.')[0] | int >= 9 else 'lucene/solr' }}/{{ solr_version }}/{{ solr_filename }}.tgz"
+    dest: "{{ solr_workspace }}/{{ solr_filename }}.tgz"
+    force: false
+    mode: "0644"
+  when: solr_install_path_status.stat.isdir is not defined
+  register: solr_download_status
+
+- name: Expand Solr.
+  ansible.builtin.unarchive:
+    src: "{{ solr_workspace }}/{{ solr_filename }}.tgz"
+    dest: "{{ solr_workspace }}"
+    copy: false
+  when: solr_download_status.changed
+  tags: ["skip_ansible_lint"]
+
+# Install Solr < 5.
+- name: Install Solr <5
+  ansible.builtin.include_tasks: install-pre5.yml
+  when: "solr_version.split('.')[0] < '5'"
+
+# Install Solr 5+.
+- name: Install Solr 5+
+  ansible.builtin.include_tasks: install.yml
+  when: "solr_version.split('.')[0] >= '5'"
+
+- name: Ensure solr is started and enabled on boot if configured.
+  when: solr_service_manage
+  block:
+    - name: Ensure solr is started and enabled on boot if configured.
+      ansible.builtin.service:
+        name: "{{ solr_service_name }}"
+        state: "{{ solr_service_state }}"
+        enabled: true
+  rescue:
+    - name: Debug | Capture solr.service journal on start failure.
+      ansible.builtin.command: journalctl -xeu {{ solr_service_name }} --no-pager -n 200
+      changed_when: false
+      register: solr_journal
+    - name: Debug | Print solr.service journal.
+      ansible.builtin.fail:
+        msg: "{{ solr_journal.stdout_lines }}"
+
+# Configure solr.
+- name: Configure Solr
+  ansible.builtin.include_tasks: configure.yml
+  when: "solr_version.split('.')[0] >= '5'"
+
+# Create cores, if any are configured.
+- name: Create cores, if any are configured.
+  ansible.builtin.include_tasks: cores.yml
+  when: "solr_cores and solr_version.split('.')[0] >= '5'"
+
+- name: Trim fat
+  ansible.builtin.include_tasks: trim-fat.yml

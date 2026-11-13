@@ -2,32 +2,13 @@
 galaxy_info:
   author: buluma
   role_name: apache
-  description: Apache 2.x for Linux.
+  description: "Apache 2.x for Linux."
   license: Apache-2.0
-  min_ansible_version: "2.4"
-  platforms:
-    - name: EL
-      versions:
-        - all
-    - name: Fedora
-      versions:
-        - all
-    - name: Amazon
-      versions:
-        - all
-    - name: Debian
-      versions:
-        - all
-    - name: Ubuntu
-      versions:
-        - all
+  min_ansible_version: "2.12"
   galaxy_tags:
     - web
     - apache
     - webserver
     - html
     - httpd
-
 dependencies: []
-
-allow_duplicates: true

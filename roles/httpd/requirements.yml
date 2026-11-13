@@ -1,0 +1,12 @@
+---
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.buildtools
+  - name: buluma.epel
+  - name: buluma.openssl
+  - name: buluma.python_pip
+  - name: buluma.selinux
+collections:
+  - name: ansible.posix
+  - name: community.crypto
+  - name: community.general

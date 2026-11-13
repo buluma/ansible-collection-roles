@@ -1,0 +1,6 @@
+---
+exceptions:
+  - variation: Alpine
+    reason: "Source /bin/bash not found"
+  - variation: Amazon
+    reason: "Source /usr/bin/sort not found"

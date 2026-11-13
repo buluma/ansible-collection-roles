@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: pip
+  description: Install Pip (Python package manager) for Linux.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - system
+    - server
+    - packaging
+    - python
+    - pip
+    - tools
+dependencies: []

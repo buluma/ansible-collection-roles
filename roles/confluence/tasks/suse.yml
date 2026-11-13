@@ -1,8 +1,8 @@
 ---
-- name: Zypper install
+- name: suse | Zypper install
   vars:
     ansible_python_interpreter: "python3"
-  ansible.builtin.zypper:
+  community.general.zypper:
     name: "{{ item.name }}"
     state: "{{ item.state }}"
   loop: "{{ _zypper }}"

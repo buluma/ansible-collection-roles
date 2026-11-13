@@ -1,0 +1,22 @@
+---
+- name: Debian | Ensure sensu apt repository key is deployed
+  ansible.builtin.get_url:
+    url: https://packagecloud.io/sensu/stable/gpgkey
+    dest: /etc/apt/trusted.gpg.d/sensu.asc
+    mode: "0644"
+
+- name: Debian | Ensure sensu apt repository is deployed
+  ansible.builtin.apt_repository:
+    # repo: deb http://sensu.global.ssl.fastly.net/apt sensu main EOL
+    # repo: deb https://eol-repositories.sensuapp.org/apt {{ ansible_facts['distribution_release'] }} main
+    repo: deb https://packagecloud.io/sensu/stable/{{ ansible_facts['distribution'] | lower }}/ {{ ansible_facts['distribution_release'] | lower }} main
+
+- name: Debian | Ensure sensu is installed
+  ansible.builtin.apt:
+    name: sensu-go-backend
+    state: present
+
+- name: Debian | Ensure sensu-backend is installed
+  ansible.builtin.apt:
+    name: sensu-go-backend
+    state: present

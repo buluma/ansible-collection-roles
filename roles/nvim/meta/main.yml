@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: nvim
+  description: "Install and Configure NVIM on your Linux systems."
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - development
+    - nvim
+    - neovim
+    - editor
+dependencies: []

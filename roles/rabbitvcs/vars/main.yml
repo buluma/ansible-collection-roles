@@ -1,0 +1,21 @@
+---
+# vars file for rabbitvcs
+
+_rabbitvcs_packages:
+  default:
+    - rabbitvcs
+  Debian:
+    - rabbitvcs-nautilus
+    - rabbitvcs-gedit
+    - rabbitvcs-cli
+  Debian_12:
+    # rabbitvcs-nautilus was dropped from bookworm (GTK4/Nautilus
+    # incompatibility with RabbitVCS 0.18); use the packages that are
+    # actually available there instead.
+    - rabbitvcs-core
+    - rabbitvcs-thunar
+    - rabbitvcs-gedit
+    - rabbitvcs-cli
+
+rabbitvcs_packages: "{{ _rabbitvcs_packages[ansible_facts['distribution'] ~ '_' ~ ansible_facts['distribution_major_version']] |
+  default(_rabbitvcs_packages[ansible_facts['os_family']] | default(_rabbitvcs_packages['default'])) }}"

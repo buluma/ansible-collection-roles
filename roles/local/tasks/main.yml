@@ -1,0 +1,7 @@
+---
+# tasks file for ansible-role-local
+- name: Import Ping
+  ansible.builtin.import_tasks:
+    file: ping.yml
+  tags:
+    - ping

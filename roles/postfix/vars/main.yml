@@ -1,0 +1,33 @@
+---
+_postfix_alias_path:
+  Alpine: /etc/postfix/aliases
+  default: /etc/aliases
+_postfix_alias_map_type:
+  # EL10 dropped Berkeley DB (hash) support from the postfix package;
+  # its own main.cf defaults to lmdb there.
+  RedHat-10: lmdb
+  Rocky-10: lmdb
+  AlmaLinux-10: lmdb
+  CentOS-10: lmdb
+  default: hash
+_postfix_compatibility_level:
+  default: 2
+  jammy: 3.6
+_postfix_daemon_directory:
+  Debian: /usr/lib/postfix/sbin
+  Suse: /usr/lib/postfix/bin
+  default: /usr/libexec/postfix
+_postfix_group:
+  Suse: maildrop
+  default: postdrop
+postfix_alias_path: "{{ _postfix_alias_path[ansible_facts['os_family']] | default(_postfix_alias_path['default']) }}"
+postfix_alias_map_type: >-
+  {{ _postfix_alias_map_type[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] |
+  default(_postfix_alias_map_type[ansible_facts['os_family'] ~ '-' ~ ansible_facts['distribution_major_version']] |
+  default(_postfix_alias_map_type['default'])) }}
+postfix_compatibility_level: "{{ _postfix_compatibility_level[ansible_facts['distribution_release']] | default(_postfix_compatibility_level['default']) }}"
+postfix_daemon_directory: "{{ _postfix_daemon_directory[ansible_facts['os_family']] | default(_postfix_daemon_directory['default']) }}"
+postfix_group: "{{ _postfix_group[ansible_facts['os_family']] | default(_postfix_group['default']) }}"
+postfix_recipient_access_path: /etc/postfix/recipient_access
+postfix_sender_access_path: /etc/postfix/sender_access
+postfix_service: postfix

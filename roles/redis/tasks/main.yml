@@ -1,0 +1,36 @@
+---
+# tasks file for redis
+
+- name: Install redis
+  ansible.builtin.package:
+    name: "{{ redis_packages }}"
+    state: present
+
+- name: Configure redis
+  ansible.builtin.template:
+    src: "redis.conf-{{ ansible_facts['distribution'] }}.j2"
+    dest: "{{ redis_configuration_directory }}/{{ redis_configuration_file }}"
+    owner: "{{ redis_owner }}"
+    group: "{{ redis_group }}"
+    mode: "{{ redis_mode }}"
+  notify:
+    - Restart redis
+
+- name: Start and enable redis
+  ansible.builtin.service:
+    name: "{{ redis_service }}"
+    state: started
+    enabled: true
+  register: redis_start_result
+  ignore_errors: true
+
+- name: Debug | Capture journal on start failure.
+  ansible.builtin.command: journalctl -xeu {{ redis_service }} --no-pager -n 200
+  changed_when: false
+  register: redis_journal
+  when: redis_start_result is failed
+
+- name: Debug | Fail with journal.
+  ansible.builtin.fail:
+    msg: "{{ redis_journal.stdout_lines }}"
+  when: redis_start_result is failed

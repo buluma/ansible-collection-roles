@@ -1,0 +1,6 @@
+---
+hashicorp_destination: /usr/bin
+hashicorp_group: root
+hashicorp_installation_method: package
+hashicorp_mode: "0755"
+hashicorp_owner: root

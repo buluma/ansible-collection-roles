@@ -1,20 +1,20 @@
 ---
-- name: Configure apache.
+- name: configure-Solaris | Configure apache.
   ansible.builtin.lineinfile:
     dest: "{{ apache_server_root }}/{{ apache_daemon }}.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
-    mode: 0644
+    mode: "0644"
   with_items: "{{ apache_ports_configuration_items }}"
   notify: Restart apache
 
-- name: Add apache vhosts configuration.
+- name: configure-Solaris | Add apache vhosts configuration.
   ansible.builtin.template:
     src: "{{ apache_vhosts_template }}"
     dest: "{{ apache_conf_path }}/{{ apache_vhosts_filename }}"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: Restart apache
   when: apache_create_vhosts | bool

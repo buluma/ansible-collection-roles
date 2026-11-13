@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: crowd
+  description: Install and configure crowd on your system.
+  license: Apache-2.0
+  company: none
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - crowd
+dependencies: []

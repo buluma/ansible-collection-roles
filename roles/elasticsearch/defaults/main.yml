@@ -1,0 +1,10 @@
+---
+elasticsearch_cluster_initial_master_nodes: []
+elasticsearch_discovery_seed_hosts: []
+elasticsearch_http_port: 9200
+elasticsearch_network_host: "0.0.0.0"
+elasticsearch_type: oss
+
+# The temporary directory for JNA.
+# This should be a location that is NOT mounted with 'noexec'.
+elasticsearch_jvm_tmpdir: /var/lib/elasticsearch/tmp

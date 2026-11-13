@@ -1,0 +1,36 @@
+---
+# vars file for docker_compose
+
+# A map to relate the Ansible architecture to the Docker Compose architecture.
+_docker_compose_architecture:
+  x86_64: x86_64
+  arm64: aarch64
+docker_compose_architecture: "{{ _docker_compose_architecture[ansible_facts['architecture']] }}"
+
+# The type of installation (either `package` or `binary`) depends on the
+# distribution, os_family and distribution_major release.
+_docker_compose_installation_type:
+  default: package
+  Amazon: binary
+  Debian:
+    default: package
+    "24": binary
+    "13": binary
+  RedHat:
+    default: package
+    "8": binary
+    "9": binary
+    "10": binary
+    "2023": binary # Amazonlinux 2
+docker_compose_installation_type: "{{ _docker_compose_installation_type[ansible_facts['os_family']][ansible_facts['distribution_major_version']] | default(_docker_compose_installation_type[ansible_facts['os_family']]['default'])
+  | default(_docker_compose_installation_type[ansible_facts['distribution']]) | default(_docker_compose_installation_type['default']) }}"
+
+_docker_compose_binary_required_packages:
+  default: []
+  RedHat:
+    default:
+      - libxcrypt-compat
+    "8":
+      - libxcrypt
+docker_compose_binary_required_packages: "{{ _docker_compose_binary_required_packages[ansible_facts['os_family']][ansible_facts['distribution_major_version']] | default(_docker_compose_binary_required_packages[ansible_facts['os_family']]['default'])
+  | default(_docker_compose_binary_required_packages['default']) }}"

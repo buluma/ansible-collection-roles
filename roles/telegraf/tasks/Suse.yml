@@ -1,0 +1,69 @@
+---
+- name: Suse | Adding Telegraf group
+  ansible.builtin.group:
+    name: telegraf
+    state: present
+- name: Suse | Adding Telegraf user
+  ansible.builtin.user:
+    group: telegraf
+    name: telegraf
+    state: present
+  become: true
+- name: Suse | Install repo dependencies for Python 2
+  become: true
+  community.general.zypper:
+    name:
+      - python-libxml2
+      - python-xml
+    state: present
+    update_cache: true
+  register: are_telegraf_dependencies_packages_installed
+  until: are_telegraf_dependencies_packages_installed is succeeded
+  when: ansible_python.version.major == 2
+- name: Suse | Install repo dependencies for Python >= 3
+  become: true
+  community.general.zypper:
+    name:
+      - python3-libxml2-python
+    state: present
+    update_cache: true
+  register: are_telegraf_dependencies_packages_installed
+  until: are_telegraf_dependencies_packages_installed is succeeded
+  when: ansible_python.version.major >= 3
+- name: Suse | Add default Open Build Service repository
+  become: true
+  community.general.zypper_repository:
+    auto_import_keys: true
+    name: telegraf
+    repo: "{{ telegraf_zypper_repos[ansible_facts['distribution'] | lower] | default(telegraf_zypper_repos['default']) }}"
+    runrefresh: true
+    state: present
+  when: telegraf_zypper_baseurl is not defined
+- name: Suse | Add specified package repository
+  become: true
+  community.general.zypper_repository:
+    auto_import_keys: true
+    name: telegraf
+    repo: "{{ telegraf_zypper_baseurl }}"
+    runrefresh: true
+    state: present
+  when: telegraf_zypper_baseurl is defined
+- name: Suse | Install Telegraf
+  become: true
+  community.general.zypper:
+    name: "{{ telegraf_agent_package }}"
+    state: "{{ telegraf_agent_package_state }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded
+- name: Suse | Create directories for telegraf
+  ansible.builtin.file:
+    mode: "0755"
+    owner: "{{ item.owner }}"
+    path: "{{ item.path }}"
+    state: directory
+  with_items:
+    - owner: root
+      path: /etc/telegraf/telegraf.d/
+    - owner: telegraf
+      path: /var/log/telegraf

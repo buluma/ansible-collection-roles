@@ -1,0 +1,80 @@
+---
+- name: Load version vars
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - ../vars/versions/{{ maven_version }}.yml
+    - ../vars/versions/default.yml
+- name: Assert version vars
+  ansible.builtin.assert:
+    that:
+      - maven_redis_sha256sum not in (None, '')
+- name: Install which (yum, dnf, zypper)
+  ansible.builtin.package:
+    name: which
+    state: present
+  become: true
+  when: ansible_facts['pkg_mgr'] in ('yum', 'dnf', 'dnf5', 'zypper')
+- name: Create download directory
+  ansible.builtin.file:
+    dest: "{{ maven_download_dir }}"
+    mode: u=rwx,go=rx
+    state: directory
+- name: Download Maven
+  ansible.builtin.get_url:
+    checksum: sha256:{{ maven_redis_sha256sum }}
+    dest: "{{ maven_download_dir }}/{{ maven_redis_filename }}"
+    force: false
+    mode: u=rw,go=r
+    timeout: "{{ maven_download_timeout }}"
+    url: "{{ maven_mirror }}/{{ maven_redis_filename }}"
+    use_proxy: "{{ maven_use_proxy }}"
+    validate_certs: "{{ maven_validate_certs }}"
+- name: Create Maven installation directory
+  ansible.builtin.file:
+    dest: "{{ maven_install_dir }}"
+    group: "0"
+    mode: u=rwx,go=rx
+    owner: root
+    state: directory
+  become: true
+- name: Install unarchive module dependencies (dnf, zypper)
+  ansible.builtin.package:
+    name:
+      - tar
+      - unzip
+      - gzip
+    state: present
+  become: true
+  when: ansible_facts['pkg_mgr'] in ('dnf', 'dnf5', 'zypper')
+- name: Install Maven
+  ansible.builtin.unarchive:
+    copy: false
+    creates: "{{ maven_install_dir }}/apache-maven-{{ maven_version }}"
+    dest: "{{ maven_install_dir }}"
+    group: "0"
+    mode: go-w
+    owner: root
+    src: "{{ maven_download_dir }}/{{ maven_redis_filename }}"
+  become: true
+- name: Create symbolic links
+  ansible.builtin.include_tasks: create-symbolic-links.yml
+  when: maven_is_default_installation
+- name: Create Ansible facts.d directory
+  ansible.builtin.file:
+    dest: /etc/ansible/facts.d
+    group: "0"
+    mode: u=rwx,go=rx
+    owner: root
+    state: directory
+  become: true
+- name: Install Maven facts
+  ansible.builtin.template:
+    dest: /etc/ansible/facts.d/{{ maven_fact_group_name }}.fact
+    group: "0"
+    mode: u=rw,go=r
+    owner: root
+    src: facts.j2
+  become: true
+- name: Re-read facts
+  ansible.builtin.setup:
+    filter: ansible_facts['local']

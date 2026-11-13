@@ -1,0 +1,25 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      # ubuntu2604 excluded from the actual CI workflow matrix (Microsoft's
+      # azure-cli apt repo has no 'resolute' dist yet) - the generator's
+      # version-exclusion syntax for a single version within "all" isn't
+      # confirmed here, so re-editing the workflow directly is required if
+      # this file is used to regenerate it.
+      - all

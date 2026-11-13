@@ -1,0 +1,12 @@
+---
+- name: integration | macos | Set Agent binary path
+  ansible.builtin.set_fact:
+    datadog_agent_binary_path: "{{ datadog_agent_binary_path_macos }}"
+
+- name: integration | macos | Set Agent user for integration commmand
+  ansible.builtin.set_fact:
+    integration_command_user: "{{ integration_command_user_macos }}"
+
+- name: integration | macos | Include shared integration installation and removal tasks
+  ansible.builtin.include_tasks: integration/_linux-macos-shared.yml
+  loop: "{{ datadog_integration | dict2items }}"

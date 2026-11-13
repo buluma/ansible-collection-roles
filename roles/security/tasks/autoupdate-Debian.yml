@@ -1,0 +1,15 @@
+---
+- name: autoupdate-Debian | Install unattended upgrades package.
+  ansible.builtin.package:
+    name: unattended-upgrades
+    state: present
+- name: autoupdate-Debian | Copy unattended-upgrades configuration files in place.
+  ansible.builtin.template:
+    dest: /etc/apt/apt.conf.d/{{ item }}
+    group: root
+    mode: "0644"
+    owner: root
+    src: "{{ item }}.j2"
+  with_items:
+    - 10periodic
+    - 50unattended-upgrades

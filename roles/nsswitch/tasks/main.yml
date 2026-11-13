@@ -1,0 +1,14 @@
+---
+- name: Deploy nsswitch.conf
+  ansible.builtin.template:
+    dest: /etc/nsswitch.conf
+    group: root
+    mode: "0644"
+    owner: root
+    # On authselect-managed systems (EL10, Fedora), /etc/nsswitch.conf is a
+    # symlink to /etc/authselect/nsswitch.conf. template's default follow:false
+    # would delete that symlink and replace it with a plain file, leaving
+    # authselect's tracked state pointing at a file that's no longer there -
+    # follow it instead so we write through to the real target.
+    follow: true
+    src: '{{ lookup("first_found", __nsswitch_template) }}'

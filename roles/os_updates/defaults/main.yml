@@ -1,0 +1,21 @@
+---
+# Possible Values
+# ALWAYS = Always reboot after updates
+# NEVER = Never reboot after updates
+# NEEDED = Only reboot after Kernel changes
+os_updates_reboot: "NEEDED"
+
+# YUM
+# define packages which should not upgraded
+os_updates_yum_exclude: ""
+os_updates_yum_clean_cache: true
+
+# APT
+os_updates_apt_upgrade: "safe"
+# define packages which should not upgraded
+os_updates_apt_exclude: []
+os_updates_apt_autoremove: true
+
+# reboot options
+os_updates_reboot_delay: 30
+os_updates_reboot_timeout: 300

@@ -11,6 +11,12 @@
     name: "{{ cargo_requirements }}"
     state: present
 
+- name: Install curl if not already available
+  ansible.builtin.package:
+    name: curl
+    state: present
+  when: not (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution'] != "Fedora" and ansible_facts['distribution_major_version'] | int >= 9)
+
 - name: Download installer rustup
   ansible.builtin.get_url:
     url: https://static.rust-lang.org/rustup.sh

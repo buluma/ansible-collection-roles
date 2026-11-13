@@ -1,0 +1,23 @@
+---
+- name: Include checks tasks
+  ansible.builtin.include_tasks: checks.yml
+- name: Include gather_cluster tasks
+  ansible.builtin.include_tasks: gather_cluster.yml
+- name: Include install-debian tasks
+  ansible.builtin.include_tasks: install-debian.yml
+  when: ansible_facts['os_family'] == 'Debian'
+- name: Include config-user tasks
+  ansible.builtin.include_tasks: config-user.yml
+- name: Include config-postgresql tasks
+  ansible.builtin.include_tasks: config-postgresql.yml
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Include bootstrap-replicas tasks
+  ansible.builtin.include_tasks: bootstrap-replicas.yml
+  when:
+    - postgresql_replication__group_replicas in group_names
+    - postgresql_replication__bootstrap is defined
+    - postgresql_replication__bootstrap == "yesiwant"
+- name: Include config-replicas tasks
+  ansible.builtin.include_tasks: config-replicas.yml
+  when: postgresql_replication__group_replicas in group_names

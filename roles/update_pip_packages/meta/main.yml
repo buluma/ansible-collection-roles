@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: buluma
+  role_name: update_pip_packages
+  description: Find and update pip packages.
+  license: Apache-2.0
+  company: ShadowNet
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - updatepippackages
+    - pip
+    - update
+dependencies: []

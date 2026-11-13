@@ -1,0 +1,23 @@
+---
+# defaults file for capistrano_setup
+
+capistrano_setup_users:
+# - username: docker // project username
+#   name: buluma // name of the project or some extra information you want to put in the users comment field
+#   group: docker
+#   groups: 'docker, docker2' // list of groups the user belongs to
+#   shell: '' // user shell
+#   comment: ''
+#   uid: 1750 // user id
+#   home: / // path of the users home directory
+#   createhomedir: false // indicate if you want to create the home directory
+#   password: "{{ 'itsasecret' | password_hash('sha512') }}" // password for the project user
+#   update_password: on_create
+#   upload_key: false
+#   project_directory: "capistrano" // possible subdirectory inside the users home directory for your project structure
+#   placeholder: files/index.txt // placeholder file so you can have a dummy deployment when your project is not deployed yet
+#   pub_key: // public key to use when deploying through capistrano
+#   upload_key: // indicate if you want to upload the public key
+capistrano_setup_users_deleted:
+# - name: name of the user you want to remove
+#   remove: false // indicate if you want to remove the users home directory

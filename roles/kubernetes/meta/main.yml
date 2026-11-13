@@ -1,0 +1,21 @@
+---
+dependencies: []
+galaxy_info:
+  author: buluma
+  company: ShadowNet
+  description: Kubernetes for Linux.
+  galaxy_tags:
+    - system
+    - containers
+    - docker
+    - rkt
+    - orchestration
+    - kubernetes
+    - k8s
+    - paas
+    - saas
+    - hosting
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  namespace: buluma
+  role_name: kubernetes

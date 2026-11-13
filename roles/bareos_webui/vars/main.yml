@@ -1,0 +1,17 @@
+---
+# vars file for bareos_webui
+
+_bareos_webui_requirements:
+  default: []
+  Debian:
+    - libapache2-mod-php
+
+bareos_webui_requirements: "{{ _bareos_webui_requirements[ansible_facts['os_family']] | default(_bareos_webui_requirements['default']) }}"
+
+_bareos_webui_httpd_service:
+  default: httpd
+  Alpine: apache2
+  Debian: apache2
+  RedHat: httpd
+
+bareos_webui_httpd_service: "{{ _bareos_webui_httpd_service[ansible_facts['os_family']] | default(_bareos_webui_httpd_service['default']) }}"

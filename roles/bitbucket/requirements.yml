@@ -1,8 +1,9 @@
 ---
-roles:
-  - name: buluma.bootstrap
-  - name: buluma.git
-  - name: buluma.java
-
 collections:
   - name: community.general
+roles:
+  - name: buluma.bootstrap
+  - name: buluma.epel
+  - name: buluma.git
+  - name: buluma.openjdk
+  - name: buluma.java

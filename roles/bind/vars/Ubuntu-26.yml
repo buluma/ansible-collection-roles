@@ -1,0 +1,25 @@
+---
+# Ubuntu 26.04's BIND package replaced named.conf.default-zones with
+# named.conf.root-hints and uses dns-root-data for the root trust anchor.
+auth_file: auth_transfer.conf
+bind_auth_file: "{{ bind_conf_dir }}/{{ auth_file }}"
+bind_bindkeys_file: /usr/share/dns/root.key
+bind_conf_dir: /etc/bind
+bind_config: /etc/bind/named.conf
+bind_default_python_version: "3"
+bind_default_zone_files:
+  - /etc/bind/named.conf.root-hints
+bind_dnssec_validation: auto
+bind_dir: /var/cache/bind
+bind_group: bind
+bind_owner: root
+bind_packages:
+  - "{{ (bind_python_version == '3') | ternary('python3-netaddr', 'python-netaddr') }}"
+  - "{{ (bind_python_version == '3') | ternary('python3-dnspython', 'python-dnspython') }}"
+  - bind9
+  - bind9utils
+bind_pid_file: /run/named/named.pid
+bind_secondary_dir: "{{ bind_dir }}/secondary"
+bind_service: bind9
+bind_session_keyfile: /run/named/session.key
+bind_zone_dir: "{{ bind_dir }}"

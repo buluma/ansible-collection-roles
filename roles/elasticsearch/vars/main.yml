@@ -1,0 +1,7 @@
+---
+_elasticsearch_packages:
+  elastic:
+    - elasticsearch
+  oss:
+    - elasticsearch-oss
+elasticsearch_packages: "{{ _elasticsearch_packages[elasticsearch_type] }}"

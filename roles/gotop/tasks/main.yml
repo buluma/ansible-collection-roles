@@ -1,0 +1,11 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install software
+  ansible.builtin.unarchive:
+    dest: "{{ gotop_installation_path }}"
+    mode: "0755"
+    remote_src: true
+    src: "{{ gotop_download_url }}"

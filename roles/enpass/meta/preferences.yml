@@ -1,0 +1,20 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # EL excluded entirely: enpass's GPG signing key uses a hash algorithm
+  # EL9/EL10's default crypto policy rejects ("key 1 import failed"),
+  # and EL10 additionally lacks libXss.so.1/libgc.so.1 that its RPM needs.
+  # Upstream Enpass issues, not fixable from this role.
+  - name: Debian
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      - "44"
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

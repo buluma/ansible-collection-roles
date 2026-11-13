@@ -1,0 +1,66 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install nomad
+  ansible.builtin.package:
+    name: nomad
+    state: present
+  when:
+    - nomad_install_package
+- name: Create /etc/nomad.d
+  ansible.builtin.file:
+    group: nomad
+    mode: "0750"
+    owner: nomad
+    path: /etc/nomad
+    state: directory
+- name: Configure nomad server
+  ansible.builtin.template:
+    dest: /etc/nomad.d/nomad.hcl
+    group: nomad
+    mode: "0640"
+    owner: nomad
+    src: server.hcl.j2
+  notify:
+    - Restart nomad
+  when:
+    - nomad_server | bool
+- name: Configure nomad agent
+  ansible.builtin.template:
+    dest: /etc/nomad.d/nomad.hcl
+    group: nomad
+    mode: "0640"
+    owner: nomad
+    src: agent.hcl.j2
+  notify:
+    - Restart nomad
+  when:
+    - nomad_agent | bool
+- name: Start nomad
+  ansible.builtin.service:
+    enabled: true
+    name: nomad
+    state: started
+- name: Determine nomad leader
+  ansible.builtin.set_fact:
+    nomad_leader: "{{ ansible_facts['hostname'] }}"
+  run_once: true
+  when:
+    - nomad_server | bool
+- name: List server members
+  ansible.builtin.command:
+    cmd: nomad server members
+  changed_when: false
+  register: nomad_list_server_members
+  when:
+    - nomad_server | bool
+- name: Join nomad leader
+  ansible.builtin.command:
+    cmd: nomad server join {{ nomad_leader }}:4648
+  changed_when: true
+  register: nomad_join_nomad_leader
+  when:
+    - ansible_facts['hostname'] != nomad_server
+    - ansible_facts['hostname'] not in nomad_list_server_members.stdout

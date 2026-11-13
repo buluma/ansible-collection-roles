@@ -1,0 +1,30 @@
+---
+- name: configure-Solaris | Print the gateway for each host when defined
+  ansible.builtin.debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_facts['default_ipv4'].gateway }}
+  when: ansible_facts['default_ipv4'].gateway is defined
+- name: configure-Solaris | Display all variables/facts known for a host
+  ansible.builtin.debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
+- name: configure-Solaris | Show configured default become user
+  ansible.builtin.debug:
+    msg: "{{ lookup('config', 'DEFAULT_BECOME_USER') }}"
+- name: configure-Solaris | Print out role paths
+  ansible.builtin.debug:
+    msg: "These are the configured role paths: {{ lookup('config', 'DEFAULT_ROLES_PATH') }}"
+- name: configure-Solaris | Find retry files, skip if missing that key
+  ansible.builtin.find:
+    paths: "{{ lookup('config', 'RETRY_FILES_SAVE_PATH') | default(playbook_dir, True) }}"
+    patterns: "*.retry"
+- name: configure-Solaris | See the colors
+  ansible.builtin.debug:
+    msg: "{{ item }}"
+  loop: "{{ lookup('config', 'COLOR_OK', 'COLOR_CHANGED', 'COLOR_SKIP', wantlist=True) }}"
+- name: configure-Solaris | Show remote user and port for ssh connection
+  ansible.builtin.debug:
+    msg: "{{ q('config', 'remote_user', 'port', plugin_type='connection', plugin_name='ssh') }}"
+    on_missing: skip
+- name: configure-Solaris | Show remote_tmp setting for shell (sh) plugin
+  ansible.builtin.debug:
+    msg: "{{ q('config', 'remote_tmp', plugin_type='shell', plugin_name='sh') }}"

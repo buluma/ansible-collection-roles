@@ -4,5 +4,3 @@ roles:
   - name: buluma.buildtools
   - name: buluma.core_dependencies
   - name: buluma.epel
-  - name: buluma.python_pip
-collections:

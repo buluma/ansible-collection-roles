@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  namespace: buluma
+  role_name: perforce
+  author: buluma
+  description: Install and Configure Perforce on your systems.
+  company: ShadowNet
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - system
+dependencies: []

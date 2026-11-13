@@ -1,0 +1,57 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install haproxy
+  ansible.builtin.package:
+    name: haproxy
+    state: present
+- name: Create group
+  ansible.builtin.group:
+    name: haproxy
+    state: present
+    system: true
+- name: Create user
+  ansible.builtin.user:
+    name: haproxy
+    state: present
+    system: true
+- name: Configure software
+  ansible.builtin.template:
+    backup: true
+    dest: /etc/haproxy/haproxy.cfg
+    mode: "0640"
+    src: haproxy.cfg.j2
+  notify:
+    - Restart haproxy
+# Separator for the pre-commit handler parser.
+- name: Modify selinux settings
+  when:
+    - ansible_facts['selinux'].status is defined
+    - ansible_facts['selinux'].status == "enabled"
+  block:
+    - name: Add haproxy_stats_port to http_port_t selinux type
+      community.general.seport:
+        ports: "{{ haproxy_stats_port }}"
+        proto: tcp
+        setype: http_port_t
+        state: present
+      when:
+        - haproxy_stats_port is defined
+    - name: Allow haproxy to open any port
+      ansible.posix.seboolean:
+        name: haproxy_connect_any
+        persistent: true
+        state: true
+      notify:
+        - Reboot
+# Separator for the pre-commit handler parser.
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Start and enable haproxy
+  ansible.builtin.service:
+    enabled: true
+    name: haproxy
+    state: started

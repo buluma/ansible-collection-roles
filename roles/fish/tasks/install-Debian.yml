@@ -1,42 +1,42 @@
 ---
-- name: Debian | require fish >= 3 on Debian >= 10
+- name: install-Debian | Require fish >= 3 on Debian >= 10
   ansible.builtin.fail:
     msg: Only fish >= 3 is supported on Debian >= 10
   when:
-    - ansible_facts.distribution == 'Debian'
+    - ansible_facts['distribution'] == 'Debian'
     - fish_release_version is version('3', '<')
-    - ansible_facts.distribution_major_version is version('10', '>=')
+    - ansible_facts['distribution_major_version'] is version('10', '>=')
   tags:
     - fish
 
-- name: Debian | ensure dependencies are present.
+- name: install-Debian | Ensure dependencies are present.
   ansible.builtin.apt:
     name:
       - apt-transport-https
       - gnupg2
     state: present
 
-- name: Debian | add fish repository key
-  ansible.builtin.apt_key:
-    keyserver: "{{ _fish_apt_keyserver | default(omit) }}"
-    url: "{{ _fish_apt_key_url | default(omit) }}"
-    id: "{{ _fish_apt_key_id | default(omit) }}"
-    state: present
+- name: install-Debian | Add fish repository key
+  ansible.builtin.get_url:
+    url: "{{ _fish_apt_key_url | default('https://' + (_fish_apt_keyserver | default('keyserver.ubuntu.com')) + '/pks/lookup?op=get&search=0x' + (_fish_apt_key_id
+      | default(''))) }}"
+    dest: /etc/apt/trusted.gpg.d/fish.asc
+    mode: "0644"
   tags:
     - fish
 
-- name: Debian | add fish repository
+- name: install-Debian | Add fish repository
   ansible.builtin.apt_repository:
     filename: shells_fish_release_{{ fish_release_version }}
     repo: "{{ _fish_apt_repo_url }}"
   tags:
     - fish
 
-- name: Debian | install fish
+- name: install-Debian | Install fish
   ansible.builtin.apt:
     name: fish
     allow_unauthenticated: true
-    state: latest
+    state: present
     cache_valid_time: 600
   tags:
     - fish

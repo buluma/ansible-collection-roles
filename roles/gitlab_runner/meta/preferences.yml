@@ -1,0 +1,21 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      # Excludes 45: it ships Python 3.15.0b3, whose dataclasses module
+      # dropped _is_type, breaking ansible-core's AnsiballZ module wrapper.
+      # Excludes 44: packages.gitlab.com's runner repo config endpoint
+      # 404s for fedora/44 (200 for fedora/43); not yet published upstream.
+      - "43"
+  - name: Ubuntu
+    versions:
+      - all

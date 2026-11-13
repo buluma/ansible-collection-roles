@@ -1,23 +1,25 @@
-# [auditd](#auditd)
+# [Ansible role auditd](#ansible-role-auditd)
 
 Install and configure auditd on your system.
 
-|GitHub|GitLab|Quality|Downloads|Version|Issues|Pull Requests|
-|------|------|-------|---------|-------|------|-------------|
-|[![github](https://github.com/buluma/ansible-role-auditd/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-auditd/actions)|[![gitlab](https://gitlab.com/buluma/ansible-role-auditd/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-auditd)|[![quality](https://img.shields.io/ansible/quality/57876)](https://galaxy.ansible.com/buluma/auditd)|[![downloads](https://img.shields.io/ansible/role/d/57876)](https://galaxy.ansible.com/buluma/auditd)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/releases/)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/pulls/)|
+|GitHub|Issues|Pull Requests|Version|Downloads|
+|------|------|-------------|-------|---------|
+|[![github](https://github.com/buluma/ansible-role-auditd/actions/workflows/molecule.yml/badge.svg)](https://github.com/buluma/ansible-role-auditd/actions/workflows/molecule.yml)|[![Issues](https://img.shields.io/github/issues/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/issues/)|[![PullRequests](https://img.shields.io/github/issues-pr-closed-raw/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/pulls/)|[![Version](https://img.shields.io/github/release/buluma/ansible-role-auditd.svg)](https://github.com/buluma/ansible-role-auditd/releases/)|[![Ansible Role](https://img.shields.io/ansible/role/d/buluma/auditd)](https://galaxy.ansible.com/ui/standalone/roles/buluma/auditd/documentation)|
 
 ## [Example Playbook](#example-playbook)
 
-This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
+This example is taken from [`molecule/default/converge.yml`](https://github.com/buluma/ansible-role-auditd/blob/master/molecule/default/converge.yml) and is tested on each push, pull request and release.
+
 ```yaml
 ---
-- name: converge
+- name: Converge
   hosts: all
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
 
   roles:
     - role: buluma.auditd
+      auditd_start_service: false
       auditd_local_events: "no"
       auditd_rules:
         - file: /var/log/audit/
@@ -71,31 +73,64 @@ This example is taken from `molecule/default/converge.yml` and is tested on each
           keyname: privileged
 ```
 
-The machine needs to be prepared. In CI this is done using `molecule/default/prepare.yml`:
+The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-auditd/blob/master/molecule/default/prepare.yml):
+
 ```yaml
 ---
-- name: prepare
+- name: Prepare
   hosts: all
-  become: yes
-  gather_facts: no
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Install sudo if missing
+      ansible.builtin.raw: "{{ ansible_pkg_mgr | default('dnf') }} install -y sudo"
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Install python3 if missing
+      ansible.builtin.raw: >-
+        if [ -x /usr/bin/python3 ]; then exit 0; fi;
+        if command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y python3;
+        elif command -v dnf >/dev/null 2>&1; then dnf install -y python3;
+        elif command -v yum >/dev/null 2>&1; then yum install -y python3;
+        elif command -v zypper >/dev/null 2>&1; then zypper -n install python3;
+        else exit 1; fi
+      become: false
+      changed_when: false
+      failed_when: false
+
+    - name: Configure passwordless sudo
+      ansible.builtin.raw: >-
+        if ! grep -q '^%wheel ALL=(ALL) NOPASSWD: ALL' /etc/sudoers; then
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers;
+        fi;
+        visudo -cf /etc/sudoers
+      become: false
+      changed_when: false
+      failed_when: false
 
   roles:
     - role: buluma.bootstrap
 ```
 
+Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
 
 ## [Role Variables](#role-variables)
 
-The default values for the variables are set in `defaults/main.yml`:
+The default values for the variables are set in [`defaults/main.yml`](https://github.com/buluma/ansible-role-auditd/blob/master/defaults/main.yml):
+
 ```yaml
 ---
 # defaults file for auditd
 
+# Below variables are docuemented in the man page for auditd.conf
+# https://linux.die.net/man/5/auditd.conf
 auditd_buffer_size: 32768
 auditd_fail_mode: 1
 auditd_maximum_rate: 60
 auditd_enable_flag: 1
-
 auditd_local_events: "yes"
 auditd_write_logs: "yes"
 auditd_log_file: /var/log/audit/audit.log
@@ -110,7 +145,7 @@ auditd_disp_qos: lossy
 auditd_dispatcher: /sbin/audispd
 auditd_name_format: none
 auditd_max_log_file_action: rotate
-auditd_space_left: 75
+auditd_space_left: "75" # This can be a number ('25') or a percentage. ('25%')
 auditd_space_left_action: syslog
 auditd_verify_email: "yes"
 auditd_action_mail_acct: root
@@ -126,26 +161,33 @@ auditd_enable_krb5: "no"
 auditd_krb5_principal: auditd
 auditd_distribute_network: "no"
 
-auditd_manage_rules: yes
+# You can opt to manage the rules with this role or not.
+# Setting auditd_manage_rules to false will not manage the rules.
+auditd_manage_rules: true
 
+# Some rules require a specific architecture to be set.
 auditd_default_arch: b64
+
+# You can opt to start the auditd service or not.
+# Mostly useful in CI, to avoid starting the service.
+auditd_start_service: true
 ```
 
 ## [Requirements](#requirements)
 
-- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-auditd/blob/main/requirements.txt).
+- pip packages listed in [requirements.txt](https://github.com/buluma/ansible-role-auditd/blob/master/requirements.txt).
 
-## [Status of used roles](#status-of-requirements)
+## [State of used roles](#state-of-used-roles)
 
 The following roles are used to prepare a system. You can prepare your system in another way.
 
-| Requirement | GitHub | GitLab |
-|-------------|--------|--------|
-|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|[![Build Status GitLab ](https://gitlab.com/buluma/ansible-role-bootstrap/badges/master/pipeline.svg)](https://gitlab.com/buluma/ansible-role-bootstrap)|
+| Requirement | GitHub |
+|-------------|--------|
+|[buluma.bootstrap](https://galaxy.ansible.com/buluma/bootstrap)|[![Build Status GitHub](https://github.com/buluma/ansible-role-bootstrap/workflows/Ansible%20Molecule/badge.svg)](https://github.com/buluma/ansible-role-bootstrap/actions)|
 
 ## [Context](#context)
 
-This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
+This role is part of many compatible roles. Have a look at [the documentation of these roles](https://buluma.github.io/) for further information.
 
 Here is an overview of related roles:
 
@@ -157,38 +199,23 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|el|8|
-|debian|all|
-|fedora|all|
-|opensuse|all|
-|ubuntu|all|
+|[EL](https://hub.docker.com/r/buluma/docker-molecule-images)|10, 9|
+|[Debian](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
+|[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
+|[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.10, tests have been done to:
+The minimum version of Ansible required is 2.12, tests have been done on:
 
 - The previous version.
 - The current version.
 - The development version.
 
-## [Exceptions](#exceptions)
-
-Some roles can't run on a specific distribution or version. Here are some exceptions.
-
-| variation                 | reason                 |
-|---------------------------|------------------------|
-| alpine | auditd start-stop-daemon: /sbin/auditd does not exist |
-| amazonlinux:1 | /etc/init.d/auditd: line 32: /etc/init.d/functions: No such file or directory |
-
-
-If you find issues, please register them in [GitHub](https://github.com/buluma/ansible-role-auditd/issues)
-
-## [Changelog](#changelog)
-
-[Role History](https://github.com/buluma/ansible-role-auditd/blob/master/CHANGELOG.md)
+If you find issues, please register them on [GitHub](https://github.com/buluma/ansible-role-auditd/issues).
 
 ## [License](#license)
 
-Apache-2.0
+[Apache-2.0](https://github.com/buluma/ansible-role-auditd/blob/master/LICENSE).
 
 ## [Author Information](#author-information)
 
-[Michael Buluma](https://buluma.github.io/)
+[buluma](https://buluma.github.io/)

@@ -1,0 +1,28 @@
+---
+ca_consul_csr_cn: Consul
+ca_consul_csr_key_algo: rsa
+ca_consul_csr_key_size: "2048"
+ca_consul_csr_names_c: DE
+ca_consul_csr_names_l: The_Internet
+ca_consul_csr_names_o: Consul
+ca_consul_csr_names_ou: BY
+ca_consul_csr_names_st: Bayern
+ca_consul_expiry: 87600h
+cfssl_arch: amd64
+cfssl_bin_directory: /usr/local/bin
+cfssl_checksum_url: "https://github.com/cloudflare/cfssl/releases/download/v{{ cfssl_version }}/cfssl_{{ cfssl_version }}_checksums.txt"
+cfssl_group: root
+cfssl_os: linux
+cfssl_owner: root
+cfssl_version: "1.7.1"
+consul_ca_certificate_group: root
+consul_ca_certificate_owner: root
+consul_ca_conf_directory: "{{ '~/consul/ssl' | expanduser }}"
+consul_csr_cn: server.dc1.consul
+consul_csr_key_algo: rsa
+consul_csr_key_size: "2048"
+consul_csr_names_c: DE
+consul_csr_names_l: The_Internet
+consul_csr_names_o: Consul
+consul_csr_names_ou: BY
+consul_csr_names_st: Bayern

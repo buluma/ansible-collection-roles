@@ -1,0 +1,76 @@
+---
+# tasks file for types
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Show strings
+  ansible.builtin.debug:
+    msg: "{{ item }} is type {{ item | type_debug }}"
+  loop: "{{ types_strings }}"
+
+- name: Test strings
+  ansible.builtin.assert:
+    that:
+      - item is string
+    quiet: true
+  loop: "{{ types_strings }}"
+
+- name: Show integers
+  ansible.builtin.debug:
+    msg: "{{ item }} is type {{ item | type_debug }}"
+  loop: "{{ types_integers }}"
+
+- name: Test integers
+  ansible.builtin.assert:
+    that:
+      - item is number
+    quiet: true
+  loop: "{{ types_integers }}"
+
+- name: Show booleans
+  ansible.builtin.debug:
+    msg: "{{ item }} is type {{ item | type_debug }}"
+  loop: "{{ types_booleans }}"
+
+- name: Test booleans
+  ansible.builtin.assert:
+    that:
+      - item is boolean
+    quiet: true
+  loop: "{{ types_booleans }}"
+
+- name: Show floats
+  ansible.builtin.debug:
+    msg: "{{ item }} is type {{ item | type_debug }}"
+  loop: "{{ types_floats }}"
+
+- name: Test floats
+  ansible.builtin.assert:
+    that:
+      - item is float
+    quiet: true
+  loop: "{{ types_floats }}"
+
+- name: Show map
+  ansible.builtin.debug:
+    msg: "{{ types_map }} is type {{ types_map | type_debug }}"
+
+- name: Test map
+  ansible.builtin.assert:
+    that:
+      - types_map is mapping
+    quiet: true
+
+- name: Show list of lists
+  ansible.builtin.debug:
+    msg: "{{ types_lists }} is type {{ types_lists | type_debug }}"
+# - name: Test list of lists
+#   ansible.builtin.assert:
+#     that:
+#       - item is list
+#     quiet: true
+#   loop: "{{ types_lists }}"

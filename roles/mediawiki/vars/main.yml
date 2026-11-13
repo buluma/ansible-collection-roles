@@ -1,0 +1,58 @@
+---
+_mediawiki_destination:
+  Alpine: /var/www/{{ httpd_servername | default(ansible_facts['fqdn']) }}
+  Suse: /srv/www/htdocs
+  default: /var/www/html
+_mediawiki_owner:
+  Debian: www-data
+  Suse: wwwrun
+  default: apache
+_mediawiki_requirements:
+  Alpine:
+    - php-intl
+    - php-json
+    - php-mysqli
+    - php-mbstring
+    - php-xml
+  CentOS:
+    - php-intl
+    - php-json
+    - php-mbstring
+    - php-mysqlnd
+    - php-xml
+  Rocky:
+    - php-intl
+    - php-json
+    - php-mbstring
+    - php-mysqlnd
+    - php-xml
+  AlmaLinux:
+    - php-intl
+    - php-json
+    - php-mbstring
+    - php-mysqlnd
+    - php-xml
+  CentOS-7:
+    - php-intl
+    - php-json
+    - php-mbstring
+    - php-mysql
+    - php-xml
+  Fedora:
+    - php-intl
+    - php-json
+    - php-mbstring
+    - php-pdo_mysql
+    - php-xml
+  default:
+    - php-intl
+    - php-json
+    - php-mbstring
+    - php-xml
+    - php-mysql
+mediawiki_docroot: "{{ _mediawiki_destination[ansible_facts['os_family']] | default(_mediawiki_destination['default']) }}"
+mediawiki_group: "{{ _mediawiki_owner[ansible_facts['os_family']] | default(_mediawiki_owner['default']) }}"
+mediawiki_owner: "{{ _mediawiki_owner[ansible_facts['os_family']] | default(_mediawiki_owner['default']) }}"
+mediawiki_requirements: "{{ _mediawiki_requirements[ansible_facts['distribution'] ~ '-' ~ ansible_facts['distribution_major_version']] | default (_mediawiki_requirements[ansible_facts['distribution']]
+  | default(_mediawiki_requirements['default'])) }}"
+mediawiki_source: "https://releases.wikimedia.org/mediawiki/{{ mediawiki_major }}.{{ mediawiki_minor }}/mediawiki-{{ mediawiki_version }}.tar.gz"

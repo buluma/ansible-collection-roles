@@ -1,0 +1,74 @@
+---
+argument_specs:
+  main:
+    author: Robert de Bock
+    description: "Install Hashicorp Vault, either a package or a binary.\n"
+    options:
+      vault_data_directory:
+        default: /opt/vault
+        description: Where to store data. That's Raft data and TLS material.
+        type: str
+      vault_download_path:
+        default: /tmp/vault-{{ vault_version }}
+        description: When 'vault_installation_method' is set to 'binary', set the path where to (temporarily) download Vault.
+        type: str
+      vault_environment_settings:
+        default: []
+        description: You can place variables that Vault listens to in this list.
+        type: list
+      vault_group:
+        default: vault
+        description: When 'vault_installation_method' is set to 'binary', set the group Vault will run under. The group 'root' is not allowed.
+        type: str
+      vault_hardening_configure_selinux_apparmor:
+        default: true
+        description: Hardening advices to configure SELinux / AppArmor.
+        type: bool
+      vault_hardening_disable_core_dumps:
+        default: true
+        description: Hardening advices to disable core dumps.
+        type: bool
+      vault_hardening_disable_shell_command_history:
+        default: true
+        description: Hardening advices to disable shell command history.
+        type: bool
+      vault_hardening_disable_swap:
+        default: true
+        description: Hardening advices to disable swap.
+        type: bool
+      vault_installation_method:
+        choices:
+          - package
+          - binary
+        default: package
+        description: Select the way to intall Vault. Either 'package' or 'binary'.
+        type: str
+      vault_package_release:
+        default: "1"
+        description: For package installations, a 'release' is required. The package would for example be called 'vault-1.12.2-1'.
+        type: str
+      vault_path:
+        default: ""
+        description: When 'vault_installation_method' is set to 'binary', set the (base) path where to install Vault. This can be '' or '/opt' for example.
+        type: str
+      vault_type:
+        choices:
+          - oss
+          - ent
+          - hsm
+        default: oss
+        description: Select the type of Vault to install. Either 'oss', 'ent' or 'hsm'.
+        type: str
+      vault_user:
+        default: vault
+        description: When 'vault_installation_method' is set to 'binary', set the user Vault will run under. The user 'root' is not allowed.
+        type: str
+      vault_user_shell:
+        default: /bin/false
+        description: When 'vault_installation_method' is set to 'binary', set the shell for the vault_user.
+        type: str
+      vault_version:
+        default: 1.15.2
+        description: Set the version of the package to install.
+        type: str
+    short_description: Install Hashicorp Vault, either a package or a binary.

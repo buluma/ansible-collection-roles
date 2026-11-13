@@ -1,0 +1,13 @@
+---
+# vars file for benthos
+benthos_os: "{{ ansible_facts['system'] | lower }}"
+benthos_arch: "{{ benthos_arch_map[ansible_facts['architecture']] }}"
+benthos_platform: "{{ benthos_os }}_{{ benthos_arch }}"
+benthos_prefix: benthos_{{ benthos_ver }}_{{ benthos_platform }}
+benthos_archive: '{{ benthos_prefix }}.{{ benthos_archive_type | default("tar.gz") }}'
+benthos_url: "{{ benthos_mirror }}/v{{ benthos_ver }}/{{ benthos_archive }}"
+benthos_checksum: "{{ benthos_checksums[benthos_ver][benthos_platform] }}"
+benthos_tmp_archive: '{{ benthos_tmp_dir | default("/tmp") }}/{{ benthos_archive }}'
+benthos_install_dir: "{{ benthos_parent_install_dir }}/{{ benthos_prefix }}"
+benthos_exe: "{{ benthos_install_dir }}/benthos"
+benthos_link: "{{ benthos_parent_install_dir }}/bin/benthos"

@@ -1,0 +1,40 @@
+---
+- name: root-config | Deploy /etc/nginx/nginx.conf
+  ansible.builtin.template:
+    dest: /etc/nginx/nginx.conf
+    mode: "0644"
+    src: nginx.conf.j2
+  notify: Restart nginx
+- name: root-config | Deploy /etc/nginx/conf.d/default.conf
+  ansible.builtin.template:
+    dest: /etc/nginx/conf.d/default.conf
+    mode: "0644"
+    src: default.conf.j2
+  notify: Restart nginx
+- name: root-config | Deploy /etc/php-fpm.d/www.conf
+  ansible.builtin.file:
+    path: "{{ lemp_php_fpm_pool_path | default('/etc/php-fpm.d/www.conf') | dirname }}"
+    state: directory
+    mode: "0755"
+- name: root-config | Deploy PHP-FPM pool config
+  ansible.builtin.template:
+    dest: "{{ lemp_php_fpm_pool_path | default('/etc/php-fpm.d/www.conf') }}"
+    mode: "0644"
+    src: www.conf.j2
+  notify: Restart php-fpm
+- name: root-config | Create PHP-FPM log and cache directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ lemp_web_user }}"
+    group: "{{ lemp_web_user }}"
+    mode: "0755"
+  loop:
+    - /var/log/php-fpm
+    - /var/lib/php/wsdlcache
+    - "{{ lemp_php_session_directory }}"
+- name: root-config | Enable and start PHP-FPM
+  ansible.builtin.service:
+    enabled: true
+    name: "{{ lemp_php_fpm_service }}"
+    state: started

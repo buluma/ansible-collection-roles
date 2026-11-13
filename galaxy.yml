@@ -1,7 +1,7 @@
 ---
 namespace: buluma
 name: roles
-version: 2.0.4
+version: 3.0.0
 readme: README.md
 authors:
   - Michael Buluma <me@buluma.me.ke>
@@ -12,16 +12,30 @@ tags:
   - roles
   - ansible
 dependencies:
-  ansible.posix: "*"
-  community.crypto: "*"
-  community.general: "*"
-  community.mysql: "*"
-  community.postgresql: "*"
-  community.zabbix: "*"
-  f5networks.f5_modules: "*"
-  gluster.gluster: "*"
+  amazon.aws: ">=12.0.0"
+  ansible.mysql: ">=5.0.0"
+  ansible.netcommon: ">=8.0.0"
+  ansible.posix: ">=2.0.0"
+  ansible.utils: ">=6.0.0"
+  ansible.windows: ">=3.0.0"
+  community.aws: ">=12.0.0"
+  community.crypto: ">=3.0.0"
+  community.docker: ">=5.0.0"
+  community.general: ">=14.0.0"
+  community.postgresql: ">=5.0.0"
+  community.zabbix: ">=4.0.0"
+  containers.podman: ">=1.0.0"
+  f5networks.f5_modules: ">=1.0.0"
+  gluster.gluster: ">=1.0.0"
+  operator_sdk.util: ">=0.5.0"
 repository: https://github.com/buluma/ansible-collection-roles
 documentation: https://buluma.github.io/
 homepage: https://buluma.github.io/
-issues: http://github.com/buluma/ansible-collection-roles/issues
-build_ignore: []
+issues: https://github.com/buluma/ansible-collection-roles/issues
+build_ignore:
+  - '*.tar.gz'
+  - .github
+  - .gitignore
+  - .yamllint
+  - UPDATING.md
+  - UPDATING.sh

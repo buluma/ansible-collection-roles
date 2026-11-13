@@ -1,0 +1,15 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  # SQL Server on Linux has never officially supported Debian or Fedora,
+  # and only supports specific RHEL/Ubuntu releases. RHEL10 has no
+  # mssql-server-2022 repo published yet (confirmed 404), and Ubuntu only
+  # goes up to 22.04 (24.04+ unsupported) - restricting to what's
+  # actually available rather than leaving permanently-red platforms.
+  - name: EL
+    versions:
+      - "9"
+  - name: Ubuntu
+    versions:
+      - "22.04"

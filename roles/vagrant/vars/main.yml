@@ -1,0 +1,18 @@
+---
+# HashiCorp changed their release filename scheme starting with 2.4.x:
+# rpm went from vagrant_{version}_{arch}.rpm to vagrant-{version}-1.{arch}.rpm,
+# and deb from vagrant_{version}_{arch}.deb to vagrant_{version}-1_{arch}.deb.
+_vagrant_package:
+  apt: "{{ vagrant_release_url }}/vagrant_{{ vagrant_version }}-1_amd64.deb"
+  dnf: "{{ vagrant_release_url }}/vagrant-{{ vagrant_version }}-1.x86_64.rpm"
+  dnf5: "{{ vagrant_release_url }}/vagrant-{{ vagrant_version }}-1.x86_64.rpm"
+  src: "{{ vagrant_release_url }}/vagrant_{{ vagrant_version }}_linux_amd64.zip"
+  yum: "{{ vagrant_release_url }}/vagrant-{{ vagrant_version }}-1.x86_64.rpm"
+  zypper: "{{ vagrant_release_url }}/vagrant-{{ vagrant_version }}-1.x86_64.rpm"
+_vagrant_pip_packages:
+  Debian: []
+  default:
+    - python-vagrant
+vagrant_package: "{{ _vagrant_package[ansible_facts['pkg_mgr']] | default(_vagrant_package['src']) }}"
+vagrant_pip_packages: "{{ _vagrant_pip_packages[ansible_facts['os_family']] | default(_vagrant_pip_packages['default']) }}"
+vagrant_release_url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}"

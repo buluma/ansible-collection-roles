@@ -1,0 +1,43 @@
+---
+- name: apm-inject-install | Include APM host injection Debian install tasks
+  ansible.builtin.include_tasks: pkg-debian/install-apm-inject-latest.yml
+  when: not ansible_check_mode and ansible_facts['os_family'] == "Debian"
+
+- name: apm-inject-install | Include APM host injection RedHat install tasks
+  ansible.builtin.include_tasks: pkg-redhat/install-apm-inject-latest.yml
+  when: not ansible_check_mode and ansible_facts['os_family'] in ["RedHat", "Rocky", "AlmaLinux"]
+
+- name: apm-inject-install | Check if dd-host-install needs to run
+  ansible.builtin.command: dd-host-install --false-config-change --false-agent-restart --dry-run
+  register: agent_dd_host_install_cmd
+  changed_when: false
+  when: not ansible_check_mode and datadog_apm_instrumentation_enabled in ["all", "host"]
+  failed_when: agent_dd_host_install_cmd.rc >= 2
+
+- name: apm-inject-install | Run APM host injection setup script
+  ansible.builtin.command: dd-host-install --false-config-change --false-agent-restart
+  notify: Restart datadog-agent
+  when: not ansible_check_mode and datadog_apm_instrumentation_enabled in ["all", "host"] and agent_dd_host_install_cmd.rc == 1
+  changed_when: true
+
+- name: apm-inject-install | Check if dd-container-install needs to run
+  ansible.builtin.command: dd-container-install --dry-run
+  register: agent_dd_container_install_cmd
+  changed_when: false
+  when: not ansible_check_mode and datadog_apm_instrumentation_enabled in ["all", "docker"]
+  failed_when: agent_dd_container_install_cmd.rc >= 2
+
+- name: apm-inject-install | Create Docker APM injection config file
+  ansible.builtin.template:
+    src: apm-inject-docker-config.yaml.j2
+    dest: /etc/datadog-agent/inject/docker_config.yaml
+    mode: "0640"
+    owner: root
+    group: "{{ datadog_group }}"
+  when: datadog_apm_instrumentation_docker_config
+
+- name: apm-inject-install | Run APM host-docker injection (Docker) setup script
+  # this command will change /etc/docker/daemon.json and reload docker if changes are made.
+  ansible.builtin.command: dd-container-install
+  when: not ansible_check_mode and datadog_apm_instrumentation_enabled in ["all", "docker"] and agent_dd_container_install_cmd.rc == 1
+  changed_when: true

@@ -1,0 +1,115 @@
+---
+- name: setup_sonarqube | Check if SonarQube binary exists
+  ansible.builtin.stat:
+    path: "{{ sonar_daemon_dir }}/sonar.sh"
+  register: sonar_binary_stat
+
+- name: setup_sonarqube | Setup SonarQube
+  when: not sonar_binary_stat.stat.exists
+  block:
+    - name: setup_sonarqube | Download SonarQube binaries
+      ansible.builtin.get_url:
+        url: "{{ sonar_download_url }}"
+        dest: "/tmp/{{ __sonar_archive }}"
+        mode: "0644"
+      retries: 5
+      delay: 10
+
+    - name: setup_sonarqube | Ensure unzip is installed
+      ansible.builtin.package:
+        name: unzip
+        state: present
+
+    - name: setup_sonarqube | Expand SonarQube binaries
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ __sonar_archive }}"
+        dest: "{{ sonar_install_directory }}"
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        copy: false
+
+    - name: setup_sonarqube | Remove SonarQube archive
+      ansible.builtin.file:
+        path: "/tmp/{{ __sonar_archive }}"
+        state: absent
+
+    - name: setup_sonarqube | Collect the list of services to check if sonar.service exists
+      ansible.builtin.service_facts:
+
+    - name: setup_sonarqube | Stop service before upgrade
+      ansible.builtin.service:
+        name: sonar
+        state: stopped
+      when: '"sonar.service" in ansible_facts["services"]'
+      notify: Warn about post-upgrade steps
+
+    - name: setup_sonarqube | Ensure SonarQube files permissions
+      ansible.builtin.file:
+        path: "{{ sonar_install_directory }}"
+        state: directory
+        recurse: true
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        mode: "o-w"
+
+- name: setup_sonarqube | Ensure SonarQube as init script for service management
+  ansible.builtin.file:
+    src: "{{ sonar_daemon_dir }}/sonar.sh"
+    dest: /etc/init.d/sonar
+    state: link
+  when: "ansible_facts['service_mgr'] != 'systemd'"
+
+# - name: setup_sonarqube | copy SonarQube systemd unit file into place (for systemd systems)
+#   ansible.builtin.template:
+#     src: sonar.service.j2
+#     dest: /etc/systemd/system/sonar.service
+#     owner: root
+#     group: root
+#     mode: 0755
+#   register: systemd_service
+#   when: "ansible_facts['service_mgr'] == 'systemd'"
+#
+# - name: setup_sonarqube | force systemd to reread configs
+#   ansible.builtin.systemd:
+#     daemon_reload: yes
+#   tags: skip_ansible_lint
+#   when: systemd_service is defined and systemd_service.changed
+#   failed_when: false
+
+# service latest
+- name: setup_sonarqube | Create service for SonarQube
+  ansible.builtin.import_role:
+    name: buluma.roles.service
+  vars:
+    service_list:
+      - name: sonar
+        description: "SonarQube"
+        start_command: "{{ sonar_daemon_dir }}/sonar.sh console"
+        working_directory: "{{ sonar_daemon_dir }}"
+        user_name: "{{ sonar_user }}"
+        group_name: "{{ sonar_group }}"
+
+- name: setup_sonarqube | Force systemd to reread configs
+  ansible.builtin.systemd:
+    daemon_reload: true
+  tags: skip_ansible_lint
+  when: systemd_service is defined and systemd_service.changed
+  failed_when: false
+# service end
+
+- name: setup_sonarqube | Ensure SonarQube is running and set to start on boot
+  ansible.builtin.service:
+    name: sonar
+    state: started
+    enabled: true
+
+- name: setup_sonarqube | Ensure SonarQube configuration
+  ansible.builtin.template:
+    src: "sonar.properties.j2"
+    dest: "{{ sonar_conf_dir }}/sonar.properties"
+    owner: "{{ sonar_user }}"
+    group: "{{ sonar_group }}"
+    mode: "u=rw,g=,o="
+  no_log: true
+  notify:
+    - "Restart SonarQube service"

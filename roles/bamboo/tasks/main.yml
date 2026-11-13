@@ -1,0 +1,11 @@
+---
+# tasks file for bamboo
+
+- name: Import java task
+  ansible.builtin.import_tasks: java.yml
+
+- name: Import bamboo task
+  ansible.builtin.import_tasks: bamboo.yml
+
+- name: Import facts task
+  ansible.builtin.import_tasks: facts.yml

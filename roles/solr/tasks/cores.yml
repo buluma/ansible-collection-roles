@@ -1,0 +1,78 @@
+---
+- name: cores | Check current list of Solr cores.
+  ansible.builtin.uri:
+    url: http://{{ solr_connect_host }}:{{ solr_port }}/solr/admin/cores
+    return_content: true
+  register: solr_cores_current
+  check_mode: false
+
+- name: cores | Ensure solr lib directory exists.
+  ansible.builtin.file:
+    path: "{{ solr_home }}/lib"
+    state: directory
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    mode: "0755"
+
+# Solr's default configset wires up an update-script.js processor via
+# the JVM's javax.script ScriptEngine, but the JDK dropped its
+# built-in Nashorn engine in 15+. Installing the standalone artifact
+# into solr_home/lib restores it without needing the mvn CLI - the
+# maven_artifact module downloads directly from the repository (it
+# does need lxml on the target, though).
+- name: cores | Ensure lxml is installed for maven_artifact.
+  ansible.builtin.package:
+    name: python3-lxml
+    state: present
+
+- name: cores | Install the Nashorn JS engine for update-script.js.
+  community.general.maven_artifact:
+    group_id: org.openjdk.nashorn
+    artifact_id: nashorn-core
+    version: "{{ solr_nashorn_core_version }}"
+    dest: "{{ solr_home }}/lib/nashorn-core-{{ solr_nashorn_core_version }}.jar"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    mode: "0644"
+  notify: Restart solr
+
+# Solr's already running by this point (started earlier in main.yml),
+# and it only scans solr_home/lib for jars at startup, so the Nashorn
+# jar above needs a restart to take effect before core creation.
+- name: cores | Flush handlers so a pending Solr restart applies now.
+  ansible.builtin.meta: flush_handlers
+
+- name: cores | Wait for Solr to come back up after a restart.
+  ansible.builtin.uri:
+    url: http://{{ solr_connect_host }}:{{ solr_port }}/solr/admin/cores
+  register: solr_restart_check
+  until: solr_restart_check.status == 200
+  retries: 30
+  delay: 2
+
+- name: cores | Ensure Solr conf directories exist.
+  ansible.builtin.file:
+    path: "{{ solr_home }}/data/{{ item }}/conf"
+    state: directory
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    recurse: true
+    mode: "0755"
+  when: "item not in solr_cores_current.content"
+  with_items: "{{ solr_cores }}"
+
+- name: cores | Ensure core configuration directories exist.
+  ansible.builtin.command: "cp -r {{ solr_default_core_path }} {{ solr_home }}/data/{{ item }}/"
+  changed_when: true
+  when: "item not in solr_cores_current.content"
+  with_items: "{{ solr_cores }}"
+  become: true
+  become_user: "{{ solr_user }}"
+
+- name: cores | Create configured cores.
+  ansible.builtin.command: "{{ solr_install_path }}/bin/solr create -c {{ item }} -p {{ solr_port }}"
+  changed_when: true
+  when: "item not in solr_cores_current.content"
+  with_items: "{{ solr_cores }}"
+  become: true
+  become_user: "{{ solr_user }}"

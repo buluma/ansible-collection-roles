@@ -1,0 +1,60 @@
+---
+- name: Install unarchivedeps
+  ansible.builtin.include_role:
+    name: andrewrothstein.unarchivedeps
+- name: Resolve platform specific vars
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_release'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}.yml"
+        - "{{ ansible_facts['os_family'] }}.yml"
+      skip: true
+      paths:
+        - "{{ role_path }}/vars"
+- name: Check for installation at {{ benthos_exe }}
+  become: true
+  ansible.builtin.stat:
+    path: "{{ benthos_exe }}"
+  changed_when: false
+  register: benthos_binary
+- name: Install benthos if required
+  when: not benthos_binary.stat.exists
+  block:
+    - name: Downloading {{ benthos_url }}
+      become: true
+      become_user: root
+      ansible.builtin.get_url:
+        url: "{{ benthos_url }}"
+        dest: "{{ benthos_tmp_archive }}"
+        mode: "644"
+        checksum: "{{ benthos_checksum }}"
+    - name: Mkdir {{ benthos_install_dir }}
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: "{{ benthos_install_dir }}"
+        state: directory
+        mode: "755"
+    - name: Unarchive {{ benthos_tmp_archive }}
+      become: true
+      become_user: root
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: "{{ benthos_tmp_archive }}"
+        dest: "{{ benthos_install_dir }}"
+        creates: "{{ benthos_exe }}"
+  always:
+    - name: Rm -rf {{ benthos_tmp_archive }}
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: "{{ benthos_tmp_archive }}"
+        state: absent
+- name: Linking {{ benthos_link }}
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    src: "{{ benthos_exe }}"
+    dest: "{{ benthos_link }}"
+    state: link

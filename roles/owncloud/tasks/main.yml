@@ -1,0 +1,122 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+
+# Not folded into assert.yml: that file is imported with delegate_to:
+# localhost, but architecture is a per-host fact - checking it there would
+# validate the controller's architecture, not this host's.
+- name: Assert | Test if ocis_version is a supported release
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ocis_version in _ocis_download
+    fail_msg: "ocis_version '{{ ocis_version }}' has no matching entry in vars/main.yml's _ocis_download."
+
+- name: Assert | Test if this host's architecture is supported
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ansible_facts['architecture'] in _ocis_architecture_map
+    fail_msg: "No oCIS build is mapped for architecture '{{ ansible_facts['architecture'] }}' in vars/main.yml's _ocis_architecture_map."
+
+- name: Groupadd
+  ansible.builtin.group:
+    name: "{{ ocis_group }}"
+    state: present
+    system: true
+
+- name: Useradd
+  ansible.builtin.user:
+    name: "{{ ocis_owner }}"
+    group: "{{ ocis_group }}"
+    home: "{{ ocis_data_path }}"
+    create_home: false
+    shell: "/usr/sbin/nologin"
+    state: present
+    system: true
+
+- name: Prepare directories
+  ansible.builtin.file:
+    dest: "{{ item }}"
+    owner: "{{ ocis_owner }}"
+    group: "{{ ocis_group }}"
+    mode: "0750"
+    state: directory
+  loop:
+    - "{{ ocis_config_dir }}"
+    - "{{ ocis_data_path }}"
+
+- name: Download oCIS binary
+  ansible.builtin.get_url:
+    url: "{{ ocis_download.url }}"
+    dest: "{{ ocis_binary_path }}"
+    checksum: "{{ ocis_download.checksum }}"
+    owner: root
+    group: root
+    mode: "0755"
+  notify:
+    - Ocis | systemctl restart ocis
+
+- name: Place ocis.env
+  ansible.builtin.template:
+    dest: "{{ ocis_config_dir }}/ocis.env"
+    src: ocis.env.j2
+    owner: "{{ ocis_owner }}"
+    group: "{{ ocis_group }}"
+    mode: "0640"
+  notify:
+    - Ocis | systemctl restart ocis
+
+- name: Initialize oCIS configuration
+  # Runs as root, same as ownCloud's own documented systemd deployment
+  # (docs/ocis/deployment/systemd.md in owncloud/ocis).
+  #
+  # `ocis init`'s --insecure flag defaults to "ask" (see
+  # ocis/pkg/command/init.go upstream): left unset, it blocks forever
+  # reading a yes/no prompt from stdin (its retry loop doesn't even
+  # break on EOF). Setting OCIS_INSECURE here - the same env var the
+  # flag itself reads - skips the prompt entirely. async/poll is a
+  # hard timeout on top: if this ever hangs again it fails fast
+  # instead of burning the whole job.
+  ansible.builtin.command:
+    cmd: "{{ ocis_binary_path }} init --config-path {{ ocis_config_dir }}"
+    creates: "{{ ocis_config_dir }}/ocis.yaml"
+  environment:
+    OCIS_INSECURE: "{{ ocis_insecure | lower }}"
+    IDM_ADMIN_PASSWORD: "{{ ocis_admin_pass }}"
+  async: 120
+  poll: 5
+  no_log: true
+
+- name: Fix ownership of oCIS config after init
+  # 'ocis init' just ran as root and wrote ocis.yaml as root:root 0600 -
+  # give it back to the ocis user/group so the systemd service (User=ocis)
+  # can actually read it. Leaves the file modes 'ocis init' set alone.
+  ansible.builtin.file:
+    dest: "{{ ocis_config_dir }}"
+    owner: "{{ ocis_owner }}"
+    group: "{{ ocis_group }}"
+    recurse: true
+    state: directory
+
+- name: Place ocis.service
+  ansible.builtin.template:
+    dest: /etc/systemd/system/ocis.service
+    src: ocis.service.j2
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Ocis | systemctl daemon-reload
+    - Ocis | systemctl restart ocis
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Systemctl start ocis
+  ansible.builtin.service:
+    name: ocis
+    state: started
+    enabled: true

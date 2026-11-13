@@ -1,0 +1,7 @@
+---
+sentinel_collector_magic: SUSE Linux Enterprise Server
+syslog_conf_path: /etc/rsyslog.d
+syslog_implementation: rsyslog
+syslog_package_names:
+  - rsyslog
+syslog_service_name: rsyslog

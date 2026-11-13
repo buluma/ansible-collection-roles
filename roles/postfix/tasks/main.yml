@@ -1,0 +1,198 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Pre-configure debian systems
+  ansible.builtin.debconf:
+    name: postfix
+    question: postfix/main_mailer_type
+    value: No configuration
+    vtype: string
+  when:
+    - ansible_facts['os_family'] == "Debian"
+- name: Install postfix
+  ansible.builtin.package:
+    name: postfix
+    state: present
+- name: Install postfix-mysql
+  ansible.builtin.package:
+    name: postfix-mysql
+    state: present
+  when:
+    - (postfix_virtual_mailbox_maps is defined and "'mysql' in postfix_virtual_mailbox_maps) or (postfix_virtual_mailbox_domains is defined and 'mysql' in
+      postfix_virtual_mailbox_domains) or (postix_virtual_alias_maps is defined and 'mysql' in postix_virtual_alias_maps")
+- name: Configure postfix (transport_maps)
+  ansible.builtin.template:
+    dest: /etc/postfix/transport
+    mode: "0644"
+    src: "{{ postfix_transport_maps_template }}"
+  notify:
+    - Validate configuration
+    - Rebuild transport_maps database
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_transport_maps_template is defined
+- name: Configure postfix (header_checks)
+  ansible.builtin.template:
+    dest: /etc/postfix/header_checks
+    mode: "0644"
+    src: "{{ postfix_header_checks_template }}"
+  notify:
+    - Validate configuration
+    - Reload postfix
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_header_checks_template is defined
+- name: Setting values for main.cf (1/2)
+  ansible.builtin.set_fact:
+    _postfix_smtpd_recipient_restrictions_check_recipient_access: "{% if postfix_recipient_access is defined %}\ncheck_recipient_access hash:{{ postfix_recipient_access_path
+      }},\n{% endif %}\n"
+    _postfix_smtpd_sender_restrictions_check_sender_access: "{% if postfix_sender_access is defined %}\ncheck_sender_access hash:{{ postfix_sender_access_path }},\n\
+      {% endif %}\n"
+- name: Setting values for main.cf (2/2)
+  ansible.builtin.set_fact:
+    _postfix_mydestination: "{% if postfix_mydestination is defined %} {% if postfix_mydestination is string %} {{ postfix_mydestination }} {% elif postfix_mydestination
+      is iterable and (postfix_mydestination is not string and postfix_mydestination is not mapping) %} {% for domain in postfix_mydestination %}{{ domain }}{% if
+      not loop.last %}, {% endif %}{% endfor %} {% endif %} {% else %} <None> {% endif %}"
+    _postfix_mynetworks: "{% if postfix_mynetworks is string %}{{ postfix_mynetworks }} {% elif postfix_mynetworks is iterable and (postfix_mynetworks is not string
+      and postfix_mynetworks is not mapping) %} {% for network in postfix_mynetworks %}{{ network }}{% if not loop.last %}, {% endif %}{% endfor %} {% endif %}"
+    _postfix_relay_domains: "{% if postfix_relay_domains is defined %} {% if postfix_relay_domains is string %} {{ postfix_relay_domains }} {% elif postfix_relay_domains
+      is iterable and (postfix_relay_domains is not string and postfix_relay_domains is not mapping) %} {% for domain in postfix_relay_domains %}{{ domain }}{% if
+      not loop.last %}, {% endif %}{% endfor %} {% endif %} {% else %} <None> {% endif %}"
+    _postfix_smtpd_recipient_restrictions: "{% if postfix_smtpd_recipient_restrictions is defined %} {% if postfix_smtpd_recipient_restrictions is string %} {{ _postfix_smtpd_recipient_restrictions_check_recipient_access
+      | trim }} {{ postfix_smtpd_recipient_restrictions }} {% elif postfix_smtpd_recipient_restrictions is iterable and (postfix_smtpd_recipient_restrictions is not
+      string and postfix_smtpd_recipient_restrictions is not mapping) %} {{ _postfix_smtpd_recipient_restrictions_check_recipient_access | trim }} {% for domain in
+      postfix_smtpd_recipient_restrictions %}{{ domain }}{% if not loop.last %}, {% endif %}{% endfor %} {% endif %} {% endif %}"
+    _postfix_smtpd_sender_restrictions: "{% if postfix_smtpd_sender_restrictions is defined %} {% if postfix_smtpd_sender_restrictions is string %} {{ _postfix_smtpd_sender_restrictions_check_sender_access
+      | trim }} {{ postfix_smtpd_sender_restrictions }} {% elif postfix_smtpd_sender_restrictions is iterable and (postfix_smtpd_sender_restrictions is not string
+      and postfix_smtpd_sender_restrictions is not mapping) %} {{ _postfix_smtpd_sender_restrictions_check_sender_access | trim }} {% for domain in postfix_smtpd_sender_restrictions
+      %}{{ domain }}{% if not loop.last %}, {% endif %}{% endfor %} {% endif %} {% endif %}"
+    _postfix_virtual_alias_domains: "{% if postfix_virtual_alias_domains is defined %} {% if postfix_virtual_alias_domains is string %} {{ postfix_virtual_alias_domains
+      }} {% elif postfix_virtual_alias_domains is iterable and (postfix_virtual_alias_domains is not string and postfix_virtual_alias_domains is not mapping) %} {%
+      for domain in postfix_virtual_alias_domains %}{{ domain }}{% if not loop.last %}, {% endif %}{% endfor %} {% endif %} {% else %} <None> {% endif %}"
+    _postfix_virtual_mailbox_domains: "{% if postfix_virtual_mailbox_domains is defined %} {% if postfix_virtual_mailbox_domains is string %} {{ postfix_virtual_mailbox_domains
+      }} {% elif postfix_virtual_mailbox_domains is iterable and (postfix_virtual_mailbox_domains is not string and postfix_virtual_mailbox_domains is not mapping)
+      %} {% for domain in postfix_virtual_mailbox_domains %}{{ domain }}{% if not loop.last %}, {% endif %}{% endfor %} {% endif %} {% else %} <None> {% endif %}"
+- name: Configure postfix (main.cf)
+  ansible.builtin.template:
+    dest: /etc/postfix/main.cf
+    mode: "0644"
+    src: main.cf.j2
+    validate: postconf -d -c %s
+  notify:
+    - Validate configuration
+    - Restart postfix
+# Separator for the pre-commit handler parser.
+- name: Configure postfix (master.cf)
+  ansible.builtin.template:
+    dest: /etc/postfix/master.cf
+    mode: "0644"
+    src: master.cf.j2
+    validate: postconf -d -c %s
+  notify:
+    - Validate configuration
+    - Restart postfix
+# Separator for the pre-commit handler parser.
+- name: Creates cert/key directory
+  ansible.builtin.file:
+    mode: "0700"
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ postfix_smtpd_tls_cert_file | dirname }}"
+    - "{{ postfix_smtpd_tls_key_file | dirname }}"
+  when:
+    - postfix_smtpd_tls_cert_file is defined
+    - postfix_smtpd_tls_key_file is defined
+    - postfix_smtpd_tls_cert_file_source is defined
+    - postfix_smtpd_tls_key_file_source is defined
+- name: Deploy Postfix TLS server certificate
+  ansible.builtin.copy:
+    dest: "{{ postfix_smtpd_tls_cert_file }}"
+    mode: "0600"
+    src: "{{ postfix_smtpd_tls_cert_file_source }}"
+  notify:
+    - Reload postfix
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_smtpd_tls_cert_file_source is defined
+- name: Deploy Postfix TLS server key
+  ansible.builtin.copy:
+    dest: "{{ postfix_smtpd_tls_key_file }}"
+    mode: "0600"
+    src: "{{ postfix_smtpd_tls_key_file_source }}"
+  notify:
+    - Reload postfix
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_smtpd_tls_key_file_source is defined
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Configure aliases
+  ansible.builtin.lineinfile:
+    create: true
+    line: "{{ item.name }}: {{ item.destination }}"
+    mode: "0644"
+    path: "{{ postfix_alias_path }}"
+    regexp: "^{{ item.name }}:"
+  loop: "{{ postfix_aliases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify:
+    - Rebuild alias database
+    - Reload postfix
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_aliases is defined
+- name: Configure sender_access
+  ansible.builtin.lineinfile:
+    create: true
+    line: "{{ item.domain }} {{ item.action }}"
+    mode: "0644"
+    path: "{{ postfix_sender_access_path }}"
+    regexp: ^{{ item.domain }}
+  loop: "{{ postfix_sender_access }}"
+  loop_control:
+    label: "{{ item.domain }}"
+  notify:
+    - Rebuild sender_access database
+    - Reload postfix
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_sender_access is defined
+- name: Configure recipient_access
+  ansible.builtin.lineinfile:
+    create: true
+    line: "{{ item.domain }} {{ item.action }}"
+    mode: "0644"
+    path: "{{ postfix_recipient_access_path }}"
+    regexp: ^{{ item.domain }}
+  loop: "{{ postfix_recipient_access }}"
+  loop_control:
+    label: "{{ item.domain }}"
+  notify:
+    - Validate configuration
+    - Rebuild recipient_access database
+    - Reload postfix
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_recipient_access is defined
+- name: Place sasl_password_map
+  ansible.builtin.copy:
+    content: "{{ postfix_smtp_sasl_password_map_content }}"
+    dest: "{{ postfix_smtp_sasl_password_map }}"
+    mode: "0600"
+  notify:
+    - Rebuild sasl_password_map database
+  # Separator for the pre-commit handler parser.
+  when:
+    - postfix_smtp_sasl_password_map is defined and postfix_smtp_sasl_password_map != ""
+- name: Flush handlers again
+  ansible.builtin.meta: flush_handlers
+- name: Start and enable postfix
+  ansible.builtin.service:
+    enabled: true
+    name: "{{ postfix_service }}"
+    state: started

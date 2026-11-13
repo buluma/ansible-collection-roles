@@ -1,0 +1,27 @@
+---
+- name: rsyslog | Install rsyslog
+  ansible.builtin.package:
+    name: "{{ syslog_package_names }}"
+    state: present
+  become: true
+
+- name: rsyslog | Ensure spool directory exists
+  ansible.builtin.file:
+    path: /var/spool/rsyslog
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: rsyslog | Deploy rsyslog config for clients
+  ansible.builtin.template:
+    src: rsyslog-remote.conf.j2
+    dest: "{{ syslog_conf_path }}/sentinel.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify:
+    - Restart rsyslog
+    - Send magic message

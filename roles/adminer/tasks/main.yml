@@ -2,7 +2,7 @@
 # tasks file for adminer
 # Install Adminer.
 - name: Ensure Adminer directory exists.
-  ansible.builtin.file:  # noqa 208
+  ansible.builtin.file: # noqa risky-file-permissions
     path: "{{ adminer_install_dir }}"
     state: directory
     recurse: true
@@ -18,15 +18,15 @@
   ansible.builtin.get_url:
     url: "{{ adminer_download_url }}"
     dest: "{{ adminer_install_dir }}/{{ adminer_install_filename }}"
-    force: "{{ (adminer_is_old.matched == 1) | ternary('true','false') }}"
-    mode: 0644
+    force: "{{ (adminer_is_old.matched == 1) | ternary('true', 'false') }}"
+    mode: "0644"
     timeout: 60
 
 - name: Ensure paths to place symlinks exist
   ansible.builtin.file:
     state: directory
     path: "{{ item }}"
-    mode: 0755
+    mode: "0755"
   with_items:
     - "{{ adminer_symlink_dirs }}"
 
@@ -35,7 +35,7 @@
     src: "{{ adminer_install_dir }}/adminer.php"
     dest: "{{ item }}/adminer.php"
     state: link
-    mode: 0644
+    mode: "0644"
   with_items: "{{ adminer_symlink_dirs }}"
 
 # Install Adminer theme.
@@ -44,7 +44,7 @@
     url: https://raw.githubusercontent.com/vrana/adminer/master/designs/{{ adminer_theme }}/adminer.css
     dest: "{{ adminer_install_dir }}"
     force: "{{ (adminer_is_old.matched == 1) | adminer_force_download }}"
-    mode: 0644
+    mode: "0644"
     timeout: 60
   when: adminer_theme is defined and adminer_theme != null
 
@@ -53,7 +53,7 @@
     src: "{{ adminer_install_dir }}/adminer.css"
     dest: "{{ item }}/adminer.css"
     state: link
-    mode: 0644
+    mode: "0644"
   with_items: "{{ adminer_symlink_dirs }}"
   when: adminer_theme is defined and adminer_theme != null
 
@@ -62,20 +62,20 @@
   ansible.builtin.set_fact:
     apache_extra_conf_dir: >-
       {{ 'conf-enabled' if apache_vhosts_version == '2.4' else 'conf.d' }}
-  when: adminer_add_apache_config and ansible_os_family == 'Debian'
+  when: adminer_add_apache_config and ansible_facts['os_family'] == 'Debian'
 
 - name: Add Apache configuration file for Adminer (Debian).
   ansible.builtin.template:
     src: adminer.conf.j2
     dest: "{{ apache_conf_path }}/{{ apache_extra_conf_dir }}/adminer.conf"
-    mode: 0644
-  when: adminer_add_apache_config and ansible_os_family == 'Debian'
-  notify: restart apache
+    mode: "0644"
+  when: adminer_add_apache_config and ansible_facts['os_family'] == 'Debian'
+  notify: Restart apache
 
 - name: Add Apache configuration file for Adminer (RedHat).
   ansible.builtin.template:
     src: adminer.conf.j2
     dest: "{{ apache_conf_path }}/adminer.conf"
-    mode: 0644
-  when: adminer_add_apache_config and ansible_os_family == 'RedHat'
-  notify: restart apache
+    mode: "0644"
+  when: adminer_add_apache_config and ansible_facts['os_family'] == 'RedHat'
+  notify: Restart apache

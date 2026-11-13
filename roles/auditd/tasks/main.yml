@@ -2,7 +2,8 @@
 # tasks file for auditd
 
 - name: Import assert.yml
-  ansible.builtin.import_tasks: assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
   run_once: true
   delegate_to: localhost
 
@@ -38,10 +39,12 @@
   notify:
     - Run augenrules
   when:
-    - auditd_manage_rules | bool
+    - auditd_manage_rules
 
 - name: Start and enable auditd
   ansible.builtin.service:
     name: "{{ auditd_service }}"
     state: started
     enabled: true
+  when:
+    - auditd_start_service

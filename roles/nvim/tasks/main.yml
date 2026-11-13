@@ -1,0 +1,63 @@
+---
+- name: Debian - Ensure FUSE installed for using appimages.
+  ansible.builtin.apt:
+    name: [libfuse2]
+    state: present
+  when: ansible_facts['os_family'] == "Debian"
+  # ubuntu -- python3-neovim
+- name: Fedora - Ensure FUSE installed for using appimages.
+  ansible.builtin.dnf:
+    name: [fuse, fuse-libs]
+    state: present
+  when: ansible_facts['os_family'] == "RedHat"
+# Suse
+# To install the Python modules:
+# sudo zypper in python-neovim python3-neovim
+- name: Ensure NVIM is installed from packages.
+  # neovim python3-neovim - fedora
+  # You can also get nightly builds of git master from the Copr automated build system:
+  # dnf copr enable agriffis/neovim-nightly
+  # dnf install -y neovim python3-neovim
+
+  ansible.builtin.package:
+    name: neovim
+    state: present
+- name: Verify nvim exists
+  ansible.builtin.command: nvim -h
+  register: result
+  changed_when: result is not succeeded
+- name: Check nvim result
+  ansible.builtin.debug:
+    var: result
+    verbosity: 2
+# - name: "Latest nvim installed."
+#   ansible.builtin.include_tasks: install-neovim.yml
+#   when: neovim | bool
+#
+- name: Latest tree-sitter installed.
+  # - name: "Fedora - Ensure FUSE installed for using appimages."
+  #   ansible.builtin.dnf:
+  #     name:
+  #       - fuse
+  #       - fuse-libs
+  #     state: latest
+  #   when: ansible_facts['os_family'] == "RedHat"
+
+  ansible.builtin.include_tasks: install-treesitter.yml
+  when: treesitter | bool
+#
+# - name: "Nightly neovim installed as 'nnvim'."
+#   ansible.builtin.get_url:
+#     url: "{{ nvim_nightly_url }}"
+#     dest: /usr/local/bin/nnvim
+#     owner: root
+#     group: root
+#     mode: '0755'
+#   when: neovim_nightly | bool
+#
+# - name: "Neovim PDE (Personal Development Environment)"
+#   ansible.builtin.include_tasks: neovim-PDE.yml
+#   when: neovim_pde | bool
+#
+# ...
+# # vim : filetype=yaml.ansible :

@@ -1,0 +1,9 @@
+---
+- name: Ocis | systemctl daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Ocis | systemctl restart ocis
+  ansible.builtin.service:
+    name: ocis
+    state: restarted

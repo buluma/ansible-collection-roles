@@ -1,0 +1,74 @@
+---
+# tasks file for roundcubemail
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ roundcubemail_requirements }}"
+    state: present
+
+- name: Install roundcubemail
+  ansible.builtin.package:
+    name: "{{ roundcubemail_packages }}"
+    state: present
+  notify:
+    - Import mysql table layout
+
+- name: Create roundcubemail_conf_dir
+  ansible.builtin.file:
+    path: "{{ roundcubemail_conf_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Configure roundcubemail
+  ansible.builtin.template:
+    src: "{{ roundcubemail_file }}.j2"
+    dest: "{{ roundcubemail_conf_dir }}/{{ roundcubemail_file }}"
+    owner: "{{ roundcubemail_owner }}"
+    group: "{{ roundcubemail_group }}"
+    mode: "{{ roundcubemail_mode }}"
+
+- name: Configure selinux settings
+  when:
+    - ansible_facts['selinux'] is defined
+    - ansible_facts['selinux'].status == "enabled"
+  block:
+    - name: Place selinux type enforcement
+      ansible.builtin.copy:
+        src: my-roundcubemail.te
+        dest: /etc/my-roundcubemail.te
+        mode: "0644"
+      notify:
+        - Create roundcubemail selinux mod
+        - Create roundcubemail selinux pp
+        - Load roundcubemail selinux pp
+
+    - name: Enable selinux boolean httpd_setrlimit
+      ansible.posix.seboolean:
+        name: "{{ item }}"
+        state: true
+        persistent: true
+      loop:
+        - httpd_setrlimit
+        - daemons_enable_cluster_mode
+
+- name: Check for public_html webroot
+  ansible.builtin.stat:
+    path: "{{ roundcubemail_install_directory }}/public_html/index.php"
+  register: roundcubemail_public_html_stat
+
+- name: Set roundcubemail webroot
+  ansible.builtin.set_fact:
+    roundcubemail_webroot: "{{ roundcubemail_install_directory ~ ('/public_html' if roundcubemail_public_html_stat.stat.exists else '') }}"
+
+- name: Configure httpd
+  ansible.builtin.template:
+    src: roundcube.conf.j2
+    dest: "{{ roundcubemail_httpd_configuration }}"
+    mode: "0644"
+  notify:
+    - Restart httpd

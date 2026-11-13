@@ -1,0 +1,4 @@
+---
+exceptions:
+  - reason: "Not idempotent on: download and install software"
+    variation: ubuntu:xenial

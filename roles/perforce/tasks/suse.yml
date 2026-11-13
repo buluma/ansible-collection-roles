@@ -1,0 +1,37 @@
+---
+- name: suse | Rpm --import
+  vars:
+    ansible_python_interpreter: "python3"
+  ansible.builtin.rpm_key:
+    key: "{{ item.key }}"
+    fingerprint: "{{ item.fingerprint }}"
+    state: "{{ item.state }}"
+  loop: "{{ _rpm_key }}"
+  register: result
+  until: result is succeeded
+
+- name: suse | Yum-config-manager --add-repo
+  ansible.builtin.yum_repository:
+    file: "{{ item.file }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    enabled: "{{ item.enabled }}"
+    priority: "{{ item.priority }}"
+    module_hotfixes: "{{ item.module_hotfixes }}"
+    gpgcheck: "{{ item.gpgcheck }}"
+    gpgkey: "{{ item.gpgkey }}"
+    state: "{{ item.state }}"
+    reposdir: "{{ item.reposdir | default('/etc/zypp/repos.d') }}"
+  loop: "{{ _yum_repository }}"
+
+- name: suse | Zypper install
+  vars:
+    ansible_python_interpreter: "python3"
+  community.general.zypper:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    force_resolution: true
+  loop: "{{ _zypper }}"
+  register: result
+  until: result is succeeded

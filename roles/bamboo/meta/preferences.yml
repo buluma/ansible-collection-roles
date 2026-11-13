@@ -1,0 +1,20 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      # Excludes 10: no java-17-openjdk package; Bamboo's supported Java
+      # version for this role's pinned Bamboo release is 17, not 21.
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 13: no openjdk-17-jdk package, same reason as EL 10 above.
+      # Excludes 11: EOL, and nothing in this role requires it over 12.
+      - "12"
+  # Fedora excluded entirely: java-17-openjdk was only ever packaged
+  # through Fedora 41 (already EOL); no currently-supported Fedora
+  # release can satisfy this role's Java 17 requirement.
+  - name: Ubuntu
+    versions:
+      - all

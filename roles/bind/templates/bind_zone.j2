@@ -50,7 +50,7 @@ $TTL {{ _zone_data['ttl'] }}
 {% if _zone_data['mname']|length > 0 %}
 @ IN SOA {{ _zone_data['mname']|first }}{% if not _zone_data['mname']|first|regex_search('\.$') %}.{{ _zone_data['domain'] }}.{% endif %} {{ _zone_data['rname'] }}. (
 {% else %}
-@ IN SOA {{ ansible_hostname }}.{{ _zone_data['domain'] }}. {{ _zone_data['rname'] }}. (
+@ IN SOA {{ ansible_facts['hostname'] }}.{{ _zone_data['domain'] }}. {{ _zone_data['rname'] }}. (
 {% endif %}
   {{ _zone['serial'] }}
   {{ _zone_data['refresh'] }}
@@ -64,14 +64,15 @@ $TTL {{ _zone_data['ttl'] }}
 
 {% endfor %}
 {% else %}
-                           IN  NS     {{ ansible_hostname }}.{{ _zone_data['domain'] }}.
+                           IN  NS     {{ ansible_facts['hostname'] }}.{{ _zone_data['domain'] }}.
 {% endif %}
 {% for ns in _zone_data['aname'] %}
                            IN  NS     {{ ns }}.
 {% endfor %}
 
 {% for mail in _zone_data['mail'] %}
-{% if loop.first %}@{% else %} {% endif %}                          IN  MX     {{ mail.preference}}  {{ mail.name }}{% if not mail.name.endswith('.') %}.{{ _zone_data['domain'] }}.{% endif %} 
+{% if loop.first %}@{% else %} {% endif %}                          IN  MX     {{ mail.preference}}  {{ mail.name }}{% if not mail.name.endswith('.') %}.{{ _zone_data['domain'] }}.{% endif %}
+
 {% endfor %}
 
 {% if _zone_data['delegate']|length > 0 %}
@@ -122,7 +123,7 @@ $TTL {{ _zone_data['ttl'] }}
 {% endif %}
 {% endfor %}
 {% else %}
-{{ ansible_hostname.ljust(26) }} IN A     {{ ansible_default_ipv4.address }}
+{{ ansible_facts['hostname'].ljust(26) }} IN A     {{ (ansible_facts['default_ipv4'] | default({'address': '127.0.0.1'})).address }}
 {% endif %}
 {% for service in _zone_data['services'] %}
 {{ service.name.ljust(20) }}{{ (service.ttl|string).rjust(6) if service.ttl is defined else ''.ljust(6) }} IN  SRV    {{ service.priority|default('0') }} {{ service.weight|default('0') }} {{ service.port }} {{ service.target }}

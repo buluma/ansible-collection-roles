@@ -1,0 +1,21 @@
+---
+- name: create-symbolic-links | Install mvn link
+  ansible.builtin.file:
+    dest: /usr/local/bin/mvn
+    force: true
+    group: "0"
+    mode: u=rwx,go=rx
+    owner: root
+    src: "{{ maven_install_dir }}/apache-maven-{{ maven_version }}/bin/mvn"
+    state: link
+  become: true
+- name: create-symbolic-links | Install mvnDebug link
+  ansible.builtin.file:
+    dest: /usr/local/bin/mvnDebug
+    force: true
+    group: "0"
+    mode: u=rwx,go=rx
+    owner: root
+    src: "{{ maven_install_dir }}/apache-maven-{{ maven_version }}/bin/mvnDebug"
+    state: link
+  become: true

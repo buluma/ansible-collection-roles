@@ -1,9 +1,0 @@
----
-# handlers file for eclipse
-
-- name: Restart eclipse
-  ansible.builtin.service:
-    name: "{{ eclipse_service }}"
-    state: restarted
-  when:
-    - not ansible_check_mode | bool

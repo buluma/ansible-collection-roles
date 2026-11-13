@@ -1,0 +1,19 @@
+---
+- name: setup-RedHat | Ensure Kubernetes repository exists.
+  ansible.builtin.yum_repository:
+    baseurl: "{{ kubernetes_yum_base_url }}"
+    description: Kubernetes
+    enabled: true
+    gpgcheck: "{{ kubernetes_yum_gpg_check }}"
+    gpgkey: "{{ kubernetes_yum_gpg_key }}"
+    name: kubernetes
+    repo_gpgcheck: "{{ kubernetes_yum_repo_gpg_check }}"
+- name: setup-RedHat | Add Kubernetes GPG keys.
+  ansible.builtin.rpm_key:
+    key: "{{ item }}"
+    state: present
+  notify: Refresh Kubernetes dnf cache
+  register: kubernetes_rpm_key
+  with_items: "{{ kubernetes_yum_gpg_key }}"
+- name: setup-RedHat | Flush handlers
+  ansible.builtin.meta: flush_handlers

@@ -1,0 +1,67 @@
+---
+- name: Resolve platform specific vars
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_release'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}.yml"
+        - "{{ ansible_facts['os_family'] }}.yml"
+      paths:
+        - "{{ role_path }}/vars"
+      skip: true
+- name: Check for installation in {{ buildkit_install_dir }}
+  ansible.builtin.stat:
+    path: "{{ buildkit_install_dir }}"
+  become: true
+  changed_when: false
+  register: buildkit_binary
+- name: Not buildkit_binary.stat.exists
+  when: not buildkit_binary.stat.exists
+  block:
+    - name: Downloading '{{ buildkit_url }}'...
+      ansible.builtin.get_url:
+        checksum: "{{ buildkit_checksum }}"
+        dest: "{{ buildkit_tmp_archive }}"
+        mode: "0644"
+        url: "{{ buildkit_url }}"
+      become: true
+      become_user: root
+    - name: Mkdir -p '{{ buildkit_install_dir }}'
+      ansible.builtin.file:
+        mode: "0755"
+        path: "{{ buildkit_install_dir }}"
+        state: directory
+      become: true
+      become_user: root
+    - name: Unarchive {{ buildkit_tmp_archive }}
+      ansible.builtin.unarchive:
+        creates: "{{ buildkit_bin_dir }}"
+        dest: "{{ buildkit_install_dir }}"
+        remote_src: true
+        src: "{{ buildkit_tmp_archive }}"
+      become: true
+      become_user: root
+  always:
+    - name: Rm -f {{ buildkit_tmp_archive }}
+      ansible.builtin.file:
+        path: "{{ buildkit_tmp_archive }}"
+        state: absent
+      become: true
+      become_user: root
+- name: Link executables
+  ansible.builtin.file:
+    dest: "{{ buildkit_link_dir }}/{{ item }}"
+    src: "{{ buildkit_bin_dir }}/{{ item }}"
+    state: link
+  become: true
+  become_user: root
+  with_items: "{{ buildkit_apps }}"
+- name: Link qemu executables
+  ansible.builtin.file:
+    dest: "{{ buildkit_link_dir }}/buildkit-qemu-{{ item }}"
+    src: "{{ buildkit_bin_dir }}/buildkit-qemu-{{ item }}"
+    state: link
+  become: true
+  become_user: root
+  when: item != ansible_facts['architecture']
+  with_items: "{{ buildkit_qemu_architectures }}"

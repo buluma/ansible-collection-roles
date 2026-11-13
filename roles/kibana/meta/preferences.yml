@@ -1,0 +1,21 @@
+---
+# Pins the CI platform/version matrix for this role. Without this, ansible-generator
+# falls back to default_platforms and silently discards these choices on regenerate.
+platforms:
+  - name: EL
+    versions:
+      - "10"
+      - "9"
+  - name: Debian
+    versions:
+      # Excludes 11: EOL, and nothing in this role or its dependencies
+      # requires it over 12.
+      - "13"
+      - "12"
+  # Fedora excluded entirely: Elastic's official repo doesn't publish
+  # kibana packages for Fedora ("No package kibana available").
+  - name: Ubuntu
+    versions:
+      - "26.04"
+      - "24.04"
+      - "22.04"

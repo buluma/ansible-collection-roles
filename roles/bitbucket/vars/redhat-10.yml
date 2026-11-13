@@ -1,0 +1,21 @@
+---
+_rpm_key:
+  - fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
+    key: http://download.opensuse.org/repositories/home:/alvistack/CentOS_10_Stream/repodata/repomd.xml.key
+    state: present
+_yum:
+  - name: atlassian-bitbucket-100:{{ bitbucket_version }}*
+    state: present
+  - name: fontconfig
+    state: latest
+_yum_repository:
+  - baseurl: http://download.opensuse.org/repositories/home:/alvistack/CentOS_10_Stream
+    description: home:alvistack (CentOS_10_Stream)
+    enabled: true
+    file: home:alvistack
+    gpgcheck: true
+    gpgkey: http://download.opensuse.org/repositories/home:/alvistack/CentOS_10_Stream/repodata/repomd.xml.key
+    module_hotfixes: true
+    name: home_alvistack
+    priority: "2"
+    state: present

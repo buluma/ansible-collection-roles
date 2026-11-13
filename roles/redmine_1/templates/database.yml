@@ -1,0 +1,8 @@
+---
+production:
+  adapter: { { redmine_sql_driver: null }: null }
+  database: { { redmine_sql_database_name: null }: null }
+  host: { { redmine_sql_database_host: null }: null }
+  username: { { redmine_sql_username: null }: null }
+  password: { { redmine_sql_password: null }: null }
+  encoding: utf8

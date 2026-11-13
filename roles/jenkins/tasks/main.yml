@@ -1,0 +1,100 @@
+---
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Add yum repository
+  ansible.builtin.get_url:
+    dest: /etc/yum.repos.d/jenkins.repo
+    mode: "0644"
+    url: "{{ jenkins_yum_repository_baseurl }}"
+    validate_certs: false
+  when:
+    - ansible_facts['pkg_mgr'] in [ "dnf", "yum" ]
+- name: Import rpm key
+  ansible.builtin.rpm_key:
+    key: "{{ jenkins_rpm_key }}"
+    state: present
+    validate_certs: false
+  when:
+    - ansible_facts['pkg_mgr'] in [ "dnf", "yum", "zypper" ]
+- name: Configure apt
+  when:
+    - ansible_facts['pkg_mgr'] == "apt"
+  block:
+    - name: Add apt key
+      ansible.builtin.get_url:
+        url: "{{ jenkins_apt_key_url }}"
+        dest: /etc/apt/trusted.gpg.d/jenkins.asc
+        mode: "0644"
+    - name: Add apt repository
+      ansible.builtin.apt_repository:
+        repo: "{{ jenkins_apt_repository_repo }}"
+        state: present
+- name: Add zypper repository
+  community.general.zypper_repository:
+    name: jenkins
+    repo: "{{ jenkins_zypper_repository_repo }}"
+    state: present
+  when:
+    - ansible_facts['pkg_mgr'] == "zypper"
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ jenkins_requirements }}"
+    state: present
+- name: Install jenkins (specific version)
+  ansible.builtin.package:
+    name: "{{ jenkins_package }}"
+    state: present
+  when:
+    - jenkins_version is defined
+- name: Install jenkins
+  ansible.builtin.package:
+    name: jenkins
+    state: present
+  when:
+    - jenkins_version is not defined
+- name: Configure jenkins
+  ansible.builtin.template:
+    backup: true
+    dest: "{{ jenkins_configuration_directory }}/jenkins"
+    force: true
+    mode: "0644"
+    src: jenkins.j2
+  notify:
+    - Restart jenkins
+# Separator for the pre-commit handler parser.
+- name: Create jenkins systemd drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/jenkins.service.d
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when:
+    - ansible_facts['service_mgr'] == "systemd"
+- name: Configure jenkins systemd timeout override
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/jenkins.service.d/timeout.conf
+    content: |
+      [Service]
+      TimeoutStartSec=300
+    mode: "0644"
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart jenkins
+  when:
+    - ansible_facts['service_mgr'] == "systemd"
+- name: Reload systemd daemon before starting jenkins
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - ansible_facts['service_mgr'] == "systemd"
+- name: Manage jenkins service
+  ansible.builtin.service:
+    enabled: true
+    name: jenkins
+    state: started

@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+
+[user]
+        email = {{ git_user_email | default('unset') }}
+        name = {{ git_user_name | default('unset') }}
+
+{% for item in git_config %}
+[{{ item.section }}]
+{% for option in item.options %}
+        {{ option.key }} = {{ option.value }}
+{% endfor %}
+
+{% endfor %}

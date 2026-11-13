@@ -1,0 +1,14 @@
+---
+mozilla_syncserver_additional_volumes: []
+mozilla_syncserver_container_labels: []
+mozilla_syncserver_docker_version: latest
+mozilla_syncserver_docker_compose_pull: always
+mozilla_syncserver_environment_variables:
+  PORT: "{{ mozilla_syncserver_port }}"
+  SYNCSERVER_BATCH_UPLOAD_ENABLED: "true"
+  SYNCSERVER_FORCE_WSGI_ENVIRON: "false"
+  SYNCSERVER_PUBLIC_URL: http://localhost:{{ mozilla_syncserver_port }}
+  SYNCSERVER_SECRET: <PUT YOUR SECRET KEY HERE>
+  SYNCSERVER_SQLURI: sqlite:////data/syncserver.db
+mozilla_syncserver_network_name: ""
+mozilla_syncserver_port: "5000"

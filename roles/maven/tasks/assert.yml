@@ -1,0 +1,15 @@
+---
+- name: assert | Test version vars
+  ansible.builtin.assert:
+    that:
+      - maven_redis_sha256sum not in (None, '')
+- name: assert | Verify default maven facts
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['local'].maven.general.version is defined
+      - ansible_facts['local'].maven.general.home is defined
+- name: assert | Verify maven 3.3 facts
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['local'].maven_3_3.general.version is defined
+      - ansible_facts['local'].maven_3_3.general.home is defined

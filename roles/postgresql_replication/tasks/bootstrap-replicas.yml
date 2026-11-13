@@ -1,0 +1,26 @@
+---
+- name: bootstrap-replicas | Check if already cloned from master
+  ansible.builtin.stat:
+    path: "{{ postgresql__data_dir }}/PG_VERSION"
+  register: postgresql_replication__pg_version_stat
+- name: bootstrap-replicas | Stopping PostgreSQL server
+  when: not postgresql_replication__pg_version_stat.stat.exists
+  ansible.builtin.service:
+    name: postgresql
+    state: stopped
+  register: postgresql_was_stopped
+- name: bootstrap-replicas | Removing all server datas
+  when: not postgresql_replication__pg_version_stat.stat.exists
+  ansible.builtin.file:
+    dest: "{{ postgresql__data_dir }}"
+    state: absent
+- name: bootstrap-replicas | Copy datas from master
+  when: not postgresql_replication__pg_version_stat.stat.exists
+  ansible.builtin.command: pg_basebackup -h {{ postgresql_replication__master_node_address }} -D {{ postgresql__data_dir }} -U {{ postgresql_replication__user
+    }} --wal-method=stream
+  args:
+    creates: "{{ postgresql__data_dir }}"
+  become: true
+  become_user: "{{ postgresql__user }}"
+  vars:
+    ansible_ssh_pipelining: true

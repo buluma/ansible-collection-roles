@@ -1,0 +1,12 @@
+---
+# defaults file for bamboo
+
+# bamboo release.
+bamboo_master_version: "9.4.4"
+bamboo_master_fqdn: ""
+bamboo_master_https: false
+bamboo_master_port: ""
+bamboo_master_user: bamboo
+bamboo_master_application_folder: /opt/atlassian/bamboo
+bamboo_master_data_folder: /var/atlassian/application-data/bamboo
+bamboo_master_jvm_memory: 1g

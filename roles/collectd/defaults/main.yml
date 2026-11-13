@@ -1,7 +1,7 @@
 ---
 # defaults file for collectd
 
-collectd_conf_hostname: "{{ ansible_hostname }}"
+collectd_conf_hostname: "{{ ansible_facts['hostname'] }}"
 collectd_conf_fqdnlookup: "false"
 collectd_conf_basedir: /var/lib/collectd
 collectd_conf_pidfile: /var/run/collectd.pid
@@ -20,9 +20,8 @@ collectd_conf_include_dir: /etc/collectd.d
 collectd_conf_fnmatch_filters:
   - "*.conf"
 
-collectd_conf_extra: ~
-
-#### Logging Configuration
+collectd_conf_extra:
+# ### Logging Configuration
 
 collectd_plugin_logging: syslog
 

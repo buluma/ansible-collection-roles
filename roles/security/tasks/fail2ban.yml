@@ -1,0 +1,24 @@
+---
+- name: fail2ban | Install fail2ban (RedHat).
+  ansible.builtin.package:
+    enablerepo: epel
+    name: fail2ban
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+- name: fail2ban | Install fail2ban (Debian).
+  ansible.builtin.package:
+    name: fail2ban
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+- name: fail2ban | Copy fail2ban custom configuration file into place.
+  ansible.builtin.template:
+    dest: /etc/fail2ban/jail.local
+    group: root
+    mode: "0644"
+    owner: root
+    src: "{{ security_fail2ban_custom_configuration_template }}"
+- name: fail2ban | Ensure fail2ban is running and enabled on boot.
+  ansible.builtin.service:
+    enabled: true
+    name: fail2ban
+    state: started

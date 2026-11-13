@@ -1,0 +1,41 @@
+---
+# tasks file for revealmd
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Install revealmd
+  community.general.npm:
+    name: reveal-md
+    state: present
+    global: true
+
+- name: Create directory
+  ansible.builtin.file:
+    path: "{{ revealmd_directory }}"
+    state: directory
+    mode: "0755"
+
+- name: Place index.md default presentation
+  ansible.builtin.copy:
+    src: index.md
+    dest: "{{ revealmd_directory }}/index.md"
+    mode: "0644"
+
+- name: Create revealmd service
+  ansible.builtin.import_role:
+    name: buluma.roles.service
+  vars:
+    service_list:
+      - name: revealmd
+        description: Markdown presentor
+        start_command: "{{ revealmd_path }}/reveal-md --port {{ revealmd_port }} {{ revealmd_options | default(omit) }} {{ revealmd_presentation }}"
+        working_directory: "{{ revealmd_directory }}"
+
+- name: Start and enable revealmd
+  ansible.builtin.service:
+    name: revealmd
+    state: started
+    enabled: true

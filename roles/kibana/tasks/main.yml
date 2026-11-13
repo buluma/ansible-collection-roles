@@ -1,0 +1,24 @@
+---
+- name: Include assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  delegate_to: localhost
+  run_once: true
+- name: Install kibana
+  ansible.builtin.package:
+    name: "{{ kibana_requirements + kibana_package }}"
+    state: present
+- name: Configure kibana
+  ansible.builtin.template:
+    dest: /etc/kibana/kibana.yml
+    group: kibana
+    mode: "0660"
+    owner: kibana
+    src: kibana.yml.j2
+  notify:
+    - Restart kibana
+# Separator for the pre-commit handler parser.
+- name: Start kibana
+  ansible.builtin.service:
+    enabled: true
+    name: kibana
+    state: started

@@ -1,0 +1,11 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+- name: Restart terraform-enterprise
+  ansible.builtin.service:
+    name: terraform-enterprise
+    state: restarted
+  when:
+    - tfe_license is defined
+    - tfe_license != ""

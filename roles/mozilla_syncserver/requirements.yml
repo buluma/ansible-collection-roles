@@ -1,0 +1,7 @@
+---
+collections:
+  - name: ansible.posix
+  - name: community.docker
+roles:
+  - name: buluma.setuptools
+  - name: buluma.docker_ce

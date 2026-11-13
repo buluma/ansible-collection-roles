@@ -1,0 +1,12 @@
+---
+
+- name: assert | Test if {{ role_name }}_X is set correctly
+  ansible.builtin.assert:
+    that:
+      - {{ role_name }}_X is defined
+      - {{ role_name }}_X is iterable
+      - {{ role_name }}_X is number
+      - {{ role_name }}_X is boolean
+      - {{ role_name }}_X = 0
+      - {{ role_name }}_X in [ "a", "b" ]
+    quiet: yes

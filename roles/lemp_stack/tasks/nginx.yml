@@ -1,0 +1,33 @@
+---
+- name: nginx | Install nginx
+  notify:
+    - Restart nginx
+  # Separator for the pre-commit handler parser.
+  ansible.builtin.package:
+    name: nginx
+    state: present
+- name: nginx | Enable and start nginx
+  ansible.builtin.service:
+    enabled: true
+    name: nginx
+    state: started
+- name: nginx | Make /var/lib/nginx/cache directory
+  ansible.builtin.file:
+    group: "{{ lemp_web_user }}"
+    mode: "0700"
+    owner: "{{ lemp_web_user }}"
+    path: "{{ lemp_nginx_cache_directory }}"
+    state: directory
+  notify:
+    - Restart nginx
+# Separator for the pre-commit handler parser.
+- name: nginx | Make /etc/nginx/ssl directory
+  ansible.builtin.file:
+    group: "{{ lemp_web_user }}"
+    mode: "0700"
+    owner: "{{ lemp_web_user }}"
+    path: /etc/nginx/ssl
+    state: directory
+  notify:
+    - Restart nginx
+  # Separator for the pre-commit handler parser.

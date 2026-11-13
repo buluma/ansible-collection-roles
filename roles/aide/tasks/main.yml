@@ -1,0 +1,20 @@
+---
+# tasks file for aide
+
+- name: Install aide
+  ansible.builtin.package:
+    name: "{{ aide_packages }}"
+    state: present
+
+- name: Initialize aide
+  ansible.builtin.command:
+    cmd: "{{ aide_init_command }}"
+    creates: "{{ aide_db_new }}"
+  notify:
+    - Copy new aide database
+
+- name: Schedule aide check
+  ansible.builtin.cron:
+    name: aide check
+    job: aide --check
+    special_time: daily

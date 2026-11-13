@@ -1,0 +1,28 @@
+---
+# tasks file for epel
+
+- name: Install epel
+  when:
+    - (ansible_facts['distribution'] == "Amazon" and ansible_facts['distribution_major_version'] == "2") or (ansible_facts['os_family'] == "RedHat" and
+      ansible_facts['distribution_major_version'] in [ "7", "8", "9", "10" ])
+  block:
+    - name: Install epel gpg key
+      ansible.builtin.rpm_key:
+        key: "{{ epel_gpg_key }}"
+        state: present
+
+    - name: Install epel-release
+      ansible.builtin.package:
+        name: "{{ epel_url }}"
+        state: present
+      notify:
+        - Update package cache
+
+    - name: Install epel-next-release
+      ansible.builtin.package:
+        name: "{{ epel_next_url }}"
+        state: present
+      when:
+        - epel_next
+      notify:
+        - Update package cache

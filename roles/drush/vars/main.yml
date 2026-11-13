@@ -1,2 +1,3 @@
 ---
-# vars file for drush
+...
+# Role-specific vars are defined in defaults for this role.
