@@ -3,6 +3,7 @@ collections:
   - name: community.general
   - name: amazon.aws
   - name: ansible.windows
+  - name: community.windows
   - name: community.docker
 roles:
   - name: buluma.bootstrap

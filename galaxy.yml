@@ -23,6 +23,7 @@ dependencies:
   community.docker: ">=5.0.0"
   community.general: ">=14.0.0"
   community.postgresql: ">=5.0.0"
+  community.windows: ">=3.0.0"
   community.zabbix: ">=4.0.0"
   containers.podman: ">=1.0.0"
   f5networks.f5_modules: ">=1.0.0"

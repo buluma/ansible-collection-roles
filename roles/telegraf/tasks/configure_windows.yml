@@ -18,7 +18,7 @@
     - not file_info.stat.exists
 - name: configure_windows | Unzip file (newer than 1.15)"
   when: telegraf_agent_version is version('1.15', '>=')
-  win_unzip:
+  community.windows.win_unzip:
     creates: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}\\telegraf.exe"
     dest: "{{ telegraf_win_install_dir }}"
     src: "{{ telegraf_win_install_dir }}\\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip"
@@ -30,7 +30,7 @@
   when: telegraf_agent_version is version('1.15', '>=')
 - name: configure_windows | Unzip file"
   when: telegraf_agent_version is version('1.15', '<')
-  win_unzip:
+  community.windows.win_unzip:
     creates: "{{ telegraf_win_install_dir }}\\telegraf.exe"
     delete_archive: true
     dest: "{{ telegraf_win_install_dir }}"

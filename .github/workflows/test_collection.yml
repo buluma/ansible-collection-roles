@@ -46,8 +46,16 @@ jobs:
           EOF
       - name: build collection
         run: ansible-galaxy collection build
+      # Galaxy downloads time out intermittently. A partial install makes the next attempt a no-op, so start clean.
       - name: install collection with dependencies
-        run: ansible-galaxy collection install buluma-roles-*.tar.gz
+        run: |
+          for attempt in 1 2 3 ; do
+            echo "Install attempt ${attempt}"
+            ansible-galaxy collection install --timeout 120 buluma-roles-*.tar.gz && exit 0
+            rm -rf ~/.ansible/collections/ansible_collections
+            sleep 15
+          done
+          exit 1
       - name: syntax-check every role
         run: |
           {

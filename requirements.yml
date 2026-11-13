@@ -11,6 +11,7 @@ collections:
   - name: community.docker
   - name: community.general
   - name: community.postgresql
+  - name: community.windows
   - name: community.zabbix
   - name: containers.podman
   - name: f5networks.f5_modules
