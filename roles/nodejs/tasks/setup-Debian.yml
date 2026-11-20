@@ -24,11 +24,27 @@
     creates: /etc/apt/keyrings/nodesource.gpg
   changed_when: false
 
-- name: setup-Debian | Add NodeSource repository.
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_{{ nodejs_version }} nodistro main"
+- name: setup-Debian | Ensure python3-debian is present.
+  ansible.builtin.package:
+    name: python3-debian
     state: present
-    filename: nodesource
+
+# The one-line source below was written by earlier versions of this role.
+# Remove it so upgrades don't leave duplicate sources.
+- name: setup-Debian | Remove legacy NodeSource apt source.
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/nodesource.list
+    state: absent
+
+- name: setup-Debian | Add NodeSource repository.
+  ansible.builtin.deb822_repository:
+    name: nodesource
+    types: deb
+    uris: "https://deb.nodesource.com/node_{{ nodejs_version }}"
+    suites: nodistro
+    components: main
+    signed_by: /etc/apt/keyrings/nodesource.gpg
+    state: present
   register: node_repo
 
 - name: setup-Debian | Update apt cache if repo was added.

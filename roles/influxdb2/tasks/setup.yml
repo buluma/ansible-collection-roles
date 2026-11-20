@@ -22,10 +22,52 @@
     mode: "0644"
   when: ansible_facts['os_family'] == 'Debian'
 
-- name: setup | Manage InfluxData APT repositories
-  ansible.builtin.apt_repository:
-    repo: "{{ item }}"
+- name: setup | Install python3-debian
+  ansible.builtin.package:
+    name: python3-debian
     state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+# The one-line sources below were written by earlier versions of this role.
+# Remove them so upgrades don't leave duplicate sources. The key above stays,
+# influxdb_repositories refer to it with signed-by.
+- name: setup | Remove legacy InfluxData APT sources
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ _influxdb_repo_legacy_file }}.list"
+    state: absent
+  vars:
+    # apt_repository named its file after the URI without scheme, credentials and options.
+    _influxdb_repo_parts: "{{ (item | regex_replace('^\\s*deb(?:-src)?\\s+(?:\\[[^\\]]*\\]\\s*)?', '')).split() }}"
+    _influxdb_repo_legacy_file: "{{ (_influxdb_repo_parts[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') | regex_replace('[^a-zA-Z0-9]+', ' ')).split() | join('_') }}"
+  loop: "{{ influxdb_repositories }}"
+  when: ansible_facts['os_family'] == 'Debian'
+
+# Every item of influxdb_repositories is a one-line "deb [options] URI SUITE COMPONENT..."
+# string, split it into the parts deb822_repository needs. The package install
+# below refreshes the apt cache, deb822_repository does not.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: setup | Manage InfluxData APT repositories  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ _influxdb_repo_name }}"
+    types: "{{ _influxdb_repo_type }}"
+    uris: "{{ _influxdb_repo_uri }}"
+    suites: "{{ _influxdb_repo_suite }}"
+    components: "{{ _influxdb_repo_components }}"
+    architectures: "{{ _influxdb_repo_arch.split(',') if _influxdb_repo_arch else omit }}"
+    signed_by: "{{ _influxdb_repo_signed_by }}"
+    state: present
+  vars:
+    _influxdb_repo_type: "{{ item | regex_replace('^\\s*(deb(?:-src)?)\\s.*$', '\\1') }}"
+    _influxdb_repo_options: "{{ item | regex_replace('^\\s*deb(?:-src)?\\s+(?:\\[([^\\]]*)\\])?.*$', '\\1') }}"
+    _influxdb_repo_parts: "{{ (item | regex_replace('^\\s*deb(?:-src)?\\s+(?:\\[[^\\]]*\\]\\s*)?', '')).split() }}"
+    _influxdb_repo_uri: "{{ _influxdb_repo_parts[0] }}"
+    _influxdb_repo_suite: "{{ _influxdb_repo_parts[1] }}"
+    _influxdb_repo_components: "{{ _influxdb_repo_parts[2:] }}"
+    _influxdb_repo_arch: "{{ _influxdb_repo_options | regex_search('arch=(\\S+)', '\\1') | default([''], true) | first }}"
+    # Without signed-by, fall back to the key installed by "Add InfluxData's key".
+    _influxdb_repo_signed_by: "{{ _influxdb_repo_options | regex_search('signed-by=(\\S+)', '\\1') | default(['/etc/apt/trusted.gpg.d/influxdb.asc'], true) | first }}"
+    _influxdb_repo_host: "{{ _influxdb_repo_uri | regex_replace('^\\w+://(?:[^/@]*@)?([^/:]+).*$', '\\1') }}"
+    _influxdb_repo_name: "{{ (_influxdb_repo_host ~ '_' ~ _influxdb_repo_suite ~ ('_src' if _influxdb_repo_type == 'deb-src' else '')) | regex_replace('[^A-Za-z0-9_-]+', '_') }}"
   loop: "{{ influxdb_repositories }}"
   when: ansible_facts['os_family'] == 'Debian'
 

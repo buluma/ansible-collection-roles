@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.0.0 (2026-11-20)
+
+**Breaking changes:**
+
+- `apt_repository`: items in `apt_repositories` now use `name`, `uris`, `suites`, `components`, `types`, `architectures`, `signed_by` and `state`. The old `repo` and `validate_certs` keys are no longer supported, and the role fails with a message that says how to convert. A PPA is now a normal repository with its URI and an explicit key. Remove the old one-line source files by hand before upgrading, otherwise a repository is listed twice.
+- `bitbucket`: `bitbucket.properties` is now written with mode 0600 instead of 0644, which is the mode Bitbucket applies to it.
+
+**Changes:**
+
+- Replaced `ansible.builtin.apt_repository`, deprecated in ansible-core and removed in 2.25, with `ansible.builtin.deb822_repository` in 27 roles: apt_repository, azure_cli, bareos_repository, beats, bitbucket, code, crun, datadog, docker_ce, elastic_repo, enpass, firefox, fish, gitlab, hashicorp, influxdb2, jenkins, jitsi, kubernetes, mssql, nodejs, npm, openjdk, perforce, sensu, varnish and virtualbox. They install `python3-debian` on Debian and Ubuntu targets, remove the sources and keys that earlier versions wrote, and refresh the apt cache when a repository changes.
+- Set `min_ansible_version` to 2.19 in every role, matching the collection, except `redmine_1`, whose source repository is archived.
+- Updated pinned versions: terraform 1.17.2, vault 2.2.2, telegraf 1.40.3, go 1.27.4, maven 3.10.1, drush 13.8.1, cfssl 1.7.2, daemonize 1.7.8, tree-sitter 0.27.2, etherpad 3.3.20, kernel 6.12.118, ruby 4.0.10 and ocis 8.2.3.
+- Replaced injected fact variables with `ansible_facts[...]` in virtualbox and python_pip, and silenced a harmless ansible-lint warning on the templated `types` value in the migrated roles.
+- Synced all roles from their source repositories again (236 roles).
+
 ## 3.0.0 (2026-11-13)
 
 **Breaking changes:**

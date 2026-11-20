@@ -15,7 +15,7 @@
   loop_control:
     label: "{{ item | basename }}"
   when:
-    - ansible_pkg_mgr in [ "yum", "dnf", "dnf5", "zypper" ]
+    - ansible_facts['pkg_mgr'] in [ "yum", "dnf", "dnf5", "zypper" ]
 
 - name: Place yum repository
   ansible.builtin.yum_repository:
@@ -24,7 +24,7 @@
     baseurl: "{{ virtualbox_yum_baseurl }}"
     gpgcheck: true
   when:
-    - ansible_pkg_mgr in [ "yum", "dnf", "dnf5" ]
+    - ansible_facts['pkg_mgr'] in [ "yum", "dnf", "dnf5" ]
 
 - name: Place zypper repository
   community.general.zypper_repository:
@@ -32,43 +32,52 @@
     repo: "{{ virtualbox_yum_baseurl }}"
     state: present
   when:
-    - ansible_pkg_mgr in [ "zypper" ]
+    - ansible_facts['pkg_mgr'] in [ "zypper" ]
 
 - name: Configure apt repository
   when:
-    - ansible_pkg_mgr in [ "apt" ]
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
   block:
-    - name: Ensure gnupg is installed for key management.
+    - name: Ensure python3-debian is installed for deb822_repository.
       ansible.builtin.package:
-        name: gnupg
+        name: python3-debian
         state: present
 
-    - name: Download apt keys.
-      ansible.builtin.get_url:
-        url: "{{ item }}"
-        dest: "/tmp/{{ item | basename }}"
-        mode: "0644"
+    # The keys and the one-line source below were written by earlier versions
+    # of this role. Remove them so upgrades don't leave duplicate sources.
+    - name: Remove legacy apt key
+      ansible.builtin.file:
+        path: "/etc/apt/trusted.gpg.d/virtualbox-{{ item | basename | regex_replace('\\.asc$', '') }}.gpg"
+        state: absent
       loop: "{{ virtualbox_keys }}"
       loop_control:
         label: "{{ item | basename }}"
 
-    # apt-key is gone from Debian 13/Ubuntu 26.04+, so dearmor each key
-    # straight into trusted.gpg.d instead of shelling out to it.
-    - name: Import apt key
-      ansible.builtin.command:
-        cmd: >-
-          gpg --dearmor
-          -o /etc/apt/trusted.gpg.d/virtualbox-{{ item | basename | regex_replace('\.asc$', '') }}.gpg
-          /tmp/{{ item | basename }}
-        creates: "/etc/apt/trusted.gpg.d/virtualbox-{{ item | basename | regex_replace('\\.asc$', '') }}.gpg"
-      loop: "{{ virtualbox_keys }}"
-      loop_control:
-        label: "{{ item | basename }}"
+    - name: Remove legacy apt source
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/download_virtualbox_org_virtualbox_debian.list
+        state: absent
 
+    # deb822_repository fetches the key itself, but signed_by takes a single
+    # key, so only the first entry of virtualbox_keys is used.
     - name: Place apt repository
-      ansible.builtin.apt_repository:
-        repo: deb [ arch=amd64 ] {{ virtualbox_apt_repository }} {{ ansible_distribution_release | lower }} contrib
+      ansible.builtin.deb822_repository:
+        name: virtualbox
+        types: deb
+        uris: "{{ virtualbox_apt_repository }}"
+        suites: "{{ ansible_facts['distribution_release'] | lower }}"
+        components: contrib
+        architectures: amd64
+        signed_by: "{{ virtualbox_keys | first }}"
         state: present
+      register: virtualbox_deb822_repository
+
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update apt cache  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - virtualbox_deb822_repository is changed
 
 - name: Install requirements
   ansible.builtin.package:

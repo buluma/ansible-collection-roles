@@ -87,7 +87,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 ---
 # application versions
 neovim_version: "0.12.6"
-treesitter_version: "0.27.1"
+treesitter_version: "0.27.2"
 
 # variables for downloading appimages
 nvim_dl_dir: "/opt/nvim/{{ neovim_version }}"
@@ -148,7 +148,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

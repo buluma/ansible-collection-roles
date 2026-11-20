@@ -13,21 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: debian | Download Apt keys
-  ansible.builtin.get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.keyring | replace('.gpg', '.asc') }}"
-    mode: "0644"
-  loop: "{{ _apt_key }}"
-  register: result
-  until: result is succeeded
+- name: debian | Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
 
-- name: debian | Apt-add-repository
-  ansible.builtin.apt_repository:
-    filename: "{{ item.filename }}"
-    repo: "{{ item.repo }}"
+# The one-line sources below were written by earlier versions of this role.
+# Remove them so upgrades don't leave duplicate sources. The keys are now
+# fetched by deb822_repository from the URL in _apt_key.
+- name: debian | Remove legacy Apt sources
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ item.filename }}.list"
+    state: absent
+  loop: "{{ _apt_repository }}"
+
+# item.repo is a one-line "deb [options] URI SUITE [COMPONENT...]" string,
+# split here into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: debian | Apt-add-repository  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ item.filename | regex_replace('[^A-Za-z0-9_-]+', '_') | trim('_') }}"
+    types: "{{ _crun_apt_repository_types }}"
+    uris: "{{ _crun_apt_repository_rest[0] }}"
+    suites: "{{ _crun_apt_repository_rest[1] }}"
+    components: "{{ _crun_apt_repository_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _crun_apt_repository_arch | default(omit, true) }}"
+    signed_by: "{{ _crun_apt_repository_signed_by }}"
     state: "{{ item.state }}"
     mode: "{{ item.mode | default('0644') }}"
+  vars:
+    _crun_apt_repository_line: "{{ item.repo | trim }}"
+    _crun_apt_repository_types: "{{ _crun_apt_repository_line | regex_search('^deb-src|^deb') }}"
+    _crun_apt_repository_options: "{{ _crun_apt_repository_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _crun_apt_repository_arch_option: "{{ _crun_apt_repository_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _crun_apt_repository_arch: "{{ _crun_apt_repository_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key is fetched from the URL in _apt_key.
+    _crun_apt_repository_signed_by: "{{ _crun_apt_repository_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([_apt_key[0].url], true) | first }}"
+    _crun_apt_repository_rest: "{{ _crun_apt_repository_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
   loop: "{{ _apt_repository }}"
   register: result
   until: result is succeeded

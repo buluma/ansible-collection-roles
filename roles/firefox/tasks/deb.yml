@@ -35,10 +35,34 @@
     that: gpg.stdout == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3"
     fail_msg: Mozilla repo signing key fingerprint is not what we expect, cannot safely install firefox
 
+- name: deb | Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
+
+# The one-line source below was written by earlier versions of this role.
+# Remove it so upgrades don't leave duplicate sources.
+- name: deb | Remove legacy apt source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/packages_mozilla_org_apt.list
+    state: absent
+
 - name: deb | Add apt repository
-  ansible.builtin.apt_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main
+  ansible.builtin.deb822_repository:
+    name: mozilla
+    types: deb
+    uris: https://packages.mozilla.org/apt
+    suites: mozilla
+    components: main
+    signed_by: /etc/apt/keyrings/packages.mozilla.org.asc
+    state: present
+  register: firefox_deb822_repository
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: deb | Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
     update_cache: true
+  when:
+    - firefox_deb822_repository is changed
 
 - name: deb | Prioritize mozilla repo
   ansible.builtin.copy:

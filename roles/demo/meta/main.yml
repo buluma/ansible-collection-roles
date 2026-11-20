@@ -6,5 +6,5 @@ galaxy_info:
   galaxy_tags:
     - demo
   license: Apache-2.0
-  min_ansible_version: "2.12"
+  min_ansible_version: "2.19"
   role_name: demo

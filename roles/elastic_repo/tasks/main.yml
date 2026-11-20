@@ -6,6 +6,13 @@
 - name: Run apt steps
   when:
     - ansible_facts['pkg_mgr'] == "apt"
+  vars:
+    # elastic_repo_apt_repo is a one-line "deb [options] URI SUITE COMPONENT..." string,
+    # split it into the parts deb822_repository needs.
+    _elastic_repo_options: "{{ elastic_repo_apt_repo | regex_replace('^\\s*deb\\s+(?:\\[([^\\]]*)\\])?.*$', '\\1') }}"
+    _elastic_repo_parts: "{{ (elastic_repo_apt_repo | regex_replace('^\\s*deb\\s+(?:\\[[^\\]]*\\]\\s*)?', '')).split() }}"
+    _elastic_repo_arch: "{{ _elastic_repo_options | regex_search('arch=(\\S+)', '\\1') | default([''], true) | first }}"
+    _elastic_repo_signed_by: "{{ _elastic_repo_options | regex_search('signed-by=(\\S+)', '\\1') | default([elastic_repo_gpg_url], true) | first }}"
   block:
     - name: Ensure gnupg is installed (required for apt-key on newer Debian/Ubuntu)
       ansible.builtin.package:
@@ -13,16 +20,37 @@
         state: present
       when: ansible_facts['os_family'] == "Debian"
 
-    - name: Add gpg key (apt)
-      ansible.builtin.get_url:
-        url: "{{ elastic_repo_gpg_url }}"
-        dest: /etc/apt/trusted.gpg.d/elastic_repo.asc
-        mode: "0644"
-    - name: Apt apt repository
-      ansible.builtin.apt_repository:
-        filename: elasic-7.x
-        repo: "{{ elastic_repo_apt_repo }}"
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
         state: present
+    # The key and the one-line source below were written by earlier versions
+    # of this role. Remove them so upgrades don't leave duplicate sources.
+    - name: Remove legacy gpg key (apt)
+      ansible.builtin.file:
+        path: /etc/apt/trusted.gpg.d/elastic_repo.asc
+        state: absent
+    - name: Remove legacy apt source
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/elasic-7.x.list
+        state: absent
+    - name: Apt apt repository
+      ansible.builtin.deb822_repository:
+        name: elasic-7.x
+        types: deb
+        uris: "{{ _elastic_repo_parts[0] }}"
+        suites: "{{ _elastic_repo_parts[1] }}"
+        components: "{{ _elastic_repo_parts[2:] }}"
+        architectures: "{{ _elastic_repo_arch.split(',') if _elastic_repo_arch else omit }}"
+        signed_by: "{{ _elastic_repo_signed_by }}"
+        state: present
+      register: elastic_repo_deb822_repository
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update apt cache  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - elastic_repo_deb822_repository is changed
 - name: Run yum steps
   when:
     - ansible_facts['pkg_mgr'] in [ "dnf", "dnf5", "rpm", "yum" ]

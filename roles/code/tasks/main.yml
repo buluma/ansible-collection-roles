@@ -15,11 +15,41 @@
   when:
     - ansible_facts['pkg_mgr'] in [ "yum", "dnf", "dnf5" ]
 
-- name: Place apt repository.
-  ansible.builtin.apt_repository:
-    repo: "deb https://packages.microsoft.com/repos/code stable main"
+- name: Install required package python3-debian.
+  ansible.builtin.package:
+    name: python3-debian
   when:
     - ansible_facts['pkg_mgr'] in [ "apt" ]
+
+# The one-line source below was written by earlier versions of this role.
+# Remove it so upgrades don't leave duplicate sources.
+- name: Remove legacy apt source.
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/packages_microsoft_com_repos_code.list
+    state: absent
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+
+- name: Place apt repository.
+  ansible.builtin.deb822_repository:
+    name: code
+    types: deb
+    uris: https://packages.microsoft.com/repos/code
+    suites: stable
+    components: main
+    signed_by: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  register: code_deb822_repository
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Update apt cache.  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+    - code_deb822_repository is changed
 
 - name: Install visual studio code.
   ansible.builtin.package:

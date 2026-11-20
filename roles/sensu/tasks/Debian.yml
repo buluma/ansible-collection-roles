@@ -1,15 +1,39 @@
 ---
-- name: Debian | Ensure sensu apt repository key is deployed
-  ansible.builtin.get_url:
-    url: https://packagecloud.io/sensu/stable/gpgkey
-    dest: /etc/apt/trusted.gpg.d/sensu.asc
-    mode: "0644"
+- name: Debian | Ensure python3-debian is installed
+  ansible.builtin.package:
+    name: python3-debian
+    state: present
+
+# The key and the one-line source below were written by earlier versions
+# of this role. Remove them so upgrades don't leave duplicate sources.
+- name: Debian | Ensure legacy sensu apt repository key is removed
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/sensu.asc
+    state: absent
+
+- name: Debian | Ensure legacy sensu apt source is removed
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/packagecloud_io_sensu_stable_{{ ansible_facts['distribution'] | lower }}.list"
+    state: absent
 
 - name: Debian | Ensure sensu apt repository is deployed
-  ansible.builtin.apt_repository:
+  ansible.builtin.deb822_repository:
     # repo: deb http://sensu.global.ssl.fastly.net/apt sensu main EOL
     # repo: deb https://eol-repositories.sensuapp.org/apt {{ ansible_facts['distribution_release'] }} main
-    repo: deb https://packagecloud.io/sensu/stable/{{ ansible_facts['distribution'] | lower }}/ {{ ansible_facts['distribution_release'] | lower }} main
+    name: sensu
+    types: deb
+    uris: "https://packagecloud.io/sensu/stable/{{ ansible_facts['distribution'] | lower }}/"
+    suites: "{{ ansible_facts['distribution_release'] | lower }}"
+    components: main
+    signed_by: https://packagecloud.io/sensu/stable/gpgkey
+    state: present
+  register: sensu_deb822_repository
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Debian | Ensure apt cache is updated  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when: sensu_deb822_repository is changed
 
 - name: Debian | Ensure sensu is installed
   ansible.builtin.apt:

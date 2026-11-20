@@ -9,6 +9,6 @@ galaxy_info:
     - authentication
     - sentinel
   license: Apache-2.0
-  min_ansible_version: "2.12"
+  min_ansible_version: "2.19"
   namespace: buluma
   role_name: netiq_sentinel_syslog_event_source

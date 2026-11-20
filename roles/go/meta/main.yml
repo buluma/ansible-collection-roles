@@ -9,5 +9,5 @@ galaxy_info:
     - go
     - golang
   license: Apache-2.0
-  min_ansible_version: "2.12"
+  min_ansible_version: "2.19"
   role_name: go

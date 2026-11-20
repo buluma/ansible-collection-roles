@@ -6,18 +6,51 @@
 - name: Configure debian like systems
   when:
     - ansible_facts['pkg_mgr'] == "apt"
+  vars:
+    # docker_ce_apt_repository_repo is a one-line "deb [options] URI SUITE COMPONENT..." string,
+    # split it into the parts deb822_repository needs.
+    _docker_ce_repo_options: "{{ docker_ce_apt_repository_repo | regex_replace('^\\s*deb\\s+(?:\\[([^\\]]*)\\])?.*$', '\\1') }}"
+    _docker_ce_repo_parts: "{{ (docker_ce_apt_repository_repo | regex_replace('^\\s*deb\\s+(?:\\[[^\\]]*\\]\\s*)?', '')).split() }}"
+    _docker_ce_repo_uri: "{{ _docker_ce_repo_parts[0] }}"
+    _docker_ce_repo_suite: "{{ _docker_ce_repo_parts[1] }}"
+    _docker_ce_repo_components: "{{ _docker_ce_repo_parts[2:] }}"
+    _docker_ce_repo_arch: "{{ _docker_ce_repo_options | regex_search('arch=(\\S+)', '\\1') | default([''], true) | first }}"
+    _docker_ce_repo_signed_by: "{{ _docker_ce_repo_options | regex_search('signed-by=(\\S+)', '\\1') | default([docker_ce_apt_key_url], true) | first }}"
+    _docker_ce_repo_host: "{{ _docker_ce_repo_uri | regex_replace('^\\w+://(?:[^/@]*@)?([^/:]+).*$', '\\1') }}"
+    _docker_ce_repo_name: "{{ (_docker_ce_repo_host ~ '_' ~ _docker_ce_repo_suite) | regex_replace('[^A-Za-z0-9_-]+', '_') }}"
+    # apt_repository named its file after the URI without scheme, credentials and options.
+    _docker_ce_repo_legacy_file: "{{ (_docker_ce_repo_uri | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') | regex_replace('[^a-zA-Z0-9]+', ' ')).split() | join('_') }}"
   block:
-    - name: Install apt key
-      ansible.builtin.get_url:
-        url: "{{ docker_ce_apt_key_url }}"
-        dest: /etc/apt/trusted.gpg.d/docker_ce.asc
-        mode: "0644"
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
+        state: present
+    # The key and the one-line source below were written by earlier versions
+    # of this role. Remove them so upgrades don't leave duplicate sources.
+    - name: Remove legacy apt key
+      ansible.builtin.file:
+        path: /etc/apt/trusted.gpg.d/docker_ce.asc
+        state: absent
+    - name: Remove legacy apt source
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ _docker_ce_repo_legacy_file }}.list"
+        state: absent
     - name: Install docker_ce repository for apt
-      ansible.builtin.apt_repository:
-        repo: "{{ docker_ce_apt_repository_repo }}"
+      ansible.builtin.deb822_repository:
+        name: "{{ _docker_ce_repo_name }}"
+        types: deb
+        uris: "{{ _docker_ce_repo_uri }}"
+        suites: "{{ _docker_ce_repo_suite }}"
+        components: "{{ _docker_ce_repo_components }}"
+        architectures: "{{ _docker_ce_repo_arch.split(',') if _docker_ce_repo_arch else omit }}"
+        signed_by: "{{ _docker_ce_repo_signed_by }}"
         state: present
       notify:
         - Apt update cache
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    # Run the handler now, the packages are installed further down.
+    - name: Refresh apt cache before installing packages
+      ansible.builtin.meta: flush_handlers
 # Separator for the pre-commit handler parser.
 - name: Install docker_ce repository for dnf/yum
   ansible.builtin.get_url:

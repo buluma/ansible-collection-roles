@@ -56,16 +56,56 @@
       when:
         - bareos_repository_type == "subscription"
 
-    - name: Add repository (apt)
-      ansible.builtin.apt_repository:
-        repo: "{{ item.deb_repo }}"
-        state: present
-        filename: "{{ item.name }}"
-        update_cache: true
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
+
+    # The one-line sources below were written by earlier versions of this role.
+    # Remove them so upgrades don't leave duplicate sources. The key file
+    # /etc/apt/bareos.gpg is still used by the new sources, so it is kept.
+    - name: Remove legacy repository (apt)
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ item.name }}.list"
+        state: absent
       no_log: true
       loop: "{{ bareos_repository_list }}"
       loop_control:
         label: "{{ item.name }}"
+
+    # deb_repo is a one-line "deb [options] URI SUITE [COMPONENT...]" string,
+    # split here into the parts deb822_repository needs.
+    # The noqa is there because ansible-lint can't validate the templated types.
+    - name: Add repository (apt)  # noqa: args[module]
+      ansible.builtin.deb822_repository:
+        name: "{{ item.name }}"
+        types: "{{ _bareos_repository_deb_types }}"
+        uris: "{{ _bareos_repository_deb_rest[0] }}"
+        suites: "{{ _bareos_repository_deb_rest[1] }}"
+        components: "{{ _bareos_repository_deb_rest[2:] | default(omit, true) }}"
+        architectures: "{{ _bareos_repository_deb_arch | default(omit, true) }}"
+        signed_by: "{{ _bareos_repository_deb_signed_by }}"
+        state: present
+      vars:
+        _bareos_repository_deb_line: "{{ item.deb_repo | trim }}"
+        _bareos_repository_deb_types: "{{ _bareos_repository_deb_line | regex_search('^deb-src|^deb') }}"
+        _bareos_repository_deb_options: "{{ _bareos_repository_deb_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+        _bareos_repository_deb_arch_option: "{{ _bareos_repository_deb_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+        _bareos_repository_deb_arch: "{{ _bareos_repository_deb_arch_option | split(',') | reject('equalto', '') | list }}"
+        # Items without a signed-by option use the key file downloaded above.
+        _bareos_repository_deb_signed_by: "{{ _bareos_repository_deb_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default(['/etc/apt/bareos.gpg'], true) | first }}"
+        _bareos_repository_deb_rest: "{{ _bareos_repository_deb_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+      register: bareos_repository_deb822_repository
+      no_log: true
+      loop: "{{ bareos_repository_list }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update apt cache (apt)  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - bareos_repository_deb822_repository is changed
 
 - name: Run tasks on zypper based distributions
   when:

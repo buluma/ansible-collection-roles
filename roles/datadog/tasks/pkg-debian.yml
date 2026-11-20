@@ -53,67 +53,116 @@
   when: ((ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version']|int < 9) or (ansible_facts['distribution'] == 'Ubuntu' and
     ansible_facts['distribution_major_version'] | int < 16)) and not ansible_check_mode
 
-- name: pkg-debian | Ensure Datadog non-https repositories and repositories not using signed-by option are deprecated
-  ansible.builtin.apt_repository:
-    repo: "{{ item }}"
-    state: absent
-    update_cache: true
-  with_items:
-    - deb http://apt.datadoghq.com/ stable main
-    - deb http://apt.datadoghq.com/ stable 6
-    - deb http://apt.datadoghq.com/ stable 7
-    - deb https://apt.datadoghq.com/ stable main
-    - deb https://apt.datadoghq.com/ stable 6
-    - deb https://apt.datadoghq.com/ stable 7
+- name: pkg-debian | Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
   when: not ansible_check_mode
 
-- name: pkg-debian | Ensure Datadog repository is up-to-date
-  ansible.builtin.apt_repository:
-    filename: ansible_datadog_{{ item.key }}
-    repo: "{{ item.value }}"
+# The deprecated sources (deb http(s)://apt.datadoghq.com/ stable main|6|7) were written as
+# one-line sources by earlier versions of this role, without the filename option. In that case
+# apt_repository derives the file name from the URI, so all six end up in apt_datadoghq_com.list.
+# apt_repository state=absent removed the matching lines from whichever file held them, while
+# deb822_repository state=absent can only remove by name. Remove the legacy file instead, this
+# also drops any signed-by line an intermediate version of this role wrote to the same file, the
+# deb822 sources below replace it.
+- name: pkg-debian | Ensure Datadog non-https repositories and repositories not using signed-by option are deprecated
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/apt_datadoghq_com.list
+    state: absent
+  register: agent_datadog_deprecated_repo_file
+  when: not ansible_check_mode
+
+# The one-line sources below were written by earlier versions of this role. Remove them so
+# upgrades don't leave duplicate sources next to the deb822 sources. This is unconditional, the
+# deb822 sources below are rewritten when the repository changes, so the old
+# compare-and-delete of the custom file is no longer needed.
+- name: pkg-debian | Remove legacy Datadog one-line repository files
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/ansible_datadog_{{ item }}.list
+    state: absent
+  register: agent_datadog_legacy_repo_files
+  loop:
+    - 5
+    - 6
+    - 7
+    - custom
+  when: not ansible_check_mode
+
+# datadog_agent{5,6,7}_apt_repo are one-line "deb [options] URI SUITE [COMPONENT...]" strings,
+# split here into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: pkg-debian | Ensure Datadog repository is up-to-date  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: ansible_datadog_{{ item.key }}
+    types: "{{ _datadog_apt_repo_types }}"
+    uris: "{{ _datadog_apt_repo_rest[0] }}"
+    suites: "{{ _datadog_apt_repo_rest[1] }}"
+    components: "{{ _datadog_apt_repo_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _datadog_apt_repo_arch | default(omit, true) }}"
+    signed_by: "{{ _datadog_apt_repo_signed_by }}"
     state: "{% if item.key == agent_datadog_agent_major_version | int and datadog_apt_repo | length == 0 %}present{% else %}absent{% endif %}"
-    update_cache: true
+  vars:
+    _datadog_apt_repo_line: "{{ item.value | trim }}"
+    _datadog_apt_repo_types: "{{ _datadog_apt_repo_line | regex_search('^deb-src|^deb') }}"
+    _datadog_apt_repo_options: "{{ _datadog_apt_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _datadog_apt_repo_arch_option: "{{ _datadog_apt_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _datadog_apt_repo_arch: "{{ _datadog_apt_repo_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the keyring maintained by this role is used.
+    _datadog_apt_repo_signed_by: "{{ _datadog_apt_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([datadog_apt_usr_share_keyring], true) | first }}"
+    _datadog_apt_repo_rest: "{{ _datadog_apt_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+  register: agent_datadog_deb822_repositories
   when: (not ansible_check_mode)
   with_dict:
     5: "{{ datadog_agent5_apt_repo }}"
     6: "{{ datadog_agent6_apt_repo }}"
     7: "{{ datadog_agent7_apt_repo }}"
 
-- name: pkg-debian | Initialize custom repo file deletion flag to False
-  ansible.builtin.set_fact:
-    agent_datadog_remove_custom_repo_file: "False"
-
-- name: pkg-debian | Check if custom repository file exists
-  ansible.builtin.stat:
-    path: /etc/apt/sources.list.d/ansible_datadog_custom.list
-  register: agent_datadog_custom_repo_file
-
-- name: pkg-debian | Fetch custom repository file
-  ansible.builtin.slurp:
-    src: /etc/apt/sources.list.d/ansible_datadog_custom.list
-  register: agent_datadog_custom_repo_file_contents
-  when: agent_datadog_custom_repo_file.stat.exists
-
-- name: pkg-debian | Flag custom repository file for deletion if different from current repository config
-  ansible.builtin.set_fact:
-    agent_datadog_remove_custom_repo_file: "{{ agent_datadog_repo_file_contents != datadog_apt_repo }}"
-  vars:
-    agent_datadog_repo_file_contents: "{{ agent_datadog_custom_repo_file_contents['content'] | b64decode | trim }}"
-  when: agent_datadog_custom_repo_file.stat.exists
-
-- name: pkg-debian | (Custom) Remove Datadog custom repository file when not set or updated
-  ansible.builtin.file:
-    path: /etc/apt/sources.list.d/ansible_datadog_custom.list
-    state: absent
-  when: (datadog_apt_repo | length == 0) or agent_datadog_remove_custom_repo_file and (not ansible_check_mode)
-
-- name: pkg-debian | (Custom) Ensure Datadog repository is up-to-date
-  ansible.builtin.apt_repository:
-    filename: ansible_datadog_custom
-    repo: "{{ datadog_apt_repo }}"
+# datadog_apt_repo is a one-line "deb [options] URI SUITE [COMPONENT...]" string, split here
+# into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: pkg-debian | (Custom) Ensure Datadog repository is up-to-date  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: ansible_datadog_custom
+    types: "{{ _datadog_apt_repo_types }}"
+    uris: "{{ _datadog_apt_repo_rest[0] }}"
+    suites: "{{ _datadog_apt_repo_rest[1] }}"
+    components: "{{ _datadog_apt_repo_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _datadog_apt_repo_arch | default(omit, true) }}"
+    signed_by: "{{ _datadog_apt_repo_signed_by }}"
     state: present
-    update_cache: true
+  vars:
+    _datadog_apt_repo_line: "{{ datadog_apt_repo | trim }}"
+    _datadog_apt_repo_types: "{{ _datadog_apt_repo_line | regex_search('^deb-src|^deb') }}"
+    _datadog_apt_repo_options: "{{ _datadog_apt_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _datadog_apt_repo_arch_option: "{{ _datadog_apt_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _datadog_apt_repo_arch: "{{ _datadog_apt_repo_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the keyring maintained by this role is used.
+    _datadog_apt_repo_signed_by: "{{ _datadog_apt_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([datadog_apt_usr_share_keyring], true) | first }}"
+    _datadog_apt_repo_rest: "{{ _datadog_apt_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+  register: agent_datadog_custom_deb822_repository
   when: (datadog_apt_repo | length > 0) and (not ansible_check_mode)
+
+- name: pkg-debian | (Custom) Remove Datadog custom repository when not set
+  ansible.builtin.deb822_repository:
+    name: ansible_datadog_custom
+    state: absent
+  register: agent_datadog_custom_deb822_repository_removed
+  when: (datadog_apt_repo | length == 0) and (not ansible_check_mode)
+
+# deb822_repository does not refresh the package cache, apt_repository did. The install tasks
+# below only refresh it when it is older than datadog_apt_cache_valid_time, which is not enough
+# after a repository change.
+- name: pkg-debian | Update apt cache after repository changes  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - not ansible_check_mode
+    - >-
+      agent_datadog_deprecated_repo_file is changed
+      or agent_datadog_legacy_repo_files is changed
+      or agent_datadog_deb822_repositories is changed
+      or agent_datadog_custom_deb822_repository is changed
+      or agent_datadog_custom_deb822_repository_removed is changed
 
 - name: pkg-debian | Include debian pinned version install task
   ansible.builtin.include_tasks: pkg-debian/install-pinned.yml

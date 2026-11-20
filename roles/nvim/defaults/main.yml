@@ -1,7 +1,7 @@
 ---
 # application versions
 neovim_version: "0.12.6"
-treesitter_version: "0.27.1"
+treesitter_version: "0.27.2"
 
 # variables for downloading appimages
 nvim_dl_dir: "/opt/nvim/{{ neovim_version }}"

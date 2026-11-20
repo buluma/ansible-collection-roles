@@ -87,11 +87,11 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 ```yaml
 ---
 go_arch: amd64
-go_checksum: 65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40
+go_checksum: 7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840
 go_download_url: "https://dl.google.com/go/{{ go_tarball }}"
 go_platform: linux
 go_tarball: go{{ go_version }}.{{ go_platform }}-{{ go_arch }}.tar.gz
-go_version: "1.27.3"
+go_version: "1.27.4"
 ```
 
 ## [Requirements](#requirements)
@@ -128,7 +128,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

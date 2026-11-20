@@ -14,7 +14,7 @@ cfssl_checksum_url: "https://github.com/cloudflare/cfssl/releases/download/v{{ c
 cfssl_group: root
 cfssl_os: linux
 cfssl_owner: root
-cfssl_version: "1.7.1"
+cfssl_version: "1.7.2"
 consul_ca_certificate_group: root
 consul_ca_certificate_owner: root
 consul_ca_conf_directory: "{{ '~/consul/ssl' | expanduser }}"

@@ -137,7 +137,9 @@
 - name: Patch /var/atlassian/application-data/bitbucket/shared/bitbucket.properties
   community.general.ini_file:
     group: "{{ bitbucket_group }}"
-    mode: "0644"
+    # Bitbucket rewrites this file with mode 0600 shortly after it starts. Keeping the
+    # role on 0644 makes the next run change the mode back, which is not idempotent.
+    mode: "0600"
     no_extra_spaces: true
     option: "{{ item.option }}"
     owner: "{{ bitbucket_owner }}"

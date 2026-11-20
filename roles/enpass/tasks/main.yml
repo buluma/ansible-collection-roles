@@ -9,16 +9,34 @@
   when:
     - ansible_facts['os_family'] == "Debian"
   block:
-    - name: Trust APT key
-      ansible.builtin.get_url:
-        url: "https://apt.enpass.io/keys/enpass-linux.key"
-        dest: /etc/apt/trusted.gpg.d/enpass.asc
-        validate_certs: false
-        mode: "0644"
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
+
+    # The one-line source below was written by earlier versions of this role.
+    # Remove it so upgrades don't leave duplicate sources.
+    - name: Remove legacy APT source
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/apt_enpass_io.list
+        state: absent
 
     - name: Add APT repository
-      ansible.builtin.apt_repository:
-        repo: "deb https://apt.enpass.io/ stable main"
+      ansible.builtin.deb822_repository:
+        name: enpass
+        types: deb
+        uris: https://apt.enpass.io/
+        suites: stable
+        components: main
+        signed_by: https://apt.enpass.io/keys/enpass-linux.key
+        state: present
+      register: enpass_deb822_repository
+
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update APT cache  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - enpass_deb822_repository is changed
 
 - name: Configure RedHat like systems
   when:
@@ -58,3 +76,14 @@
 - name: Install enpass
   ansible.builtin.package:
     name: enpass
+
+# The enpass package downloads its key into /etc/apt/trusted.gpg.d in its postinst on
+# every install and upgrade, which makes apt trust it for all repositories. Trust comes
+# from signed_by in the repository above, so remove the key after the package is installed.
+# This only changes on the run that installs or upgrades the package.
+- name: Remove globally trusted APT key installed by the package
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/enpass.asc
+    state: absent
+  when:
+    - ansible_facts['os_family'] == "Debian"

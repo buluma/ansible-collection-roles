@@ -89,7 +89,7 @@ cfssl_checksum_url: "https://github.com/cloudflare/cfssl/releases/download/v{{ c
 cfssl_group: root
 cfssl_os: linux
 cfssl_owner: root
-cfssl_version: "1.7.1"
+cfssl_version: "1.7.2"
 consul_ca_certificate_group: root
 consul_ca_certificate_owner: root
 consul_ca_conf_directory: "{{ '~/consul/ssl' | expanduser }}"
@@ -137,7 +137,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

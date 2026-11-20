@@ -5,7 +5,7 @@ drush_composer_global_bin_path: ~/.config/composer/vendor/bin
 drush_composer_global_install: false
 drush_composer_path: /usr/local/bin/drush
 drush_composer_update: false
-drush_composer_version: "13.8.0"
+drush_composer_version: "13.8.1"
 drush_force_composer_install: false
 drush_force_update: false
 drush_install_from_source: false
@@ -16,4 +16,4 @@ drush_launcher_phar_url: "https://github.com/drush-ops/drush-launcher/releases/d
 drush_launcher_version: "0.10.2"
 drush_source_install_bin_path: /usr/local/bin/drush
 drush_source_install_path: /usr/local/share/drush
-drush_source_install_version: "13.8.0"
+drush_source_install_version: "13.8.1"

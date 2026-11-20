@@ -22,16 +22,36 @@
         - name: Install required package gpg
           ansible.builtin.package:
             name: gpg
-        - name: Install apt key for Debian
-          ansible.builtin.get_url:
-            url: https://apt.releases.hashicorp.com/gpg
-            dest: /etc/apt/trusted.gpg.d/hashicorp.asc
-            validate_certs: false
-            mode: "0644"
+        - name: Install required package python3-debian
+          ansible.builtin.package:
+            name: python3-debian
+        # The key and the one-line source below were written by earlier versions
+        # of this role. Remove them so upgrades don't leave duplicate sources.
+        - name: Remove legacy apt key for Debian
+          ansible.builtin.file:
+            path: /etc/apt/trusted.gpg.d/hashicorp.asc
+            state: absent
+        - name: Remove legacy apt source for Debian
+          ansible.builtin.file:
+            path: /etc/apt/sources.list.d/apt_releases_hashicorp_com.list
+            state: absent
         - name: Install repository for Debian
-          ansible.builtin.apt_repository:
-            repo: deb [arch={{ hashicorp_architecture_mapping }}] https://apt.releases.hashicorp.com {{ ansible_facts['distribution_release'] }} main
+          ansible.builtin.deb822_repository:
+            name: hashicorp
+            types: deb
+            uris: https://apt.releases.hashicorp.com
+            suites: "{{ ansible_facts['distribution_release'] }}"
+            components: main
+            architectures: "{{ hashicorp_architecture_mapping }}"
+            signed_by: https://apt.releases.hashicorp.com/gpg
             state: present
+          register: hashicorp_deb822_repository
+        # deb822_repository does not refresh the package cache, apt_repository did.
+        - name: Update apt cache for Debian  # noqa: no-handler
+          ansible.builtin.apt:
+            update_cache: true
+          when:
+            - hashicorp_deb822_repository is changed
     - name: Install hashicorp product using package
       when:
         - hashicorp_products is defined

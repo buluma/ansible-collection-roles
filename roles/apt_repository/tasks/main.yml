@@ -7,13 +7,34 @@
   run_once: true
   delegate_to: localhost
 
-- name: Manage repository
-  ansible.builtin.apt_repository:
-    repo: "{{ item.repo }}"
-    state: "{{ item.state | default('present') }}"
-    validate_certs: "{{ item.validate_certs | default('true') }}"
-  loop: "{{ apt_repositories }}"
-  loop_control:
-    label: "{{ item.repo }}"
+- name: Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
   when:
     - apt_repositories is defined
+    - apt_repositories | length > 0
+
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: Manage repository  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ item.name }}"
+    types: "{{ item.types | default(omit) }}"
+    uris: "{{ item.uris | default(omit) }}"
+    suites: "{{ item.suites | default(omit) }}"
+    components: "{{ item.components | default(omit) }}"
+    architectures: "{{ item.architectures | default(omit) }}"
+    signed_by: "{{ item.signed_by | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ apt_repositories }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: apt_repository_deb822_repository
+  when:
+    - apt_repositories is defined
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - apt_repository_deb822_repository is changed

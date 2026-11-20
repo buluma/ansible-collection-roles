@@ -6,18 +6,39 @@
   run_once: true
   delegate_to: localhost
 
-- name: Install repository key
-  ansible.builtin.get_url:
-    url: "https://download.jitsi.org/jitsi-key.gpg.key"
-    dest: /etc/apt/trusted.gpg.d/jitsi.asc
-    validate_certs: false
-    mode: "0644"
+- name: Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
 
+# The key and the one-line source below were written by earlier versions
+# of this role. Remove them so upgrades don't leave duplicate sources.
+- name: Remove legacy repository key
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/jitsi.asc
+    state: absent
+
+- name: Remove legacy repository source
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/jitsi-{{ jitsi_release }}.list"
+    state: absent
+
+# Flat repository: the suite is a path ending in a slash, so no components.
 - name: Add repository
-  ansible.builtin.apt_repository:
-    repo: "deb https://download.jitsi.org {{ jitsi_release }}/"
-    filename: jitsi-{{ jitsi_release }}
+  ansible.builtin.deb822_repository:
+    name: jitsi-{{ jitsi_release }}
+    types: deb
+    uris: https://download.jitsi.org
+    suites: "{{ jitsi_release }}/"
+    signed_by: "https://download.jitsi.org/jitsi-key.gpg.key"
     state: present
+  register: jitsi_deb822_repository
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - jitsi_deb822_repository is changed
 
 - name: Set installer options
   ansible.builtin.debconf:

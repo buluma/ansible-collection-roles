@@ -7,17 +7,59 @@
       - debian-archive-keyring
       - curl
     state: present
-- name: setup-Debian | Add packagecloud.io varnish apt key.
-  ansible.builtin.get_url:
-    url: "{{ varnish_repository_key_url }}"
-    dest: /etc/apt/trusted.gpg.d/varnish.asc
-    mode: "0644"
+- name: setup-Debian | Install required package python3-debian.
+  ansible.builtin.package:
+    name: python3-debian
   when: varnish_apt_use_packagecloud
-- name: setup-Debian | Add packagecloud.io varnish apt repository.
-  ansible.builtin.apt_repository:
-    repo: "{{ varnish_apt_repo }}"
+# The key and the one-line source below were written by earlier versions
+# of this role. Remove them so upgrades don't leave duplicate sources.
+- name: setup-Debian | Remove legacy packagecloud.io varnish apt key.
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/varnish.asc
+    state: absent
+  when: varnish_apt_use_packagecloud
+- name: setup-Debian | Remove legacy packagecloud.io varnish apt source.
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ _varnish_apt_repo_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}.list"
+    state: absent
+  vars:
+    _varnish_apt_repo_line: "{{ varnish_apt_repo | trim }}"
+    _varnish_apt_repo_rest: "{{ _varnish_apt_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+    # URI without scheme and credentials, the legacy file name is derived from it.
+    _varnish_apt_repo_uri: "{{ _varnish_apt_repo_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+  when: varnish_apt_use_packagecloud
+# varnish_apt_repo is a one-line "deb [options] URI SUITE [COMPONENT...]"
+# string, split here into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: setup-Debian | Add packagecloud.io varnish apt repository.  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ _varnish_apt_repo_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}"
+    types: "{{ _varnish_apt_repo_types }}"
+    uris: "{{ _varnish_apt_repo_rest[0] }}"
+    suites: "{{ _varnish_apt_repo_rest[1] }}"
+    components: "{{ _varnish_apt_repo_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _varnish_apt_repo_arch | default(omit, true) }}"
+    signed_by: "{{ _varnish_apt_repo_signed_by }}"
     state: present
+  vars:
+    _varnish_apt_repo_line: "{{ varnish_apt_repo | trim }}"
+    _varnish_apt_repo_types: "{{ _varnish_apt_repo_line | regex_search('^deb-src|^deb') }}"
+    _varnish_apt_repo_options: "{{ _varnish_apt_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _varnish_apt_repo_arch_option: "{{ _varnish_apt_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _varnish_apt_repo_arch: "{{ _varnish_apt_repo_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key is fetched from varnish_repository_key_url.
+    _varnish_apt_repo_signed_by: "{{ _varnish_apt_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([varnish_repository_key_url], true) | first }}"
+    _varnish_apt_repo_rest: "{{ _varnish_apt_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+    _varnish_apt_repo_uri: "{{ _varnish_apt_repo_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+  register: varnish_deb822_repository
   when: varnish_apt_use_packagecloud
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: setup-Debian | Update apt cache.  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - varnish_apt_use_packagecloud
+    - varnish_deb822_repository is changed
 - name: setup-Debian | Ensure varnish is installed.
   ansible.builtin.apt:
     name: "{{ varnish_package_name }}"

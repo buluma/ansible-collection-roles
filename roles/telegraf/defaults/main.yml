@@ -31,7 +31,7 @@ telegraf_agent_package_path: /tmp
 telegraf_agent_package_state: present
 telegraf_agent_quiet: false
 telegraf_agent_round_interval: true
-telegraf_agent_version: "1.40.2"
+telegraf_agent_version: "1.40.3"
 telegraf_agent_version_patch: 1
 telegraf_enabled: true
 telegraf_gid_docker: 995

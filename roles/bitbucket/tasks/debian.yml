@@ -1,21 +1,52 @@
 ---
-- name: debian | Download Apt keys
-  ansible.builtin.get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.keyring | regex_replace('\\.gpg$', '.asc') }}"
-    mode: "0644"
+- name: debian | Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
+# The keys and the one-line sources below were written by earlier versions
+# of this role. Remove them so upgrades don't leave duplicate sources. The keys
+# are now fetched by deb822_repository from the URL in _apt_key.
+- name: debian | Remove legacy Apt keys
+  ansible.builtin.file:
+    path: "{{ item.keyring | regex_replace('\\.gpg$', '.asc') }}"
+    state: absent
   loop: "{{ _apt_key }}"
-  register: result
-  until: result is succeeded
-- name: debian | Apt-add-repository
-  ansible.builtin.apt_repository:
-    filename: "{{ item.filename }}"
+- name: debian | Remove legacy Apt sources
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ item.filename }}.list"
+    state: absent
+  loop: "{{ _apt_repository }}"
+# item.repo is a one-line "deb [options] URI SUITE [COMPONENT...]" string,
+# split here into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: debian | Apt-add-repository  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ item.filename | regex_replace('[^A-Za-z0-9_-]+', '_') | trim('_') }}"
     mode: "{{ item.mode | default('0644') }}"
-    repo: "{{ item.repo }}"
+    types: "{{ _bitbucket_apt_repository_types }}"
+    uris: "{{ _bitbucket_apt_repository_rest[0] }}"
+    suites: "{{ _bitbucket_apt_repository_rest[1] }}"
+    components: "{{ _bitbucket_apt_repository_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _bitbucket_apt_repository_arch | default(omit, true) }}"
+    signed_by: "{{ _bitbucket_apt_repository_signed_by }}"
     state: "{{ item.state }}"
+  vars:
+    _bitbucket_apt_repository_line: "{{ item.repo | trim }}"
+    _bitbucket_apt_repository_types: "{{ _bitbucket_apt_repository_line | regex_search('^deb-src|^deb') }}"
+    _bitbucket_apt_repository_options: "{{ _bitbucket_apt_repository_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _bitbucket_apt_repository_arch_option: "{{ _bitbucket_apt_repository_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _bitbucket_apt_repository_arch: "{{ _bitbucket_apt_repository_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key is fetched from the URL in _apt_key.
+    _bitbucket_apt_repository_signed_by: "{{ _bitbucket_apt_repository_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([_apt_key[0].url], true) | first }}"
+    _bitbucket_apt_repository_rest: "{{ _bitbucket_apt_repository_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
   loop: "{{ _apt_repository }}"
   register: result
   until: result is succeeded
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: debian | Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - result is changed
 - name: debian | Apt-mark unhold
   ansible.builtin.dpkg_selections:
     name: "{{ item.name | regex_replace('^(.*)=[0-9]*:*[0-9]+\\..*$', '\\1') }}"

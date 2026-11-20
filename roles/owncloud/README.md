@@ -93,7 +93,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 # PHP/Apache/MySQL/Redis involved. This role now installs that instead.
 
 # oCIS release to install.
-ocis_version: "8.2.2"
+ocis_version: "8.2.3"
 
 # Owner and group for oCIS.
 ocis_owner: "ocis"
@@ -152,7 +152,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

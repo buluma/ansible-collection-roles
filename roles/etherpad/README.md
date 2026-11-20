@@ -78,7 +78,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 etherpad_installation_destination: /opt
 etherpad_data_directory: /opt/etherpad-data
 etherpad_port: 9001
-etherpad_version: "3.3.10"
+etherpad_version: "3.3.20"
 ```
 
 ## [Requirements](#requirements)
@@ -116,7 +116,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.
@@ -132,4 +132,4 @@ If you find issues, please register them on [GitHub](https://github.com/buluma/a
 
 [buluma](https://buluma.github.io/)
 
-Etherpad 3.3.10 requires Node.js 24.0.0 or newer and pnpm 12.0.0 or newer (upstream package manager: pnpm 12.4.2). For this security release, upstream recommends Node.js 24.22.1 or newer. Provision Node.js before applying the role. The upstream `bin/run.sh --root` entry point installs dependencies and builds the UI before starting the service. By default, the role stores the dirty database in `/opt/etherpad-data/dirty.db` and migrates one existing versioned database there during the first apply. If multiple versioned databases exist, migration stops for manual selection. Existing databases and plugins still require the upstream migration/compatibility review before production upgrades.
+Etherpad 3.3.20 requires Node.js 24.0.0 or newer and pnpm 12.0.0 or newer (upstream package manager: pnpm 12.4.2). For this security release, upstream recommends Node.js 24.22.1 or newer. Provision Node.js before applying the role. The upstream `bin/run.sh --root` entry point installs dependencies and builds the UI before starting the service. By default, the role stores the dirty database in `/opt/etherpad-data/dirty.db` and migrates one existing versioned database there during the first apply. If multiple versioned databases exist, migration stops for manual selection. Existing databases and plugins still require the upstream migration/compatibility review before production upgrades.

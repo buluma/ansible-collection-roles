@@ -11,6 +11,19 @@ _ocis_architecture_map:
 ocis_architecture: "{{ _ocis_architecture_map[ansible_facts['architecture']] }}"
 
 _ocis_download:
+  "8.2.3":
+    "amd64":
+      url: "https://github.com/owncloud/ocis/releases/download/v8.2.3/ocis-8.2.3-linux-amd64"
+      checksum: "sha256:7a386c4e85ffe629d6ffdfb0a0ea4e60c87ac3620892b9534d0a3ec8b14fc68a"
+    "arm64":
+      url: "https://github.com/owncloud/ocis/releases/download/v8.2.3/ocis-8.2.3-linux-arm64"
+      checksum: "sha256:d2c304074d66f77360e55164d040326624b5b61de03eb18888526a9a074fbfb6"
+    "arm":
+      url: "https://github.com/owncloud/ocis/releases/download/v8.2.3/ocis-8.2.3-linux-arm"
+      checksum: "sha256:c09b1c9e2dae4f4a0a4cd5f3d36c4a74cc4a52cde13a4f3b22773f935cc0301e"
+    "386":
+      url: "https://github.com/owncloud/ocis/releases/download/v8.2.3/ocis-8.2.3-linux-386"
+      checksum: "sha256:31ec598698a6b2678e1b563311dbd2435dc541531229e694767356e842ccf4f4"
   "8.2.2":
     "amd64":
       url: "https://github.com/owncloud/ocis/releases/download/v8.2.2/ocis-8.2.2-linux-amd64"

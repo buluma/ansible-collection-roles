@@ -2,7 +2,7 @@
 # Pins the CI platform/version matrix for this role. Without this, ansible-generator
 # falls back to default_platforms and silently discards these choices on regenerate.
 # EL and Fedora are excluded entirely: this role manages apt repositories via
-# ansible.builtin.apt_repository, which requires python3-apt and cannot function
+# ansible.builtin.deb822_repository, which requires python3-debian and cannot function
 # on RHEL-family systems at all.
 platforms:
   - name: Debian
