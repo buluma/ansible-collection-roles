@@ -20,7 +20,11 @@ This example is taken from [`molecule/default/converge.yml`](https://github.com/
   roles:
     - role: buluma.apt_repository
       apt_repositories:
-        - repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+        - name: yarn
+          uris: https://dl.yarnpkg.com/debian/
+          suites: stable
+          components: main
+          signed_by: https://dl.yarnpkg.com/debian/pubkey.gpg
 ```
 
 The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-apt_repository/blob/master/molecule/default/prepare.yml):
@@ -97,10 +101,38 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 ---
 # defaults file for apt_repositories
 
+# Repositories are managed in the deb822 format, as /etc/apt/sources.list.d/<name>.sources.
+#
+# BREAKING CHANGE: items used to be one-line sources (`repo: "deb ..."` or `repo: ppa:...`)
+# with an optional `validate_certs`. Those keys are no longer supported and the role fails
+# when it finds them. Convert each item to the keys below, and remove the old source files
+# by hand first so a repository is not listed twice.
+#
+# Item keys:
+#   name:          Required. Identifies the repository, it is used as the file name.
+#   uris:          Required when present. A URI, or a list of URIs.
+#   suites:        Required when present. A suite, or a list of suites.
+#   components:    Optional. A component, or a list of components.
+#   types:         Optional. deb (default) and/or deb-src.
+#   architectures: Optional. For example amd64.
+#   signed_by:     Optional. A URL to a key, a path to a keyring, or the key itself.
+#   state:         Optional. present (default) or absent.
+#
+# A PPA is a normal repository, give its URI and the key it is signed with.
+#
 # You can add or remove repositories:
 # apt_repositories:
-#   - repo: ppa:rabbitvcs/ppa
-#   - repo: ppa:something/ppa
+#   - name: yarn
+#     uris: https://dl.yarnpkg.com/debian/
+#     suites: stable
+#     components: main
+#     signed_by: https://dl.yarnpkg.com/debian/pubkey.gpg
+#   - name: rabbitvcs
+#     uris: https://ppa.launchpadcontent.net/rabbitvcs/ppa/ubuntu
+#     suites: "{{ ansible_facts['distribution_release'] }}"
+#     components: main
+#     signed_by: /etc/apt/keyrings/rabbitvcs.asc
+#   - name: something
 #     state: absent
 
 apt_repositories: []
@@ -135,7 +167,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Debian](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

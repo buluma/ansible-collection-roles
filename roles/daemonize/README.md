@@ -76,7 +76,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 
 workspace: /root
 
-daemonize_version: "1.7.7"
+daemonize_version: "1.7.8"
 daemonize_install_path: "/usr"
 ```
 
@@ -112,7 +112,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

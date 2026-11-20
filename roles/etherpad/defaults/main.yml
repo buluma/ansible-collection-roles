@@ -3,4 +3,4 @@ etherpad_installation_destination: /opt
 etherpad_data_directory: "{{ etherpad_installation_destination }}/etherpad-data"
 etherpad_port: 9001
 # Release version without a `v` prefix; the role adds `v` to the archive URL.
-etherpad_version: "3.3.10"
+etherpad_version: "3.3.20"

@@ -77,7 +77,7 @@ drush_composer_global_bin_path: ~/.config/composer/vendor/bin
 drush_composer_global_install: false
 drush_composer_path: /usr/local/bin/drush
 drush_composer_update: false
-drush_composer_version: "13.8.0"
+drush_composer_version: "13.8.1"
 drush_force_composer_install: false
 drush_force_update: false
 drush_install_from_source: false
@@ -88,7 +88,7 @@ drush_launcher_phar_url: "https://github.com/drush-ops/drush-launcher/releases/d
 drush_launcher_version: "0.10.2"
 drush_source_install_bin_path: /usr/local/bin/drush
 drush_source_install_path: /usr/local/share/drush
-drush_source_install_version: "13.8.0"
+drush_source_install_version: "13.8.1"
 ```
 
 ## [Requirements](#requirements)
@@ -123,7 +123,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

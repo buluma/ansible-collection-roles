@@ -16,10 +16,64 @@
     name: "{{ item }}"
   loop: "{{ beats_client_beats_prereq }}"
 
-- name: Add Beats apt repository.
-  ansible.builtin.apt_repository:
-    repo: "{{ beats_client_elastic_repo_url }}"
+- name: Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
+
+# beats_client_elastic_repo_url is a one-line "deb [options] URI SUITE [COMPONENT...]"
+# string, split here into the parts deb822_repository needs.
+- name: Parse Beats apt repository
+  ansible.builtin.set_fact:
+    beats_client_repo:
+      name: "{{ (_beats_client_repo_host ~ '_' ~ _beats_client_repo_rest[1]) | regex_replace('[^A-Za-z0-9_-]+', '_') }}"
+      types: "{{ _beats_client_repo_types }}"
+      uri: "{{ _beats_client_repo_rest[0] }}"
+      suite: "{{ _beats_client_repo_rest[1] }}"
+      components: "{{ _beats_client_repo_rest[2:] }}"
+      architectures: "{{ _beats_client_repo_arch }}"
+      signed_by: "{{ _beats_client_repo_signed_by }}"
+      legacy_source: "/etc/apt/sources.list.d/{{ _beats_client_repo_legacy_name }}.list"
+  vars:
+    _beats_client_repo_line: "{{ beats_client_elastic_repo_url | trim }}"
+    _beats_client_repo_types: "{{ _beats_client_repo_line | regex_search('^deb-src|^deb') }}"
+    _beats_client_repo_options: "{{ _beats_client_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _beats_client_repo_arch_option: "{{ _beats_client_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _beats_client_repo_arch: "{{ _beats_client_repo_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option use the key file imported above.
+    _beats_client_repo_signed_by: "{{ _beats_client_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default(['/usr/share/keyrings/elastic-beats.gpg'], true) | first }}"
+    _beats_client_repo_rest: "{{ _beats_client_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+    # The URI without scheme and credentials, as apt_repository used it for the file name.
+    _beats_client_repo_bare_uri: "{{ _beats_client_repo_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^@]*@', '') }}"
+    _beats_client_repo_host: "{{ _beats_client_repo_bare_uri | regex_replace('/.*$', '') }}"
+    _beats_client_repo_legacy_name: "{{ _beats_client_repo_bare_uri | regex_replace('[^A-Za-z0-9]+', '_') | regex_replace('^_+|_+$', '') }}"
+
+# The one-line source below was written by earlier versions of this role.
+# Remove it so upgrades don't leave a duplicate source. The key file
+# /usr/share/keyrings/elastic-beats.gpg is still used by the new source, so it is kept.
+- name: Remove legacy Beats apt source
+  ansible.builtin.file:
+    path: "{{ beats_client_repo.legacy_source }}"
+    state: absent
+
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: Add Beats apt repository.  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ beats_client_repo.name }}"
+    types: "{{ beats_client_repo.types }}"
+    uris: "{{ beats_client_repo.uri }}"
+    suites: "{{ beats_client_repo.suite }}"
+    components: "{{ beats_client_repo.components | default(omit, true) }}"
+    architectures: "{{ beats_client_repo.architectures | default(omit, true) }}"
+    signed_by: "{{ beats_client_repo.signed_by }}"
     state: present
+  register: beats_client_deb822_repository
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - beats_client_deb822_repository is changed
 
 - name: Install beat packages.
   ansible.builtin.apt:

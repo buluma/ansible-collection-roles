@@ -1,12 +1,42 @@
 ---
 # tasks file for azure_cli
 
-- name: Add apt repository
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ azure_cli_apt_codename }} main"
-    state: present
+- name: Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
   when:
     - ansible_facts['pkg_mgr'] in [ "apt" ]
+
+# The one-line source below was written by earlier versions of this role.
+# Remove it so upgrades don't leave duplicate sources.
+- name: Remove legacy apt source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/packages_microsoft_com_repos_azure_cli.list
+    state: absent
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+
+- name: Add apt repository
+  ansible.builtin.deb822_repository:
+    name: azure-cli
+    types: deb
+    uris: https://packages.microsoft.com/repos/azure-cli/
+    suites: "{{ azure_cli_apt_codename }}"
+    components: main
+    architectures: amd64
+    signed_by: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  register: azure_cli_deb822_repository
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - ansible_facts['pkg_mgr'] in [ "apt" ]
+    - azure_cli_deb822_repository is changed
 
 - name: Add yum repository
   ansible.builtin.yum_repository:

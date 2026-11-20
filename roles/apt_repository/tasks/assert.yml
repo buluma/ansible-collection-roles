@@ -7,14 +7,29 @@
   when:
     - apt_repositories is defined
 
-- name: assert | Test mandatory item.repo in apt_repositories
+- name: assert | Test items in apt_repositories are not in the removed one-line format
   ansible.builtin.assert:
     that:
-      - item.repo is string
+      - item.repo is not defined
+      - item.validate_certs is not defined
+    fail_msg: >-
+      apt_repositories items no longer take `repo` or `validate_certs`. Convert the item to
+      `name`, `uris`, `suites`, `components` and `signed_by`, see defaults/main.yml.
     quiet: true
   loop: "{{ apt_repositories }}"
   loop_control:
-    label: "{{ item.repo }}"
+    label: "{{ item.name | default(item.repo | default('unnamed')) }}"
+  when:
+    - apt_repositories is defined
+
+- name: assert | Test mandatory item.name in apt_repositories
+  ansible.builtin.assert:
+    that:
+      - item.name is string
+    quiet: true
+  loop: "{{ apt_repositories }}"
+  loop_control:
+    label: "{{ item.name | default(item.repo | default('unnamed')) }}"
   when:
     - apt_repositories is defined
 
@@ -26,19 +41,20 @@
     quiet: true
   loop: "{{ apt_repositories }}"
   loop_control:
-    label: "{{ item.repo }}"
+    label: "{{ item.name }}"
   when:
     - apt_repositories is defined
     - item.state is defined
 
-- name: assert | Test optional item.validate_certs in apt_repositories
+- name: assert | Test item.uris and item.suites in apt_repositories to be present
   ansible.builtin.assert:
     that:
-      - item.validate_certs is boolean
+      - item.uris is defined
+      - item.suites is defined
     quiet: true
   loop: "{{ apt_repositories }}"
   loop_control:
-    label: "{{ item.repo }}"
+    label: "{{ item.name }}"
   when:
     - apt_repositories is defined
-    - item.validate_certs is defined
+    - item.state | default('present') == "present"

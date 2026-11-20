@@ -13,24 +13,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: debian | Download Apt keys
-  ansible.builtin.get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.keyring | regex_replace('\\.gpg$', '.asc') }}"
-    mode: "0644"
+- name: debian | Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
+
+# The keys and the one-line sources below were written by earlier versions
+# of this role. Remove them so upgrades don't leave duplicate sources.
+- name: debian | Remove legacy Apt keys
+  ansible.builtin.file:
+    path: "{{ item.keyring | regex_replace('\\.gpg$', '.asc') }}"
+    state: absent
   loop: "{{ _apt_key[openjdk_release] }}"
+
+- name: debian | Remove legacy Apt sources
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ item.filename }}.list"
+    state: absent
+  loop: "{{ _apt_repository[openjdk_release] }}"
+
+# item.repo is a one-line "deb [options] URI SUITE [COMPONENT...]" string,
+# split here into the parts deb822_repository needs. The key of a repository
+# is the entry of _apt_key at the same position, and is fetched from its URL.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: debian | Apt-add-repository  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ item.filename | regex_replace('[^A-Za-z0-9_-]+', '_') }}"
+    types: "{{ _openjdk_repo_types }}"
+    uris: "{{ _openjdk_repo_rest[0] }}"
+    suites: "{{ _openjdk_repo_rest[1] }}"
+    components: "{{ _openjdk_repo_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _openjdk_repo_arch | default(omit, true) }}"
+    signed_by: "{{ _openjdk_repo_signed_by }}"
+    state: "{{ item.state }}"
+    mode: "{{ item.mode | default('0644') }}"
+  vars:
+    _openjdk_repo_line: "{{ item.repo | trim }}"
+    _openjdk_repo_types: "{{ _openjdk_repo_line | regex_search('^deb-src|^deb') }}"
+    _openjdk_repo_options: "{{ _openjdk_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _openjdk_repo_arch_option: "{{ _openjdk_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _openjdk_repo_arch: "{{ _openjdk_repo_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key is fetched from the URL of the matching _apt_key entry.
+    _openjdk_repo_signed_by: "{{ _openjdk_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([_apt_key[openjdk_release][ansible_loop.index0].url], true) | first }}"
+    _openjdk_repo_rest: "{{ _openjdk_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+  loop: "{{ _apt_repository[openjdk_release] }}"
+  loop_control:
+    extended: true
   register: result
   until: result is succeeded
 
-- name: debian | Apt-add-repository
-  ansible.builtin.apt_repository:
-    filename: "{{ item.filename }}"
-    repo: "{{ item.repo }}"
-    state: "{{ item.state }}"
-    mode: "{{ item.mode | default('0644') }}"
-  loop: "{{ _apt_repository[openjdk_release] }}"
-  register: result
-  until: result is succeeded
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: debian | Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - result is changed
 
 - name: debian | Apt-get install
   ansible.builtin.apt:

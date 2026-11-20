@@ -22,16 +22,39 @@
   when:
     - ansible_facts['pkg_mgr'] == "apt"
   block:
-    - name: Install apt repository key
-      ansible.builtin.get_url:
-        url: "https://packages.gitlab.com/gpg.key"
-        dest: /etc/apt/trusted.gpg.d/gitlab.asc
-        mode: "0644"
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
+
+    # The key and the one-line source below were written by earlier versions
+    # of this role. Remove them so upgrades don't leave duplicate sources.
+    - name: Remove legacy apt repository key
+      ansible.builtin.file:
+        path: /etc/apt/trusted.gpg.d/gitlab.asc
+        state: absent
+
+    - name: Remove legacy apt repository source
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ gitlab_repository_name }}.list"
+        state: absent
 
     - name: Install apt repository
-      ansible.builtin.apt_repository:
-        repo: "deb {{ gitlab_repository_url }} {{ gitlab_apt_codename }} main"
-        filename: "{{ gitlab_repository_name }}"
+      ansible.builtin.deb822_repository:
+        name: "{{ gitlab_repository_name }}"
+        types: deb
+        uris: "{{ gitlab_repository_url }}"
+        suites: "{{ gitlab_apt_codename }}"
+        components: main
+        signed_by: "https://packages.gitlab.com/gpg.key"
+        state: present
+      register: gitlab_deb822_repository
+
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update apt cache  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - gitlab_deb822_repository is changed
 
 - name: Execute yum/dnf tasks
   when:

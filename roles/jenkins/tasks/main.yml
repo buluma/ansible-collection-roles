@@ -22,16 +22,52 @@
 - name: Configure apt
   when:
     - ansible_facts['pkg_mgr'] == "apt"
+  # jenkins_apt_repository_repo is a one-line "deb [options] URI SUITE [COMPONENT...]"
+  # string, split here into the parts deb822_repository needs.
+  vars:
+    _jenkins_apt_repository_line: "{{ jenkins_apt_repository_repo | trim }}"
+    _jenkins_apt_repository_types: "{{ _jenkins_apt_repository_line | regex_search('^deb-src|^deb') }}"
+    _jenkins_apt_repository_options: "{{ _jenkins_apt_repository_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _jenkins_apt_repository_arch_option: "{{ _jenkins_apt_repository_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _jenkins_apt_repository_arch: "{{ _jenkins_apt_repository_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key is fetched from jenkins_apt_key_url.
+    _jenkins_apt_repository_signed_by: "{{ _jenkins_apt_repository_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([jenkins_apt_key_url], true) | first }}"
+    _jenkins_apt_repository_rest: "{{ _jenkins_apt_repository_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+    # URI without scheme and credentials, the legacy file name is derived from it.
+    _jenkins_apt_repository_uri: "{{ _jenkins_apt_repository_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+    _jenkins_apt_repository_name: "{{ (_jenkins_apt_repository_uri | regex_replace('[/:].*$', '') ~ '_' ~ _jenkins_apt_repository_rest[1]) | regex_replace('[^A-Za-z0-9_-]+', '_') | trim('_') }}"
   block:
-    - name: Add apt key
-      ansible.builtin.get_url:
-        url: "{{ jenkins_apt_key_url }}"
-        dest: /etc/apt/trusted.gpg.d/jenkins.asc
-        mode: "0644"
-    - name: Add apt repository
-      ansible.builtin.apt_repository:
-        repo: "{{ jenkins_apt_repository_repo }}"
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
+    # The key and the one-line source below were written by earlier versions
+    # of this role. Remove them so upgrades don't leave duplicate sources.
+    - name: Remove legacy apt key
+      ansible.builtin.file:
+        path: /etc/apt/trusted.gpg.d/jenkins.asc
+        state: absent
+    - name: Remove legacy apt source
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ _jenkins_apt_repository_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}.list"
+        state: absent
+    # The noqa is there because ansible-lint can't validate the templated types.
+    - name: Add apt repository  # noqa: args[module]
+      ansible.builtin.deb822_repository:
+        name: "{{ _jenkins_apt_repository_name }}"
+        types: "{{ _jenkins_apt_repository_types }}"
+        uris: "{{ _jenkins_apt_repository_rest[0] }}"
+        suites: "{{ _jenkins_apt_repository_rest[1] }}"
+        components: "{{ _jenkins_apt_repository_rest[2:] | default(omit, true) }}"
+        architectures: "{{ _jenkins_apt_repository_arch | default(omit, true) }}"
+        signed_by: "{{ _jenkins_apt_repository_signed_by }}"
         state: present
+      register: jenkins_deb822_repository
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update apt cache  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - jenkins_deb822_repository is changed
 - name: Add zypper repository
   community.general.zypper_repository:
     name: jenkins

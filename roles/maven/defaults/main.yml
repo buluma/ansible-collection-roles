@@ -7,4 +7,4 @@ maven_is_default_installation: true
 maven_mirror: "http://archive.apache.org/dist/maven/maven-{{ maven_version | regex_replace('\\..*', '') }}/{{ maven_version }}/binaries"
 maven_use_proxy: true
 maven_validate_certs: true
-maven_version: "3.10.0"
+maven_version: "3.10.1"

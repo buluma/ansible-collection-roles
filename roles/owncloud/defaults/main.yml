@@ -6,7 +6,7 @@
 # PHP/Apache/MySQL/Redis involved. This role now installs that instead.
 
 # oCIS release to install.
-ocis_version: "8.2.2"
+ocis_version: "8.2.3"
 
 # Owner and group for oCIS.
 ocis_owner: "ocis"

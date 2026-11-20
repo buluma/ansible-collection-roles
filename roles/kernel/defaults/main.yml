@@ -1,7 +1,7 @@
 ---
 # defaults file for kernel
 
-kernel_version: "6.12.96"
+kernel_version: "6.12.118"
 
 kernel_build_location: /tmp
 

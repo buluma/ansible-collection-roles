@@ -149,7 +149,7 @@ telegraf_agent_package_path: /tmp
 telegraf_agent_package_state: present
 telegraf_agent_quiet: false
 telegraf_agent_round_interval: true
-telegraf_agent_version: "1.40.2"
+telegraf_agent_version: "1.40.3"
 telegraf_agent_version_patch: 1
 telegraf_enabled: true
 telegraf_gid_docker: 995
@@ -228,7 +228,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 
-The minimum version of Ansible required is 2.12, tests have been done on:
+The minimum version of Ansible required is 2.19, tests have been done on:
 
 - The previous version.
 - The current version.

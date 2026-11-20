@@ -17,14 +17,58 @@
   when:
     - ansible_facts['distribution'] in [ "AlmaLinux", "CentOS", "Fedora", "RedHat", "Rocky", "Amazon" ]
     - mssql_add_repositories
-- name: Add apt repository
-  ansible.builtin.apt_repository:
-    repo: deb [arch=amd64,arm64,armhf] "{{ item.repo }}" {{ ansible_facts['distribution_release'] }} main
-    state: present
-  loop: "{{ mssql_ubuntu_repositories }}"
+- name: Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
   when:
     - ansible_facts['os_family'] == "Debian"
     - mssql_add_repositories
+# The one-line sources below were written by earlier versions of this role.
+# Remove them so upgrades don't leave duplicate sources. The key file in
+# /etc/apt/trusted.gpg.d is written by buluma.microsoft_repository_keys, so it is kept.
+- name: Remove legacy apt source
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ _mssql_apt_repository_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}.list"
+    state: absent
+  vars:
+    _mssql_apt_repository_uri: "{{ item.repo | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+  loop: "{{ mssql_ubuntu_repositories }}"
+  loop_control:
+    label: "{{ item.repo }}"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - mssql_add_repositories
+- name: Add apt repository
+  ansible.builtin.deb822_repository:
+    # Both repositories share host and suite, so the URI path is part of the name.
+    name: "{{ (_mssql_apt_repository_uri ~ '_' ~ ansible_facts['distribution_release']) | regex_replace('[^A-Za-z0-9_-]+', '_') | trim('_') }}"
+    types: deb
+    uris: "{{ item.repo }}"
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: main
+    architectures:
+      - amd64
+      - arm64
+      - armhf
+    signed_by: "{{ mssql_gpgkey }}"
+    state: present
+  vars:
+    _mssql_apt_repository_uri: "{{ item.repo | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+  register: mssql_deb822_repository
+  loop: "{{ mssql_ubuntu_repositories }}"
+  loop_control:
+    label: "{{ item.repo }}"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - mssql_add_repositories
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - mssql_add_repositories
+    - mssql_deb822_repository is changed
 - name: Install software mssql-server (package)
   ansible.builtin.package:
     name: "{{ mssql_server_package }}"

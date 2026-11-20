@@ -7,7 +7,7 @@
       on {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version']
       }}
 
-- name: Wait for systemd # noqa 303
+- name: Wait for systemd # noqa command-instead-of-module
   ansible.builtin.command: systemctl is-system-running
   register: systemd_status
   until: systemd_status.stdout is search('running|degraded')

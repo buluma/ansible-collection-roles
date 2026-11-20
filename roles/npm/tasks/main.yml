@@ -17,11 +17,56 @@
         validate_certs: "{{ npm_validate_certs }}"
         mode: "0644"
 
-    - name: Install nodejs deb repository
-      ansible.builtin.apt_repository:
-        repo: "{{ item }}"
-        state: present
+    - name: Install required package python3-debian
+      ansible.builtin.package:
+        name: python3-debian
+
+    # The one-line sources below were written by earlier versions of this role.
+    # Remove them so upgrades don't leave duplicate sources. The key file
+    # /etc/apt/trusted.gpg.d/npm.asc is still used by the new sources, so it is kept.
+    - name: Remove legacy nodejs deb repository
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ _npm_apt_repository_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}.list"
+        state: absent
+      vars:
+        _npm_apt_repository_rest: "{{ item | trim | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+        _npm_apt_repository_uri: "{{ _npm_apt_repository_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
       loop: "{{ npm_apt_repositories }}"
+
+    # Each item of npm_apt_repositories is a one-line "deb [options] URI SUITE [COMPONENT...]"
+    # string, split here into the parts deb822_repository needs.
+    # The noqa is there because ansible-lint can't validate the templated types.
+    - name: Install nodejs deb repository  # noqa: args[module]
+      ansible.builtin.deb822_repository:
+        name: "{{ _npm_apt_repository_name }}"
+        types: "{{ _npm_apt_repository_types }}"
+        uris: "{{ _npm_apt_repository_rest[0] }}"
+        suites: "{{ _npm_apt_repository_rest[1] }}"
+        components: "{{ _npm_apt_repository_rest[2:] | default(omit, true) }}"
+        architectures: "{{ _npm_apt_repository_arch | default(omit, true) }}"
+        signed_by: "{{ _npm_apt_repository_signed_by }}"
+        state: present
+      vars:
+        _npm_apt_repository_line: "{{ item | trim }}"
+        _npm_apt_repository_types: "{{ _npm_apt_repository_line | regex_search('^deb-src|^deb') }}"
+        _npm_apt_repository_options: "{{ _npm_apt_repository_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+        _npm_apt_repository_arch_option: "{{ _npm_apt_repository_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+        _npm_apt_repository_arch: "{{ _npm_apt_repository_arch_option | split(',') | reject('equalto', '') | list }}"
+        # Items without a signed-by option use the key file downloaded above.
+        _npm_apt_repository_signed_by: "{{ _npm_apt_repository_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default(['/etc/apt/trusted.gpg.d/npm.asc'], true) | first }}"
+        _npm_apt_repository_rest: "{{ _npm_apt_repository_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+        _npm_apt_repository_uri: "{{ _npm_apt_repository_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+        # The deb and deb-src items share URI and suite, so the type is part of the name.
+        _npm_apt_repository_name: "{{ (_npm_apt_repository_uri ~ '_' ~ _npm_apt_repository_rest[1] ~ '_' ~ _npm_apt_repository_types) | regex_replace('[^A-Za-z0-9_-]+', '_') | trim('_') }}"
+      register: npm_deb822_repository
+      loop: "{{ npm_apt_repositories }}"
+
+    # deb822_repository does not refresh the package cache, apt_repository did.
+    - name: Update apt cache  # noqa: no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      when:
+        - npm_deb822_repository is changed
 
     - name: Pin nodejs to the NodeSource repository
       ansible.builtin.copy:

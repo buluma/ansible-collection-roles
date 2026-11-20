@@ -5,7 +5,7 @@ galaxy_info:
   description: Installs benthos
   role_name: benthos
   license: MIT
-  min_ansible_version: "2.12"
+  min_ansible_version: "2.19"
   namespace: buluma
   galaxy_tags:
     - benthos

@@ -16,19 +16,60 @@
       - gnupg2
     state: present
 
-- name: install-Debian | Add fish repository key
-  ansible.builtin.get_url:
-    url: "{{ _fish_apt_key_url | default('https://' + (_fish_apt_keyserver | default('keyserver.ubuntu.com')) + '/pks/lookup?op=get&search=0x' + (_fish_apt_key_id
-      | default(''))) }}"
-    dest: /etc/apt/trusted.gpg.d/fish.asc
-    mode: "0644"
+- name: install-Debian | Install required package python3-debian
+  ansible.builtin.package:
+    name: python3-debian
   tags:
     - fish
 
-- name: install-Debian | Add fish repository
-  ansible.builtin.apt_repository:
-    filename: shells_fish_release_{{ fish_release_version }}
-    repo: "{{ _fish_apt_repo_url }}"
+# The key and the one-line source below were written by earlier versions
+# of this role. Remove them so upgrades don't leave duplicate sources.
+- name: install-Debian | Remove legacy fish repository key
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/fish.asc
+    state: absent
+  tags:
+    - fish
+
+- name: install-Debian | Remove legacy fish repository source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/shells_fish_release_{{ fish_release_version }}.list
+    state: absent
+  tags:
+    - fish
+
+# _fish_apt_repo_url is a one-line "deb [options] URI SUITE [COMPONENT...]"
+# string, split here into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: install-Debian | Add fish repository  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: shells_fish_release_{{ fish_release_version }}
+    types: "{{ _fish_apt_repo_types }}"
+    uris: "{{ _fish_apt_repo_rest[0] }}"
+    suites: "{{ _fish_apt_repo_rest[1] }}"
+    components: "{{ _fish_apt_repo_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _fish_apt_repo_arch | default(omit, true) }}"
+    signed_by: "{{ _fish_apt_repo_signed_by }}"
+    state: present
+  vars:
+    _fish_apt_repo_line: "{{ _fish_apt_repo_url | trim }}"
+    _fish_apt_repo_types: "{{ _fish_apt_repo_line | regex_search('^deb-src|^deb') }}"
+    _fish_apt_repo_options: "{{ _fish_apt_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _fish_apt_repo_arch_option: "{{ _fish_apt_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _fish_apt_repo_arch: "{{ _fish_apt_repo_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key is fetched from the URL the role used to download.
+    _fish_apt_repo_signed_by: "{{ _fish_apt_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([_fish_apt_key_url | default('https://' + (_fish_apt_keyserver | default('keyserver.ubuntu.com')) + '/pks/lookup?op=get&search=0x' + (_fish_apt_key_id | default('')))], true) | first }}"
+    _fish_apt_repo_rest: "{{ _fish_apt_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+  register: fish_deb822_repository
+  tags:
+    - fish
+
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: install-Debian | Update apt cache  # noqa: no-handler
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - fish_deb822_repository is changed
   tags:
     - fish
 

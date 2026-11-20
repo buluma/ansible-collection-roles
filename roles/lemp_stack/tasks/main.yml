@@ -1,9 +1,9 @@
 ---
-- name: Main | Include lemp-php56 tasks
-  ansible.builtin.import_tasks: lemp-php56.yml
-- name: Main | Include lemp-php70 tasks
-  ansible.builtin.import_tasks: lemp-php70.yml
-  when: php_version == 70
+- name: Main | Reject unsupported PHP versions
+  ansible.builtin.assert:
+    that:
+      - php_version == "system"
+    fail_msg: "Only distribution PHP packages are supported; PHP 5.6 and 7.0 are end of life."
 - name: Main | Include system PHP tasks
   ansible.builtin.import_tasks: lemp-php-system.yml
   when: php_version == 'system'

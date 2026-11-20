@@ -23,11 +23,51 @@
     cmd: "gpg --batch --yes --dearmor -o {{ kubernetes_apt_keyring_path }} /tmp/kubernetes-release.key"
     creates: "{{ kubernetes_apt_keyring_path }}"
   when: add_repository_key is not failed
-- name: setup-Debian | Add Kubernetes repository.
-  ansible.builtin.apt_repository:
-    repo: "{{ kubernetes_apt_repository }}"
+- name: setup-Debian | Install required package python3-debian.
+  ansible.builtin.package:
+    name: python3-debian
+# The one-line source below was written by earlier versions of this role.
+# Remove it so upgrades don't leave duplicate sources. The key file
+# kubernetes_apt_keyring_path is still used by the new source, so it is kept.
+- name: setup-Debian | Remove legacy Kubernetes apt source.
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ _kubernetes_apt_repository_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}.list"
+    state: absent
+  vars:
+    _kubernetes_apt_repository_line: "{{ kubernetes_apt_repository | trim }}"
+    _kubernetes_apt_repository_rest: "{{ _kubernetes_apt_repository_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+    # URI without scheme and credentials, the legacy file name is derived from it.
+    _kubernetes_apt_repository_uri: "{{ _kubernetes_apt_repository_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+# kubernetes_apt_repository is a one-line "deb [options] URI SUITE [COMPONENT...]"
+# string, split here into the parts deb822_repository needs.
+# The noqa is there because ansible-lint can't validate the templated types.
+- name: setup-Debian | Add Kubernetes repository.  # noqa: args[module]
+  ansible.builtin.deb822_repository:
+    name: "{{ _kubernetes_apt_repository_uri | regex_replace('[^A-Za-z0-9]+', '_') | trim('_') }}"
+    types: "{{ _kubernetes_apt_repository_types }}"
+    uris: "{{ _kubernetes_apt_repository_rest[0] }}"
+    suites: "{{ _kubernetes_apt_repository_rest[1] }}"
+    components: "{{ _kubernetes_apt_repository_rest[2:] | default(omit, true) }}"
+    architectures: "{{ _kubernetes_apt_repository_arch | default(omit, true) }}"
+    signed_by: "{{ _kubernetes_apt_repository_signed_by }}"
     state: present
+  vars:
+    _kubernetes_apt_repository_line: "{{ kubernetes_apt_repository | trim }}"
+    _kubernetes_apt_repository_types: "{{ _kubernetes_apt_repository_line | regex_search('^deb-src|^deb') }}"
+    _kubernetes_apt_repository_options: "{{ _kubernetes_apt_repository_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
+    _kubernetes_apt_repository_arch_option: "{{ _kubernetes_apt_repository_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
+    _kubernetes_apt_repository_arch: "{{ _kubernetes_apt_repository_arch_option | split(',') | reject('equalto', '') | list }}"
+    # Without a signed-by option the key file written by the dearmor task is used.
+    _kubernetes_apt_repository_signed_by: "{{ _kubernetes_apt_repository_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([kubernetes_apt_keyring_path], true) | first }}"
+    _kubernetes_apt_repository_rest: "{{ _kubernetes_apt_repository_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
+    _kubernetes_apt_repository_uri: "{{ _kubernetes_apt_repository_rest[0] | regex_replace('^\\w+://', '') | regex_replace('^[^/]*@', '') }}"
+  register: kubernetes_deb822_repository
+# deb822_repository does not refresh the package cache, apt_repository did.
+- name: setup-Debian | Update apt cache.  # noqa: no-handler
+  ansible.builtin.apt:
     update_cache: true
+  when:
+    - kubernetes_deb822_repository is changed
 - name: setup-Debian | Add Kubernetes apt preferences file to pin a version.
   ansible.builtin.template:
     dest: /etc/apt/preferences.d/kubernetes
