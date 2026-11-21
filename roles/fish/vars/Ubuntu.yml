@@ -1,6 +1,7 @@
 ---
-_fish_apt_keyserver: keyserver.ubuntu.com
 # The release-4 PPA is signed only with the 88421E70... key, so the 59FDA1CE... key
 # used for release 2 and 3 would fail apt signature verification there.
 _fish_apt_key_id: "{{ '88421E703EDC7AF54967DED473C9FCC9E2BB48DA' if fish_release_version is version('4', '>=') else '59FDA1CE1B84B3FAD89366C027557F056DC33CA5' }}"
-_fish_apt_repo_url: "deb http://ppa.launchpad.net/fish-shell/release-{{ fish_release_version }}/ubuntu {{ ansible_facts['lsb'].codename | lower }} main"
+_fish_apt_key_url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x{{ _fish_apt_key_id }}"
+# ppa.launchpad.net serves the same content, but over https only as ppa.launchpadcontent.net.
+_fish_apt_repo_url: "deb https://ppa.launchpadcontent.net/fish-shell/release-{{ fish_release_version }}/ubuntu {{ ansible_facts['lsb'].codename | lower }} main"

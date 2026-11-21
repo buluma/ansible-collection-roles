@@ -1,5 +1,20 @@
 # Changelog
 
+## 5.1.0 (2026-11-21)
+
+**Changes:**
+
+- Repository and signing key hardening in nine roles: `crun`, `fish`, `netdata`, `nodejs`, `openjdk`, `perforce`, `telegraf`, `virtualbox` and `zabbix_repository`. Repository, key and release package URLs that used plain http are https now (opensuse, perforce, virtualbox, zabbix, telegraf's opensuse Go repositories, fish's OBS repository and Launchpad PPA, NodeSource's old EL path, the okay.com.mx rpm in netdata).
+- Keys are checked before they are trusted. The key is downloaded to a private temporary directory and refused unless it holds exactly the pinned fingerprint (`zabbix_repository`: only the four known keys). Only that key is then exported from a temporary keyring and installed, so apt and rpm never see anything else from the download. Key file names and locations are unchanged, so existing installs are updated in place. The temporary gpg-agent is stopped before cleanup. `rpm_key` now imports the verified local file. The apt and rpm hosts need `gpg`, the roles install `gnupg` or `gnupg2` where they did not before.
+- `telegraf`: new variables `telegraf_apt_gpgkey`, `telegraf_gpgkey_fingerprint`, `telegraf_zypper_gpgkey` and `telegraf_zypper_gpgkey_fingerprint`. The default openSUSE repository no longer uses `auto_import_keys`, a user supplied `telegraf_zypper_baseurl` still does. The pinned OBS key expires on 2027-11-16.
+- `netdata`: new variable `netdata_epel_repo_gpg_key_fingerprints` for the optional EPEL setup, the EPEL key is imported with its fingerprint checked.
+- `nodejs`: the NodeSource apt key is checked against `6F71F525282841EEDAF851B42F59B5F99B1BE0B4` and installed as before, the RPM keys `2E55207A95D9944B0CC932615DDBE8D434FA74DD` (18.x to 20.x) and `242B813831AF09562B6C46F76B88DA4E3AF28A14` (22.x and later) are pinned. The last one has no independent source, it is trusted because it verifies the packages in the repository.
+- `fish`: the OBS key (`24A63B31CAB41B33EC48801E2CE2AC08D880C8E4`) and the Ubuntu PPA keys are checked and exported the same way, EL release 3 is not covered by CI.
+- `crun`: the changed tasks are in files the role does not include, so they have no effect yet.
+- Synced from the merged state of the source repositories, not from local checkouts.
+
+**Not tested:** none of the changes ran on real hosts from this collection, each role's Molecule run is the evidence. The Suse paths, CentOS/RHEL 7 (gpg 1.x has no `--show-keys`) and the datadog Windows hardening from 5.0.0 are not covered by CI.
+
 ## 5.0.0 (2026-11-21)
 
 **Breaking changes:**

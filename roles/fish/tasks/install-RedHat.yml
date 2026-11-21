@@ -29,12 +29,54 @@
   tags:
     - fish
 
+# rpm_key needs gpg, which minimal images don't always have.
+- name: install-RedHat | Ensure gnupg2 is present
+  ansible.builtin.package:
+    name: gnupg2
+    state: present
+  tags:
+    - fish
+
+- name: install-RedHat | Ensure the rpm key directory exists
+  ansible.builtin.file:
+    path: /etc/pki/rpm-gpg
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags:
+    - fish
+
+# The key is verified before it is trusted, see install-key.yml.
+- name: install-RedHat | Verify and install the repository key
+  ansible.builtin.include_tasks:
+    file: install-key.yml
+    apply:
+      tags:
+        - fish
+  vars:
+    _fish_key_url: "https://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/repodata/repomd.xml.key"
+    _fish_key_id: "{{ _fish_rpm_key_id }}"
+    _fish_key_dest: "{{ _fish_rpm_key_file }}"
+  tags:
+    - fish
+
+# Importing the verified file into the rpm keyring means dnf doesn't have to
+# import (and trust) a key by itself on the first install.
+- name: install-RedHat | Import the repository key
+  ansible.builtin.rpm_key:
+    key: "{{ _fish_rpm_key_file }}"
+    fingerprint: "{{ _fish_rpm_key_id }}"
+    state: present
+  tags:
+    - fish
+
 - name: install-RedHat | Create yum repo
   ansible.builtin.yum_repository:
     name: shells_fish_release_{{ fish_release_version }}
     description: Fish shell - {{ fish_release_version }}.x release series ({{ _fish_repo_version_string }})
-    baseurl: http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/
-    gpgkey: http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/repodata/repomd.xml.key
+    baseurl: https://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/{{ _fish_repo_version_string }}/
+    gpgkey: file://{{ _fish_rpm_key_file }}
     enabled: true
     gpgcheck: true
     file: fish

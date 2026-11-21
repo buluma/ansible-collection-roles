@@ -1,10 +1,24 @@
 ---
-- name: redhat | Rpm --import
+- name: redhat | Install required package gnupg2
+  ansible.builtin.package:
+    name: gnupg2
+
+# A key is checked against its listed fingerprint before it is imported, see rpm-key.yml.
+- name: redhat | Verify and import Rpm keys
+  ansible.builtin.include_tasks: rpm-key.yml
+  loop: "{{ _rpm_key[openjdk_release] }}"
+  loop_control:
+    loop_var: _openjdk_rpm_key
+    label: "{{ _openjdk_rpm_key.key }}"
+  when: _openjdk_rpm_key.state == 'present'
+
+- name: redhat | Rpm --erase keys
   ansible.builtin.rpm_key:
     key: "{{ item.key }}"
     fingerprint: "{{ item.fingerprint }}"
     state: "{{ item.state }}"
   loop: "{{ _rpm_key[openjdk_release] }}"
+  when: item.state == 'absent'
   register: result
   until: result is succeeded
 

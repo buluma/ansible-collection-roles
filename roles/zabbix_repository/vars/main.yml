@@ -12,7 +12,24 @@ zabbix_repository_effective_version_minor: "{{ _zabbix_repository_version_minor_
 # The "zabbix_repository_version" is the whole version of Zabbix.
 zabbix_repository_version: "{{ zabbix_repository_version_major }}.{{ zabbix_repository_effective_version_minor }}-1"
 
-zabbix_url_start: "http://repo.zabbix.com/zabbix/{{ zabbix_repository_version_major }}"
+zabbix_url_start: "https://repo.zabbix.com/zabbix/{{ zabbix_repository_version_major }}"
+
+# The URL of the key that is imported on rpm based systems.
+_zabbix_repository_rpm_key_url: "https://repo.zabbix.com/zabbix-official-repo.key"
+
+# Fingerprints of the primary keys that zabbix-official-repo.key may hold. The
+# file is a bundle of several keys and all of them are imported, so any key
+# that is not listed here makes the role fail instead of being trusted.
+# - FBABD5FB20255ECAB22EE194D13D58E479EA5ED4: Zabbix SIA (2012, DSA 1024)
+# - A1848F5352D022B9471D83D0082AB56BA14FE591: Zabbix LLC (2016)
+# - 4C3D6F2CC75F5146754FC374D913219AB5333005: Zabbix LLC (Apr 2024), signs the
+#   current zabbix-release packages
+# - 84162C39F000750DDAEB816305A7FAEC227618D8: Zabbix Tools (2024)
+_zabbix_repository_rpm_key_fingerprints:
+  - FBABD5FB20255ECAB22EE194D13D58E479EA5ED4
+  - A1848F5352D022B9471D83D0082AB56BA14FE591
+  - 4C3D6F2CC75F5146754FC374D913219AB5333005
+  - 84162C39F000750DDAEB816305A7FAEC227618D8
 
 _zabbix_repository_package:
   Debian: "{{ zabbix_url_start }}/{{ ansible_facts['distribution'] | lower }}/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_repository_version_major }}-{{ zabbix_repository_effective_version_minor

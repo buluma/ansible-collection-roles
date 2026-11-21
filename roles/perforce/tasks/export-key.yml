@@ -1,0 +1,97 @@
+---
+# Downloads _perforce_key_url into _perforce_key_dir and leaves exactly the key
+# with fingerprint _perforce_key_id, ASCII armored, in
+# _perforce_key_dir/verified.asc. The caller creates and removes the directory,
+# it has to be new, empty and private, and installs verified.asc.
+#
+# The downloaded file itself is never installed. gpg here and apt or rpm later
+# could read a crafted file differently (skipped packets, extra keys), and a
+# keyserver answers with different signatures and armor on each fetch, which
+# would report a change on every run. So the download is checked, imported into
+# a throwaway keyring, and only the pinned key is exported again and checked
+# once more.
+- name: export-key | Download key
+  ansible.builtin.get_url:
+    url: "{{ _perforce_key_url }}"
+    dest: "{{ _perforce_key_dir }}/key"
+    mode: "0600"
+  changed_when: false
+  register: _perforce_key_download
+  until: _perforce_key_download is succeeded
+
+- name: export-key | Read key fingerprints
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --show-keys
+      - --with-colons
+      - --with-fingerprint
+      - "{{ _perforce_key_dir }}/key"
+  environment:
+    GNUPGHOME: "{{ _perforce_key_dir }}"
+  changed_when: false
+  register: _perforce_key_info
+
+# In the colon listing the first fpr line is the fingerprint of the primary
+# key, the ones after it belong to subkeys.
+- name: export-key | Verify key fingerprint
+  ansible.builtin.assert:
+    that:
+      - _perforce_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+      - (_perforce_key_info.stdout_lines | select('match', '^fpr:') | list | first | default('::::::::::')).split(':')[9] | upper == _perforce_key_id | upper
+    fail_msg: >-
+      The key downloaded from {{ _perforce_key_url }} is not a single key with
+      fingerprint {{ _perforce_key_id }}, refusing to trust it.
+    quiet: true
+
+- name: export-key | Import the verified key into a temporary keyring
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --batch
+      - --import
+      - "{{ _perforce_key_dir }}/key"
+  environment:
+    GNUPGHOME: "{{ _perforce_key_dir }}"
+  changed_when: false
+
+# Armored, because apt rejects a binary key in a .asc file and rpm reads both.
+- name: export-key | Export only the verified key
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --batch
+      - --export
+      - --armor
+      - --export-options
+      - export-minimal
+      - --output
+      - "{{ _perforce_key_dir }}/verified.asc"
+      - "{{ _perforce_key_id }}"
+  environment:
+    GNUPGHOME: "{{ _perforce_key_dir }}"
+  changed_when: false
+
+# Fails when gpg could not use the key (nothing or something else was exported).
+- name: export-key | Read exported key fingerprints
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --show-keys
+      - --with-colons
+      - --with-fingerprint
+      - "{{ _perforce_key_dir }}/verified.asc"
+  environment:
+    GNUPGHOME: "{{ _perforce_key_dir }}"
+  changed_when: false
+  register: _perforce_key_exported
+
+- name: export-key | Verify exported key
+  ansible.builtin.assert:
+    that:
+      - _perforce_key_exported.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+      - (_perforce_key_exported.stdout_lines | select('match', '^fpr:') | list | first | default('::::::::::')).split(':')[9] | upper == _perforce_key_id | upper
+    fail_msg: >-
+      The key exported from {{ _perforce_key_url }} is not a single key with
+      fingerprint {{ _perforce_key_id }}, refusing to install it.
+    quiet: true

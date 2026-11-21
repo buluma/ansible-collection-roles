@@ -38,81 +38,32 @@
   tags:
     - fish
 
-# The release PPA key comes from a keyserver. deb822_repository fetches a
-# signed_by URL itself on every run, which the keyserver answers differently
-# each time and which can't check a fingerprint. So the key is fetched into a
-# private temporary directory, installed only when it is the single key with
-# the expected fingerprint, and signed_by points at the installed file.
-- name: install-Debian | Verify and install the PPA key
-  when:
-    - _fish_apt_keyserver is defined
+- name: install-Debian | Ensure the apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
   tags:
     - fish
-  block:
-    - name: install-Debian | Create temporary directory for the PPA key
-      ansible.builtin.tempfile:
-        state: directory
-        prefix: fish-key-
-      register: _fish_apt_key_dir
-      changed_when: false
 
-    - name: install-Debian | Download the PPA key
-      ansible.builtin.get_url:
-        url: "https://{{ _fish_apt_keyserver }}/pks/lookup?op=get&search=0x{{ _fish_apt_key_id }}"
-        dest: "{{ _fish_apt_key_dir.path }}/key"
-        mode: "0600"
-      changed_when: false
-      register: _fish_apt_key_download
-      until: _fish_apt_key_download is succeeded
-
-    - name: install-Debian | Read the PPA key fingerprints
-      ansible.builtin.command:
-        argv:
-          - gpg
-          - --show-keys
-          - --with-colons
-          - --with-fingerprint
-          - "{{ _fish_apt_key_dir.path }}/key"
-      environment:
-        GNUPGHOME: "{{ _fish_apt_key_dir.path }}"
-      changed_when: false
-      register: _fish_apt_key_info
-
-    # In the colon listing the first fpr line is the fingerprint of the
-    # primary key, the ones after it belong to subkeys.
-    - name: install-Debian | Verify the PPA key fingerprint
-      ansible.builtin.assert:
-        that:
-          - _fish_apt_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
-          - (_fish_apt_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _fish_apt_key_id | upper
-        fail_msg: >-
-          The key downloaded from {{ _fish_apt_keyserver }} is not a single key
-          with fingerprint {{ _fish_apt_key_id }}, refusing to trust it.
-        quiet: true
-
-    - name: install-Debian | Ensure the apt keyrings directory exists
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        owner: root
-        group: root
-        mode: "0755"
-
-    - name: install-Debian | Install the PPA key
-      ansible.builtin.copy:
-        src: "{{ _fish_apt_key_dir.path }}/key"
-        dest: "/etc/apt/keyrings/shells_fish_release_{{ fish_release_version }}.asc"
-        remote_src: true
-        owner: root
-        group: root
-        mode: "0644"
-  always:
-    - name: install-Debian | Remove temporary directory of the PPA key
-      ansible.builtin.file:
-        path: "{{ _fish_apt_key_dir.path }}"
-        state: absent
-      changed_when: false
-      when: _fish_apt_key_dir.path is defined
+# deb822_repository fetches a signed_by URL itself on every run and can't check
+# a fingerprint, so the key is verified and installed first and signed_by points
+# at the installed file. The file is where deb822_repository stored the key
+# before, so installs from earlier versions of this role are updated in place.
+- name: install-Debian | Verify and install the repository key
+  ansible.builtin.include_tasks:
+    file: install-key.yml
+    apply:
+      tags:
+        - fish
+  vars:
+    _fish_key_url: "{{ _fish_apt_key_url }}"
+    _fish_key_id: "{{ _fish_apt_key_id }}"
+    _fish_key_dest: "/etc/apt/keyrings/shells_fish_release_{{ fish_release_version }}.asc"
+  tags:
+    - fish
 
 # _fish_apt_repo_url is a one-line "deb [options] URI SUITE [COMPONENT...]"
 # string, split here into the parts deb822_repository needs.
@@ -133,8 +84,8 @@
     _fish_apt_repo_options: "{{ _fish_apt_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
     _fish_apt_repo_arch_option: "{{ _fish_apt_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
     _fish_apt_repo_arch: "{{ _fish_apt_repo_arch_option | split(',') | reject('equalto', '') | list }}"
-    # Without a signed-by option the key is fetched from the URL the role used to download.
-    _fish_apt_repo_signed_by: "{{ _fish_apt_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([_fish_apt_key_url | default('/etc/apt/keyrings/shells_fish_release_' ~ fish_release_version ~ '.asc')], true) | first }}"
+    # Without a signed-by option the key installed above is used.
+    _fish_apt_repo_signed_by: "{{ _fish_apt_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default(['/etc/apt/keyrings/shells_fish_release_' ~ fish_release_version ~ '.asc'], true) | first }}"
     _fish_apt_repo_rest: "{{ _fish_apt_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
   register: fish_deb822_repository
   tags:

@@ -20,7 +20,8 @@
 # _apt_key. The key is installed where deb822_repository would have stored it,
 # so installs from earlier versions of this role are updated in place. The
 # key has to be ASCII armored, as the file is named .asc; apt rejects it
-# otherwise.
+# otherwise. What is installed is not the download but the key exported from a
+# temporary keyring after the check, see below.
 # _openjdk_apt_key is a pair of the _apt_key entry and its _apt_repository entry.
 - name: apt-key | Create temporary directory
   ansible.builtin.tempfile:
@@ -65,15 +66,83 @@
           key with fingerprint {{ _openjdk_apt_key[0].id }}, refusing to trust it.
         quiet: true
 
+    # Install only the key that was checked, not the downloaded bytes. gpg here
+    # and apt later could read a crafted file differently, and a keyserver
+    # answers with different signatures and armor on each fetch, which would
+    # report a change on every run.
+    - name: apt-key | Import the verified key into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _openjdk_apt_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _openjdk_apt_key_dir.path }}"
+      changed_when: false
+
+    - name: apt-key | Export only the verified key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ _openjdk_apt_key_dir.path }}/verified.asc"
+          - "{{ _openjdk_apt_key[0].id }}"
+      environment:
+        GNUPGHOME: "{{ _openjdk_apt_key_dir.path }}"
+      changed_when: false
+
+    # The export must hold exactly the pinned key, so a key gpg could not use
+    # fails here instead of being installed.
+    - name: apt-key | Read exported key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _openjdk_apt_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ _openjdk_apt_key_dir.path }}"
+      changed_when: false
+      register: _openjdk_apt_key_export_info
+
+    - name: apt-key | Verify exported key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _openjdk_apt_key_export_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_openjdk_apt_key_export_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _openjdk_apt_key[0].id | upper
+        fail_msg: >-
+          The key exported for {{ _openjdk_apt_key[0].url }} is not a single
+          key with fingerprint {{ _openjdk_apt_key[0].id }}, refusing to install it.
+        quiet: true
+
     - name: apt-key | Install key
       ansible.builtin.copy:
-        src: "{{ _openjdk_apt_key_dir.path }}/key"
+        src: "{{ _openjdk_apt_key_dir.path }}/verified.asc"
         dest: "/etc/apt/keyrings/{{ _openjdk_apt_key[1].filename | regex_replace('[^A-Za-z0-9_-]+', '_') }}.asc"
         remote_src: true
         owner: root
         group: root
         mode: "0644"
   always:
+    - name: apt-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _openjdk_apt_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _openjdk_apt_key_dir.path is defined
+
     - name: apt-key | Remove temporary directory
       ansible.builtin.file:
         path: "{{ _openjdk_apt_key_dir.path }}"

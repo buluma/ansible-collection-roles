@@ -1,0 +1,127 @@
+---
+# Verifies and imports one key of _rpm_key into rpm. rpm_key with a URL accepts
+# a key file that merely contains the fingerprint, also as a subkey or next to
+# other keys, so the key is fetched into a private temporary directory first.
+# It is only imported when it holds exactly one key and the fingerprint of that
+# key is the one listed in _rpm_key. What rpm imports is not the download but
+# the key exported from a temporary keyring after the check, as gpg here and
+# rpm later could read a crafted file differently.
+# _openjdk_rpm_key is one entry of _rpm_key.
+- name: rpm-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: rpm-key-
+  register: _openjdk_rpm_key_dir
+  changed_when: false
+
+- name: rpm-key | Verify and import key
+  block:
+    - name: rpm-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ _openjdk_rpm_key.key }}"
+        dest: "{{ _openjdk_rpm_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _openjdk_rpm_key_download
+      until: _openjdk_rpm_key_download is succeeded
+
+    - name: rpm-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _openjdk_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _openjdk_rpm_key_dir.path }}"
+      changed_when: false
+      register: _openjdk_rpm_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: rpm-key | Verify key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _openjdk_rpm_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_openjdk_rpm_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _openjdk_rpm_key.fingerprint | upper
+        fail_msg: >-
+          The key downloaded from {{ _openjdk_rpm_key.key }} is not a single
+          key with fingerprint {{ _openjdk_rpm_key.fingerprint }}, refusing to trust it.
+        quiet: true
+
+    - name: rpm-key | Import the verified key into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _openjdk_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _openjdk_rpm_key_dir.path }}"
+      changed_when: false
+
+    - name: rpm-key | Export only the verified key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ _openjdk_rpm_key_dir.path }}/verified.asc"
+          - "{{ _openjdk_rpm_key.fingerprint }}"
+      environment:
+        GNUPGHOME: "{{ _openjdk_rpm_key_dir.path }}"
+      changed_when: false
+
+    # The export must hold exactly the pinned key, so a key gpg could not use
+    # fails here instead of being imported.
+    - name: rpm-key | Read exported key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _openjdk_rpm_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ _openjdk_rpm_key_dir.path }}"
+      changed_when: false
+      register: _openjdk_rpm_key_export_info
+
+    - name: rpm-key | Verify exported key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _openjdk_rpm_key_export_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_openjdk_rpm_key_export_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _openjdk_rpm_key.fingerprint | upper
+        fail_msg: >-
+          The key exported for {{ _openjdk_rpm_key.key }} is not a single
+          key with fingerprint {{ _openjdk_rpm_key.fingerprint }}, refusing to import it.
+        quiet: true
+
+    - name: rpm-key | Rpm --import
+      ansible.builtin.rpm_key:
+        key: "{{ _openjdk_rpm_key_dir.path }}/verified.asc"
+        fingerprint: "{{ _openjdk_rpm_key.fingerprint }}"
+        state: present
+  always:
+    - name: rpm-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _openjdk_rpm_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _openjdk_rpm_key_dir.path is defined
+
+    - name: rpm-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _openjdk_rpm_key_dir.path }}"
+        state: absent
+      changed_when: false

@@ -1,0 +1,48 @@
+---
+# Verifies and imports one entry of _rpm_key, see export-key.yml. rpm_key only
+# checks that the fingerprint is somewhere in the file, so a file with extra
+# keys would import them as well. The key is therefore fetched into a private
+# temporary directory first and rpm_key imports the file with only the pinned
+# key from there. The fingerprint is still passed to rpm_key as a second check.
+# _perforce_rpm_key is the _rpm_key entry.
+- name: rpm-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: rpm-key-
+  register: _perforce_rpm_key_dir
+  changed_when: false
+
+- name: rpm-key | Verify and import key
+  block:
+    - name: rpm-key | Export the verified key
+      ansible.builtin.include_tasks: export-key.yml
+      vars:
+        _perforce_key_url: "{{ _perforce_rpm_key.key }}"
+        _perforce_key_id: "{{ _perforce_rpm_key.fingerprint }}"
+        _perforce_key_dir: "{{ _perforce_rpm_key_dir.path }}"
+
+    - name: rpm-key | Rpm --import
+      ansible.builtin.rpm_key:
+        key: "{{ _perforce_rpm_key_dir.path }}/verified.asc"
+        fingerprint: "{{ _perforce_rpm_key.fingerprint }}"
+        state: "{{ _perforce_rpm_key.state }}"
+      register: result
+      until: result is succeeded
+  always:
+    - name: rpm-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _perforce_rpm_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _perforce_rpm_key_dir.path is defined
+
+    - name: rpm-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _perforce_rpm_key_dir.path }}"
+        state: absent
+      changed_when: false

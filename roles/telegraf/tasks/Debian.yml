@@ -34,14 +34,20 @@
   when:
     - telegraf_agent_package_method == "repo"
   block:
-    - name: Debian | Download Telegraf apt key
-      ansible.builtin.get_url:
-        url: https://repos.influxdata.com/influxdata-archive.key
-        dest: /etc/apt/trusted.gpg.d/telegraf.asc
-        mode: "0644"
+    # gpg is needed to verify the fingerprint of the apt key.
+    - name: Debian | Install gnupg
+      ansible.builtin.apt:
+        name: gnupg
+        state: present
       become: true
-      register: are_telegraf_dependencies_keys_installed
-      until: are_telegraf_dependencies_keys_installed is succeeded
+      register: are_telegraf_gnupg_installed
+      until: are_telegraf_gnupg_installed is succeeded
+    - name: Debian | Install Telegraf apt key
+      ansible.builtin.include_tasks: install-key.yml
+      vars:
+        _telegraf_key_url: "{{ telegraf_apt_gpgkey }}"
+        _telegraf_key_fingerprint: "{{ telegraf_gpgkey_fingerprint }}"
+        _telegraf_key_dest: /etc/apt/trusted.gpg.d/telegraf.asc
       when: (ansible_facts['distribution'] == "Debian" and ansible_facts['distribution_major_version']|int < 9) or (ansible_facts['distribution'] == "Ubuntu"
         and ansible_facts['distribution_major_version']|int < 18)
     - name: Debian | Configure keyring-based repository signing
@@ -63,13 +69,11 @@
           when:
             - not usr_share_keyrings.stat.exists
         - name: Debian | Install Telegraf apt key
-          ansible.builtin.get_url:
-            dest: /usr/share/keyrings/influxdata-archive.asc
-            mode: "0644"
-            url: https://repos.influxdata.com/influxdata-archive.key
-          become: true
-          register: are_telegraf_dependencies_keys_installed
-          until: are_telegraf_dependencies_keys_installed is succeeded
+          ansible.builtin.include_tasks: install-key.yml
+          vars:
+            _telegraf_key_url: "{{ telegraf_apt_gpgkey }}"
+            _telegraf_key_fingerprint: "{{ telegraf_gpgkey_fingerprint }}"
+            _telegraf_key_dest: /usr/share/keyrings/influxdata-archive.asc
         - name: Debian | Set Telegraf apt repository parameters
           ansible.builtin.set_fact:
             telegraf_repository_params: "[signed-by=/usr/share/keyrings/influxdata-archive.asc]"

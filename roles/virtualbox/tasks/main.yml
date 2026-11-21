@@ -7,13 +7,20 @@
   run_once: true
   delegate_to: localhost
 
-- name: Import rpm key
-  ansible.builtin.rpm_key:
+- name: Ensure gnupg is installed to check the rpm key fingerprint.
+  ansible.builtin.package:
+    name: gnupg2
     state: present
-    key: "{{ item }}"
+  when:
+    - ansible_facts['pkg_mgr'] in [ "yum", "dnf", "dnf5", "zypper" ]
+
+- name: Verify and import rpm key
+  ansible.builtin.include_tasks:
+    file: rpm-key.yml
   loop: "{{ virtualbox_keys }}"
   loop_control:
-    label: "{{ item | basename }}"
+    loop_var: _virtualbox_rpm_key_url
+    label: "{{ _virtualbox_rpm_key_url | basename }}"
   when:
     - ansible_facts['pkg_mgr'] in [ "yum", "dnf", "dnf5", "zypper" ]
 
@@ -58,8 +65,25 @@
         path: /etc/apt/sources.list.d/download_virtualbox_org_virtualbox_debian.list
         state: absent
 
-    # deb822_repository fetches the key itself, but signed_by takes a single
-    # key, so only the first entry of virtualbox_keys is used.
+    - name: Ensure gnupg is installed to check the key fingerprint.
+      ansible.builtin.package:
+        name: gnupg
+        state: present
+
+    - name: Create apt keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    # signed_by takes a single key, so only the first entry of virtualbox_keys
+    # is used.
+    - name: Verify and install apt key
+      ansible.builtin.import_tasks:
+        file: apt-key.yml
+
     - name: Place apt repository
       ansible.builtin.deb822_repository:
         name: virtualbox
@@ -68,7 +92,7 @@
         suites: "{{ ansible_facts['distribution_release'] | lower }}"
         components: contrib
         architectures: amd64
-        signed_by: "{{ virtualbox_keys | first }}"
+        signed_by: /etc/apt/keyrings/virtualbox.asc
         state: present
       register: virtualbox_deb822_repository
 

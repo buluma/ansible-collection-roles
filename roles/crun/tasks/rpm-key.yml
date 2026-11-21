@@ -1,0 +1,143 @@
+---
+# (c) Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Verifies and imports one key of _rpm_key into the rpm database. rpm_key with
+# a fingerprint accepts a key file that merely contains that fingerprint, also
+# next to other keys, so the key is fetched into a private temporary directory
+# first. It is only imported when it holds exactly one key and the fingerprint
+# of that key is the one listed in _rpm_key. What is imported is that key
+# exported from a temporary keyring, not the downloaded file.
+# _crun_rpm_key is an entry of _rpm_key.
+- name: rpm-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: rpm-key-
+  register: _crun_rpm_key_dir
+  changed_when: false
+
+- name: rpm-key | Verify and import key
+  block:
+    - name: rpm-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ _crun_rpm_key.key }}"
+        dest: "{{ _crun_rpm_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _crun_rpm_key_download
+      until: _crun_rpm_key_download is succeeded
+
+    - name: rpm-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _crun_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _crun_rpm_key_dir.path }}"
+      changed_when: false
+      register: _crun_rpm_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: rpm-key | Verify key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _crun_rpm_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_crun_rpm_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _crun_rpm_key.fingerprint | upper
+        fail_msg: >-
+          The key downloaded from {{ _crun_rpm_key.key }} is not a single key
+          with fingerprint {{ _crun_rpm_key.fingerprint }}, refusing to trust
+          it.
+        quiet: true
+
+    - name: rpm-key | Import the verified key into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _crun_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _crun_rpm_key_dir.path }}"
+      changed_when: false
+
+    # rpm reads armored and binary keys alike, so the armored export is kept.
+    - name: rpm-key | Export only the verified key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ _crun_rpm_key_dir.path }}/verified.asc"
+          - "{{ _crun_rpm_key.fingerprint }}"
+      environment:
+        GNUPGHOME: "{{ _crun_rpm_key_dir.path }}"
+      changed_when: false
+
+    # Fails when gpg could not use the key (skipped packets, no valid user
+    # ID): the export is then empty or holds another key.
+    - name: rpm-key | Read exported key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _crun_rpm_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ _crun_rpm_key_dir.path }}"
+      changed_when: false
+      register: _crun_rpm_key_exported
+
+    - name: rpm-key | Verify exported key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _crun_rpm_key_exported.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_crun_rpm_key_exported.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _crun_rpm_key.fingerprint | upper
+        fail_msg: >-
+          The key exported for {{ _crun_rpm_key.fingerprint }} from
+          {{ _crun_rpm_key.key }} is not a single key with that fingerprint,
+          refusing to trust it.
+        quiet: true
+
+    - name: rpm-key | Rpm --import
+      ansible.builtin.rpm_key:
+        key: "{{ _crun_rpm_key_dir.path }}/verified.asc"
+        fingerprint: "{{ _crun_rpm_key.fingerprint }}"
+        state: present
+  always:
+    - name: rpm-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _crun_rpm_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _crun_rpm_key_dir.path is defined
+
+    - name: rpm-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _crun_rpm_key_dir.path }}"
+        state: absent
+      changed_when: false

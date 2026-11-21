@@ -1,0 +1,134 @@
+---
+# Verifies and installs the apt signing key. deb822_repository fetches a
+# signed_by URL itself and cannot check a fingerprint, so the key is fetched
+# into a private temporary directory first. It is only installed when it holds
+# exactly one key and the fingerprint of that key is virtualbox_key_fingerprint.
+# What is installed is not the download: gpg here and apt later could read a
+# crafted file differently, and a key server answers with different signatures
+# and armor on each fetch. So the verified key is imported into a temporary
+# keyring and exported again, which gives apt exactly that key and the same
+# bytes on every run.
+# The key is installed where deb822_repository would have stored it, so
+# installs from earlier versions of this role are updated in place. The key
+# has to be ASCII armored, as the file is named .asc; apt rejects it otherwise.
+- name: apt-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: apt-key-
+  register: _virtualbox_apt_key_dir
+  changed_when: false
+
+- name: apt-key | Verify and install key
+  block:
+    - name: apt-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ virtualbox_keys | first }}"
+        dest: "{{ _virtualbox_apt_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _virtualbox_apt_key_download
+      until: _virtualbox_apt_key_download is succeeded
+
+    - name: apt-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _virtualbox_apt_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_apt_key_dir.path }}"
+      changed_when: false
+      register: _virtualbox_apt_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: apt-key | Verify key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _virtualbox_apt_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_virtualbox_apt_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == virtualbox_key_fingerprint | upper
+        fail_msg: >-
+          The key downloaded from {{ virtualbox_keys | first }} is not a single
+          key with fingerprint {{ virtualbox_key_fingerprint }}, refusing to trust it.
+        quiet: true
+
+    - name: apt-key | Import the verified key into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _virtualbox_apt_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_apt_key_dir.path }}"
+      changed_when: false
+
+    - name: apt-key | Export only the verified key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ _virtualbox_apt_key_dir.path }}/verified.asc"
+          - "{{ virtualbox_key_fingerprint }}"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_apt_key_dir.path }}"
+      changed_when: false
+
+    # Fails when gpg could not use the key, as then nothing (or something
+    # else) is exported.
+    - name: apt-key | Read exported key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _virtualbox_apt_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_apt_key_dir.path }}"
+      changed_when: false
+      register: _virtualbox_apt_key_exported
+
+    - name: apt-key | Verify exported key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _virtualbox_apt_key_exported.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_virtualbox_apt_key_exported.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == virtualbox_key_fingerprint | upper
+        fail_msg: >-
+          The key exported from {{ virtualbox_keys | first }} is not a single
+          key with fingerprint {{ virtualbox_key_fingerprint }}, refusing to trust it.
+        quiet: true
+
+    - name: apt-key | Install key
+      ansible.builtin.copy:
+        src: "{{ _virtualbox_apt_key_dir.path }}/verified.asc"
+        dest: /etc/apt/keyrings/virtualbox.asc
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+  always:
+    - name: apt-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _virtualbox_apt_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _virtualbox_apt_key_dir.path is defined
+
+    - name: apt-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _virtualbox_apt_key_dir.path }}"
+        state: absent
+      changed_when: false

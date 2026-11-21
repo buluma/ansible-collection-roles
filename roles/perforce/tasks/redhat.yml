@@ -1,10 +1,23 @@
 ---
-- name: redhat | Rpm --import
+- name: redhat | Install required package gnupg2
+  ansible.builtin.package:
+    name: gnupg2
+
+# A key is checked against its listed fingerprint before it is imported, see
+# rpm-key.yml. Removing a key needs no download.
+- name: redhat | Verify and import rpm keys
+  ansible.builtin.include_tasks: rpm-key.yml
+  loop: "{{ _rpm_key | selectattr('state', 'equalto', 'present') | list }}"
+  loop_control:
+    loop_var: _perforce_rpm_key
+    label: "{{ _perforce_rpm_key.key }}"
+
+- name: redhat | Rpm --import absent
   ansible.builtin.rpm_key:
     key: "{{ item.key }}"
     fingerprint: "{{ item.fingerprint }}"
     state: "{{ item.state }}"
-  loop: "{{ _rpm_key }}"
+  loop: "{{ _rpm_key | rejectattr('state', 'equalto', 'present') | list }}"
   register: result
   until: result is succeeded
 
