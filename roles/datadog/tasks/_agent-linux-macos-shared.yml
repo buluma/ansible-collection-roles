@@ -18,20 +18,26 @@
   when: datadog_manage_config
   notify: "{{ agent_dd_notify_agent }}"
 
-- name: _agent-linux-macos-shared | Register all checks directories present in datadog
+- name: _agent-linux-macos-shared | Register all check configs present in datadog
   ansible.builtin.find:
     paths: "{{ agent_dd_config_dir }}/conf.d/"
     patterns:
-      - "*.d"
-    file_type: directory
-  register: agent_datadog_conf_directories
+      - "conf.yaml*"
+    recurse: true
+    depth: 2
+    file_type: file
+  register: agent_datadog_conf_paths
   when: datadog_manage_config and (datadog_disable_untracked_checks or datadog_disable_default_checks)
 
 - name: _agent-linux-macos-shared | Delete checks not present in agent_datadog_tracked_checks
   ansible.builtin.file:
     path: "{{ agent_dd_config_dir }}/conf.d/{{ item }}.d/conf.yaml"
     state: absent
-  loop: "{{ agent_datadog_conf_directories.files | map(attribute='path') | list | map('basename') | list | map('regex_replace', '^(.*).d$', '\\1') | list }}"
+  loop: >-
+    {{
+      agent_datadog_conf_paths.files | map(attribute='path') | select('match', '.*\/conf\.yaml$') | list
+      | map('dirname') | map('basename') | list | map('regex_replace', '^(.*).d$', '\1') | list
+    }}
   when: datadog_manage_config and datadog_disable_untracked_checks and item not in agent_datadog_tracked_checks
   notify: "{{ agent_dd_notify_agent }}"
 
@@ -39,7 +45,11 @@
   ansible.builtin.file:
     path: "{{ agent_dd_config_dir }}/conf.d/{{ item }}.d/conf.yaml.default"
     state: absent
-  loop: "{{ agent_datadog_conf_directories.files | map(attribute='path') | list | map('basename') | list | map('regex_replace', '^(.*).d$', '\\1') | list }}"
+  loop: >-
+    {{
+      agent_datadog_conf_paths.files | map(attribute='path') | select('match', '.*\/conf\.yaml\.default$') | list
+      | map('dirname') | map('basename') | list | map('regex_replace', '^(.*).d$', '\1') | list
+    }}
   when: datadog_manage_config and datadog_disable_default_checks and item not in agent_datadog_tracked_checks
   notify: "{{ agent_dd_notify_agent }}"
 
@@ -47,7 +57,11 @@
   ansible.builtin.file:
     path: "{{ agent_dd_config_dir }}/conf.d/{{ item }}.d/conf.yaml.example"
     state: absent
-  loop: "{{ agent_datadog_conf_directories.files | map(attribute='path') | list | map('basename') | list | map('regex_replace', '^(.*).d$', '\\1') | list }}"
+  loop: >-
+    {{
+      agent_datadog_conf_paths.files | map(attribute='path') | select('match', '.*\/conf\.yaml\.example$') | list
+      | map('dirname') | map('basename') | list | map('regex_replace', '^(.*).d$', '\1') | list
+    }}
   when: datadog_manage_config and datadog_disable_example_checks and item not in agent_datadog_tracked_checks
   notify: "{{ agent_dd_notify_agent }}"
 
@@ -97,3 +111,62 @@
     owner: "{{ agent_dd_user }}"
     group: "{{ agent_dd_group }}"
     mode: "0644"
+
+- name: _agent-linux-macos-shared | Check if install.json exists
+  ansible.builtin.stat:
+    path: "{{ agent_dd_config_dir }}/install.json"
+  register: install_file
+
+- name: _agent-linux-macos-shared | Read remote install.json
+  register: install_json_value
+  ansible.builtin.slurp:
+    src: "{{ agent_dd_config_dir }}/install.json"
+  when: install_file.stat.exists
+
+- name: _agent-linux-macos-shared | Debug print install.json content
+  ansible.builtin.debug:
+    msg: "install.json content : {{ install_json_value.content }}"
+  when: install_file.stat.exists
+
+- name: _agent-linux-macos-shared | Parse install.json file if it exists
+  ansible.builtin.set_fact:
+    install_info: "{{ install_json_value.content | b64decode | from_json }}"
+  when: install_file.stat.exists
+
+- name: _agent-linux-macos-shared | Generate uuid
+  when: not install_file.stat.exists
+  check_mode: false
+  block:
+    - name: _agent-linux-macos-shared | Generate uuid based on /proc/sys/kernel/random/uuid
+      ansible.builtin.command: cat /proc/sys/kernel/random/uuid
+      register: uuid_cmd
+      changed_when: false
+
+  rescue:
+    - name: _agent-linux-macos-shared | Generate uuid using uuidgen
+      ansible.builtin.command: uuidgen
+      register: uuid_cmd
+      changed_when: false
+
+- name: _agent-linux-macos-shared | Set install signature from file if it exists
+  ansible.builtin.set_fact:
+    install_signature:
+      install_id: "{{ install_info.install_id }}"
+      install_time: "{{ install_info.install_time }}"
+  when: install_file.stat.exists
+
+- name: _agent-linux-macos-shared | Generate install signature
+  ansible.builtin.set_fact:
+    install_signature:
+      install_id: "{{ uuid_cmd.stdout }}"
+      install_time: "{{ ansible_date_time.epoch }}"
+  when: not install_file.stat.exists
+
+- name: _agent-linux-macos-shared | Create installation json file
+  ansible.builtin.template:
+    src: install.json.j2
+    dest: "{{ agent_dd_config_dir }}/install.json"
+    owner: "{{ agent_dd_user }}"
+    group: "{{ agent_dd_group }}"
+    mode: "0644"
+  when: datadog_apm_instrumentation_enabled is defined

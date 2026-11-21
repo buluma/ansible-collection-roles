@@ -1,3 +1,0 @@
----
-- name: facts-ansible9 | Gather Ansible Facts
-  ansible.builtin.setup:

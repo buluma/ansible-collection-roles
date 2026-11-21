@@ -41,6 +41,8 @@
       value: "{{ datadog_apt_key_url_new }}"
     - key: 5F1E256061D813B125E156E8E6266D4AC0962C7D
       value: "{{ datadog_apt_key_url_new }}"
+    - key: D18886567EABAD8B2D2526900D826EB906462314
+      value: "{{ datadog_apt_key_url_new }}"
   when: datadog_apt_key_url_new is defined and not ansible_check_mode
 
 - name: pkg-debian | Ensure keyring1 exists with same contents as keyring2 for older distro versions. keyring1,keyring2= {{ datadog_apt_trusted_d_keyring,
@@ -113,7 +115,6 @@
   register: agent_datadog_deb822_repositories
   when: (not ansible_check_mode)
   with_dict:
-    5: "{{ datadog_agent5_apt_repo }}"
     6: "{{ datadog_agent6_apt_repo }}"
     7: "{{ datadog_agent7_apt_repo }}"
 
@@ -166,16 +167,16 @@
 
 - name: pkg-debian | Include debian pinned version install task
   ansible.builtin.include_tasks: pkg-debian/install-pinned.yml
-  when: agent_datadog_agent_debian_version is defined
+  when: not agent_datadog_skip_install and agent_datadog_agent_debian_version is defined
 
 - name: pkg-debian | Include debian latest version install task
   ansible.builtin.include_tasks: pkg-debian/install-latest.yml
-  when: agent_datadog_agent_debian_version is not defined
+  when: not agent_datadog_skip_install and agent_datadog_agent_debian_version is not defined
 
 - name: pkg-debian | Install latest datadog-signing-keys package
   ansible.builtin.apt:
     name: datadog-signing-keys
     state: latest # noqa package-latest
-    # we don't use update_cache: true, as that was just done by the install-pinned/install-latest
+    # we don't use update_cache: yes, as that was just done by the "Ensure Datadog repository is up-to-date" task above
   register: agent_datadog_signing_keys_install
   when: not ansible_check_mode

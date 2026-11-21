@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+**Changes:**
+
+- `datadog`: synced from the merged 5.6.0 re-vendor. The copy in 4.0.0 still had `win_ansible.builtin.shell`, a module name that does not exist, in its Windows tasks. Hosts running those tasks failed with "couldn't resolve module/action".
+- CI: the collection tests now also run on ansible-core 2.19, the declared minimum, and check that every module the roles call resolves, including those in files loaded with `include_tasks`, which `--syntax-check` skips.
+
 ## 4.0.0 (2026-11-20)
 
 **Breaking changes:**

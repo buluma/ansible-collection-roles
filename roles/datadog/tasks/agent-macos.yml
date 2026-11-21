@@ -3,8 +3,9 @@
 # under datadog_macos_user and remove the user-specific config for ansible_user
 - name: agent-macos | Load user data
   ansible.builtin.shell:
-    cmd: "set -o pipefail && dscacheutil -q user -a name {{ datadog_macos_user }} | awk 'BEGIN { RS=\"\\n\"; ORS=\" \" } /uid:/ { print \"{ \\\"uid\\\": \" $2\",\"\
-      \ } /gid:/ { print \"\\\"gid\\\": \" $2 \" }\"}'"
+    cmd: "set -o pipefail && dscacheutil -q user -a name {{ datadog_macos_user }} |
+      awk 'BEGIN { RS=\"\\n\"; ORS=\" \" } /uid:/ { print \"{ \\\"uid\\\": \" $2\",\" } /gid:/ { print
+      \"\\\"gid\\\": \" $2 \" }\"}'"
     executable: /bin/bash
   changed_when: false
   register: agent_macos_user_output
@@ -16,7 +17,7 @@
 # out of the ABOVE task preventing us from having to run 2 similar commands.
 - name: agent-macos | Extract JSON user data as variable object
   ansible.builtin.set_fact:
-    agent_macos_user_data: "{{ agent_macos_user_output.stdout }}"
+    agent_macos_user_data: "{{ agent_macos_user_output.stdout | from_json }}"
 
 - name: agent-macos | Load user group data
   ansible.builtin.shell:
