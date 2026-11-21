@@ -1,2 +1,12 @@
 ---
-fish_release_version: 3
+# The fish release series to install (the repository that is configured).
+# Valid values are 2, 3 and 4.
+#
+# Release 4 is the default. It has no builds for EL (RedHat family except Fedora:
+# RHEL, CentOS, Rocky, AlmaLinux, ...), so the role fails early when release 4
+# is requested there. EL users must pin `fish_release_version: 3`. Release 3
+# has builds for EL 7, 8 and 9, but not for EL 10 or Fedora 42 and newer.
+#
+# Release 3 also has no builds for Debian 13 and Ubuntu 25.04 and newer, use
+# release 4 there. Release 4 has no builds for Debian 11 and older.
+fish_release_version: 4

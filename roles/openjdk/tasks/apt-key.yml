@@ -1,0 +1,81 @@
+---
+# Copyright 2024 Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Verifies and installs one key of _apt_key. deb822_repository fetches a
+# signed_by URL itself and cannot check a fingerprint, so the key is fetched
+# into a private temporary directory first. It is only installed when it holds
+# exactly one key and the fingerprint of that key is the id listed in
+# _apt_key. The key is installed where deb822_repository would have stored it,
+# so installs from earlier versions of this role are updated in place. The
+# key has to be ASCII armored, as the file is named .asc; apt rejects it
+# otherwise.
+# _openjdk_apt_key is a pair of the _apt_key entry and its _apt_repository entry.
+- name: apt-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: apt-key-
+  register: _openjdk_apt_key_dir
+  changed_when: false
+
+- name: apt-key | Verify and install key
+  block:
+    - name: apt-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ _openjdk_apt_key[0].url }}"
+        dest: "{{ _openjdk_apt_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _openjdk_apt_key_download
+      until: _openjdk_apt_key_download is succeeded
+
+    - name: apt-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _openjdk_apt_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _openjdk_apt_key_dir.path }}"
+      changed_when: false
+      register: _openjdk_apt_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: apt-key | Verify key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _openjdk_apt_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_openjdk_apt_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _openjdk_apt_key[0].id | upper
+        fail_msg: >-
+          The key downloaded from {{ _openjdk_apt_key[0].url }} is not a single
+          key with fingerprint {{ _openjdk_apt_key[0].id }}, refusing to trust it.
+        quiet: true
+
+    - name: apt-key | Install key
+      ansible.builtin.copy:
+        src: "{{ _openjdk_apt_key_dir.path }}/key"
+        dest: "/etc/apt/keyrings/{{ _openjdk_apt_key[1].filename | regex_replace('[^A-Za-z0-9_-]+', '_') }}.asc"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+  always:
+    - name: apt-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _openjdk_apt_key_dir.path }}"
+        state: absent
+      changed_when: false

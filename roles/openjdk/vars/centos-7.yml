@@ -15,28 +15,28 @@
 
 _rpm_key:
   "21":
-    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+    - key: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
       state: present
     - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
       fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
       state: present
   "17":
-    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+    - key: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
       state: present
     - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
       fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
       state: present
   "11":
-    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+    - key: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
       state: present
     - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
       fingerprint: 3B04D753C9050D9A5D343F39843C48A565F8F04B
       state: present
   "8":
-    - key: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+    - key: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       fingerprint: 789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD
       state: present
     - key: https://packages.adoptium.net/artifactory/api/gpg/key/public
@@ -48,12 +48,12 @@ _yum_repository:
     - file: home:alvistack
       name: home_alvistack
       description: home:alvistack (CentOS_7)
-      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
+      baseurl: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
       enabled: true
       priority: "2"
       module_hotfixes: true
       gpgcheck: true
-      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+      gpgkey: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       state: present
     - file: adoptium
       name: adoptium
@@ -69,12 +69,12 @@ _yum_repository:
     - file: home:alvistack
       name: home_alvistack
       description: home:alvistack (CentOS_7)
-      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
+      baseurl: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
       enabled: true
       priority: "2"
       module_hotfixes: true
       gpgcheck: true
-      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+      gpgkey: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       state: present
     - file: adoptium
       name: adoptium
@@ -90,12 +90,12 @@ _yum_repository:
     - file: home:alvistack
       name: home_alvistack
       description: home:alvistack (CentOS_7)
-      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
+      baseurl: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
       enabled: true
       priority: "2"
       module_hotfixes: true
       gpgcheck: true
-      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+      gpgkey: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       state: present
     - file: adoptium
       name: adoptium
@@ -111,12 +111,12 @@ _yum_repository:
     - file: home:alvistack
       name: home_alvistack
       description: home:alvistack (CentOS_7)
-      baseurl: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
+      baseurl: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7
       enabled: true
       priority: "2"
       module_hotfixes: true
       gpgcheck: true
-      gpgkey: http://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
+      gpgkey: https://downloadcontent.opensuse.org/repositories/home:/alvistack/CentOS_7/repodata/repomd.xml.key
       state: present
     - file: adoptium
       name: adoptium

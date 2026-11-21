@@ -8,6 +8,8 @@ _tomcat_unarchive_urls:
     url: "{{ tomcat_mirror }}/dist/tomcat/tomcat-9/v{{ tomcat_version9 }}/bin/apache-tomcat-{{ tomcat_version9 }}.tar.gz"
   10:
     url: "{{ tomcat_mirror }}/dist/tomcat/tomcat-10/v{{ tomcat_version10 }}/bin/apache-tomcat-{{ tomcat_version10 }}.tar.gz"
+  11:
+    url: "{{ tomcat_mirror }}/dist/tomcat/tomcat-11/v{{ tomcat_version11 }}/bin/apache-tomcat-{{ tomcat_version11 }}.tar.gz"
 tomcat_access_log_directory: logs
 tomcat_access_log_enabled: true
 tomcat_access_log_pattern: "%h %l %u %t &quot;%r&quot; %s %b"
@@ -55,9 +57,10 @@ tomcat_ssl_connector_port: 8443
 tomcat_unarchive_url: "{{ _tomcat_unarchive_urls[tomcat_version].url }}"
 tomcat_user: tomcat
 tomcat_version: 9
-tomcat_version10: "10.1.61"
+tomcat_version10: "10.1.62"
+tomcat_version11: "11.0.29"
 tomcat_version7: "7.0.109"
 tomcat_version8: "8.5.100"
-tomcat_version9: "9.0.123"
+tomcat_version9: "9.0.124"
 tomcat_xms: 512M
 tomcat_xmx: 1024M

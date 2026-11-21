@@ -93,7 +93,7 @@ irslackd_address: "0.0.0.0"
 irslackd_dest: /opt/irslackd
 
 # The version of irslackd to install.
-irslackd_version: b8ab630c877819d8b4bac9ab808b408e06cdb350
+irslackd_version: 0ccfdc32ac8676269d28a483a402e235027c2c17
 
 # These settings are used for the SSL certificate.
 irslackd_country: KE
@@ -103,6 +103,8 @@ irslackd_organization: Very little
 irslackd_organizational_unit: IT Department
 irslackd_common_name: "{{ ansible_facts['fqdn'] | default(ansible_facts['hostname']) | default('localhost') }}"
 ```
+
+The default pin applies to fresh installations. Existing checkouts are not updated automatically because the Git task uses `update: false`; plan and test any manual upgrade before changing an existing installation. This revision updates Slack API dependencies and message handling.
 
 ## [Requirements](#requirements)
 

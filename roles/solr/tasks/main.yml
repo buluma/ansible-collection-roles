@@ -6,7 +6,7 @@
 - name: Set solr_filename for Solr 4+.
   ansible.builtin.set_fact:
     solr_filename: "solr-{{ solr_version }}"
-  when: "solr_version.split('.')[0] >= '4'"
+  when: "solr_version is version('4', '>=')"
 
 - name: Set solr_filename for Solr 3.x.
   ansible.builtin.set_fact:
@@ -41,12 +41,12 @@
 # Install Solr < 5.
 - name: Install Solr <5
   ansible.builtin.include_tasks: install-pre5.yml
-  when: "solr_version.split('.')[0] < '5'"
+  when: "solr_version is version('5', '<')"
 
 # Install Solr 5+.
 - name: Install Solr 5+
   ansible.builtin.include_tasks: install.yml
-  when: "solr_version.split('.')[0] >= '5'"
+  when: "solr_version is version('5', '>=')"
 
 - name: Ensure solr is started and enabled on boot if configured.
   when: solr_service_manage
@@ -68,12 +68,12 @@
 # Configure solr.
 - name: Configure Solr
   ansible.builtin.include_tasks: configure.yml
-  when: "solr_version.split('.')[0] >= '5'"
+  when: "solr_version is version('5', '>=')"
 
 # Create cores, if any are configured.
 - name: Create cores, if any are configured.
   ansible.builtin.include_tasks: cores.yml
-  when: "solr_cores and solr_version.split('.')[0] >= '5'"
+  when: "solr_cores and solr_version is version('5', '>=')"
 
 - name: Trim fat
   ansible.builtin.include_tasks: trim-fat.yml

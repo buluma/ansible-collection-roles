@@ -151,7 +151,7 @@ kubernetes_pod_network:
   cidr: 10.244.0.0/16
   cni: flannel
 kubernetes_role: master
-kubernetes_version: "1.36"
+kubernetes_version: "1.37"
 kubernetes_version_kubeadm: stable-{{ kubernetes_version }}
 kubernetes_yum_base_url: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/rpm/"
 kubernetes_yum_gpg_check: true

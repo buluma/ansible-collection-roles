@@ -23,58 +23,7 @@ This example is taken from [`molecule/default/converge.yml`](https://github.com/
       bareos_fd_backup_configurations: true
       bareos_fd_install_debug_packages: true
       bareos_fd_encryption_enabled: true
-      bareos_fd_encryption_private_key: |
-        -----BEGIN RSA PRIVATE KEY-----
-        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
-        -----END RSA PRIVATE KEY-----
+      bareos_fd_encryption_private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') ~ '/bareos_fd_private.key', rstrip=False) }}"
       bareos_fd_encryption_master_public_key: |
         -----BEGIN CERTIFICATE-----
         MIIDyjCCArKgAwIBAgIJAIAjOIGqAGRwMA0GCSqGSIb3DQEBCwUAMIGSMQswCQYD

@@ -85,7 +85,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 # The versions `2.*` and later start with a `v`.
 # You can check available versions here:
 # https://github.com/docker/compose/releases
-docker_compose_version: "v5.6.1"
+docker_compose_version: "v5.8.0"
 
 # Where to download the docker binary from.
 docker_compose_url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_facts['system'] | lower }}-{{ docker_compose_architecture

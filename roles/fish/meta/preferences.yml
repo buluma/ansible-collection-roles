@@ -2,10 +2,10 @@
 # Pins the CI platform/version matrix for this role. Without this, ansible-generator
 # falls back to default_platforms and silently discards these choices on regenerate.
 platforms:
-  - name: EL
-    versions:
-      - "10"
-      - "9"
+  # EL (RHEL, CentOS, Rocky, AlmaLinux) is left out on purpose: fish 4, the default
+  # fish_release_version, has no EL packages in the opensuse repository (EL 9 and 10
+  # return 404). EL users have to pin fish_release_version: 3. Add EL back when
+  # upstream publishes fish 4 for it, or run a separate job that pins release 3.
   - name: Debian
     versions:
       - all

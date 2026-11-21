@@ -5,10 +5,14 @@ solr_create_user: true
 solr_user: solr
 solr_group: "{{ solr_user }}"
 
-solr_version: "9.10.1"
+# Solr 10 and later need Java 21 or newer, install it before this role (for example
+# with buluma.java and `java_version: 21`). The role runs Solr in standalone (user-managed) mode.
+# Solr 10 installs a systemd unit, older versions an init.d script, so changing solr_version
+# on a host that has Solr installed is not an upgrade, the install is skipped.
+solr_version: "9.11.0"
 solr_mirror: "https://archive.apache.org/dist"
 solr_remove_cruft: false
-solr_nashorn_core_version: "15.6"
+solr_nashorn_core_version: "15.7"
 
 solr_service_manage: true
 solr_service_name: solr
@@ -30,7 +34,7 @@ solr_timezone: "UTC"
 solr_cores:
   - collection1
 
-solr_default_core_path: "{% if solr_version.split('.')[0] < '9' %}{{ solr_install_path }}/example/files/conf/{% else %}{{ solr_install_path }}/server/solr/configsets/_default/conf/{%
+solr_default_core_path: "{% if solr_version is version('9', '<') %}{{ solr_install_path }}/example/files/conf/{% else %}{{ solr_install_path }}/server/solr/configsets/_default/conf/{%
   endif %}"
 
 solr_config_file: /etc/default/{{ solr_service_name }}.in.sh

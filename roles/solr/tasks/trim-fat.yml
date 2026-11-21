@@ -19,4 +19,4 @@
     state: absent
   when:
     - solr_remove_cruft
-    - solr_version.split('.')[0] >= '5'
+    - solr_version is version('5', '>=')

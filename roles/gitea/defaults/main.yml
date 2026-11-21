@@ -1,4 +1,4 @@
 ---
 # defaults file for gitea
 
-gitea_version: "28.2.0"
+gitea_version: "28.4.0"
