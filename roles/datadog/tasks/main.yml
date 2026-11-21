@@ -1,11 +1,11 @@
 ---
-- name: Include Gather Ansible Facts task on Ansible >= 2.10
-  ansible.builtin.include_tasks: facts-ansible10.yml
-  when: ansible_version.major >= 2 and ansible_version.minor >= 10
-
-- name: Include Gather Ansible Facts task on Ansible < 2.10
-  ansible.builtin.include_tasks: facts-ansible9.yml
-  when: ansible_version.major == 2 and ansible_version.minor < 10
+- name: Gather Ansible Facts
+  ansible.builtin.setup:
+    gather_subset: "{{ datadog_ansible_facts_subset }}"
+    # If the full prefix isn't specified in Ansible 2.10+, we might end up running `ansible.windows.setup` instead.
+  when:
+    - ansible_facts is undefined
+    - ansible_facts['system'] is undefined
 
 - name: Initialize internal datadog_config variable
   ansible.builtin.set_fact:
@@ -13,6 +13,11 @@
 
 - name: Check if OS is supported
   ansible.builtin.include_tasks: os-check.yml
+
+# Check for Windows remote updates before proceeding with installation
+- name: Windows remote update check
+  ansible.builtin.include_tasks: windows_remote_update_check.yml
+  when: ansible_facts['os_family'] == "Windows"
 
 - name: Fail if API key is missing
   ansible.builtin.fail:
@@ -26,13 +31,24 @@
 - name: Set Facts for Datadog Agent Major Version
   ansible.builtin.include_tasks: set-parse-version.yml
 
-- name: Check and resolve APM injection settings
-  ansible.builtin.include_tasks: apm-inject-check.yml
-  when: datadog_apm_instrumentation_enabled | length > 0
+- name: Remove /opt/datadog-agent/python-scripts/__pycache__
+  ansible.builtin.file:
+    path: /opt/datadog-agent/python-scripts/__pycache__
+    state: absent
+  when: not agent_datadog_skip_install and ansible_facts['os_family'] != "Windows" and ansible_facts['os_family'] != "Darwin"
+  failed_when: false
+  changed_when: false
+
+- name: Remove legacy package-based datadog-installer
+  ansible.builtin.include_tasks: remove-legacy-installer.yml
+  when:
+    - ansible_facts['os_family'] != "Windows"
+    - ansible_facts['os_family'] != "Darwin"
+    - not ansible_check_mode
 
 - name: Debian Install Tasks
   ansible.builtin.include_tasks: pkg-debian.yml
-  when: ansible_facts['os_family'] == "Debian" and not agent_datadog_skip_install
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Include tasks to remove old GPG keys
   ansible.builtin.include_tasks: _remove_rpm_keys.yml
@@ -47,33 +63,39 @@
 # For Rocky it is some 4.X and >= 5.0
 - name: RedHat Install Tasks
   ansible.builtin.include_tasks: pkg-redhat.yml
-  when: ansible_facts['os_family'] in ["RedHat", "Rocky", "AlmaLinux"] and not agent_datadog_skip_install
+  when: ansible_facts['os_family'] in ["RedHat", "Rocky", "AlmaLinux"]
 
 - name: Suse Install Tasks
   ansible.builtin.include_tasks: pkg-suse.yml
-  when: ansible_facts['os_family'] == "Suse" and not agent_datadog_skip_install
+  when: ansible_facts['os_family'] == "Suse"
+
+# Windows variable initialization - always needed for configuration
+- name: Set windows NPM installed
+  ansible.builtin.set_fact:
+    agent_datadog_sysprobe_enabled: "{{ network_config is defined and 'enabled' in (network_config | default({}, true)) and network_config['enabled'] }}"
+  when: ansible_facts['os_family'] == "Windows"
+
+- name: Include Windows opts tasks
+  ansible.builtin.include_tasks: pkg-windows-opts.yml
+  when: ansible_facts['os_family'] == "Windows"
 
 # Note we don't check agent_datadog_skip_install variable value for windows here,
 # because some tasks in pkg-windows.yml are carried out regardless of its value.
 - name: Windows Install Tasks
   ansible.builtin.include_tasks: pkg-windows.yml
-  when: ansible_facts['os_family'] == "Windows"
+  when: ansible_facts['os_family'] == "Windows" and not datadog_remote_update_in_progress
 
 - name: MacOS Install Tasks
   ansible.builtin.include_tasks: pkg-macos.yml
   when: ansible_facts['os_family'] == "Darwin" and not agent_datadog_skip_install
 
-- name: Linux Configuration Tasks (Agent 5)
-  ansible.builtin.include_tasks: agent5-linux.yml
-  when: agent_datadog_agent_major_version | int == 5 and ansible_facts['os_family'] != "Windows"  and ansible_facts['os_family'] != "Darwin"
-
 - name: Linux Configuration Tasks
   ansible.builtin.include_tasks: agent-linux.yml
-  when: agent_datadog_agent_major_version | int > 5 and ansible_facts['os_family'] != "Windows" and ansible_facts['os_family'] != "Darwin"
+  when: ansible_facts['os_family'] != "Windows" and ansible_facts['os_family'] != "Darwin"
 
 - name: Windows Configuration Tasks
   ansible.builtin.include_tasks: agent-win.yml
-  when: agent_datadog_agent_major_version | int > 5 and ansible_facts['os_family'] == "Windows"
+  when: ansible_facts['os_family'] == "Windows"
 
 - name: MacOS Configuration Tasks
   ansible.builtin.include_tasks: agent-macos.yml
@@ -83,6 +105,24 @@
   ansible.builtin.include_tasks: integration.yml
   when: datadog_integration is defined
 
-- name: APM Host injection tasks
-  ansible.builtin.include_tasks: apm-inject-install.yml
-  when: datadog_apm_instrumentation_enabled | length > 0
+# Determine if APM Single Step Instrumentation should be installed
+- name: Determine and validate APM Single Step Instrumentation configuration
+  ansible.builtin.set_fact:
+    apm_single_step_instrumentation_should_install: >-
+      {{
+        datadog_apm_instrumentation_enabled is defined
+        and datadog_apm_instrumentation_enabled in ["host", "docker", "all"]
+      }}
+
+- name: Fail explicitly if APM Single Step Instrumentation is desired but misconfigured
+  ansible.builtin.fail:
+    msg: "datadog_apm_instrumentation_enabled must be set to 'host', 'docker', or 'all' when enabling APM Single Step Instrumentation"
+  when:
+    - datadog_apm_instrumentation_enabled is defined
+    - datadog_apm_instrumentation_enabled not in ["host", "docker", "all"]
+
+- name: APM Single Step Instrumentation Install Tasks
+  ansible.builtin.include_tasks: apm-single-step-instrumentation.yml
+  when:
+    - apm_single_step_instrumentation_should_install
+    - not ansible_check_mode

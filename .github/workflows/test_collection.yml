@@ -22,16 +22,25 @@ concurrency:
 
 jobs:
   test_build:
+    # 2.19 is the declared minimum, "2" is whatever is newest.
+    name: test_build (ansible-core ${{ matrix.ansible-core }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-core:
+          - "2.19"
+          - "2"
     steps:
       - name: checkout
         uses: actions/checkout@v7
       - name: setup python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          # ansible-core 2.19 does not support the newest Python as controller.
+          python-version: "3.13"
       - name: install ansible-core
-        run: pip install "ansible-core>=2.19"
+        run: pip install "ansible-core==${{ matrix.ansible-core }}.*"
       # galaxy.yml dependencies are what users actually get installed, so they must cover requirements.yml.
       - name: check galaxy.yml dependencies cover requirements.yml
         run: |
@@ -66,6 +75,9 @@ jobs:
             done
           } > all_roles.yml
           ansible-playbook -i localhost, all_roles.yml --syntax-check
+      # --syntax-check does not load files pulled in with include_tasks, so resolve the modules separately.
+      - name: resolve every module the roles use
+        run: python .github/scripts/check_modules.py roles
 
   test_galaxy:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

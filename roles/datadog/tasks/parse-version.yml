@@ -1,8 +1,8 @@
 ---
 - name: parse-version | Parse Agent version
   ansible.builtin.set_fact:
-    agent_version: "{{ datadog_agent_version | regex_search(agent_regexp, '\\g<epoch>', '\\g<major>', '\\g<minor>', '\\g<bugfix>', '\\g<suffix>', '\\g<release>')
-      }}"
+    agent_version: "{{ datadog_agent_version
+      | regex_search(agent_regexp, '\\g<epoch>', '\\g<major>', '\\g<minor>', '\\g<bugfix>', '\\g<suffix>', '\\g<release>') }}"
   vars:
     agent_regexp: (?:(?P<epoch>[0-9]+):)?(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<bugfix>[0-9]+)(?P<suffix>(?:~|-)[^0-9\s-]+[^-\s]*)?(?:-(?P<release>[0-9]+))?
 
@@ -27,8 +27,8 @@
 
 - name: parse-version | Stop play if datadog_agent_version and datadog_agent_major_version are not compatible
   ansible.builtin.fail:
-    msg: "The provided major version {{ agent_datadog_agent_major_version }} is not compatible with the version {{ agent_datadog_major }} deduced from datadog_agent_version
-      ({{ datadog_agent_version }}). Aborting play."
+    msg: "The provided major version {{ agent_datadog_agent_major_version }} is not compatible with the version {{ agent_datadog_major }}
+      deduced from datadog_agent_version ({{ datadog_agent_version }}). Aborting play."
   when: agent_datadog_agent_major_version | length > 0 and agent_datadog_major != agent_datadog_agent_major_version
 
 - name: parse-version | Set agent_datadog_agent_major_version to deduced value from datadog_agent_version
@@ -37,8 +37,7 @@
 
 - name: parse-version | Set helper variables
   ansible.builtin.set_fact:
-    agent_datadog_agent_linux_version: "{{ agent_datadog_epoch }}:{{ agent_datadog_major }}.{{ agent_datadog_minor }}.{{ agent_datadog_bugfix }}{{ agent_datadog_suffix
-      }}-{{ agent_datadog_release }}" # noqa yaml[line-length]
+    agent_datadog_agent_linux_version: "{{ agent_datadog_epoch }}:{{ agent_datadog_major }}.{{ agent_datadog_minor }}.{{ agent_datadog_bugfix }}{{ agent_datadog_suffix }}-{{ agent_datadog_release }}" # noqa yaml[line-length]
     agent_datadog_rpm_version_finding_cmd: "rpm -q --qf '%{EPOCH}:%{VERSION}-%{RELEASE}' {{ datadog_agent_flavor }}"
 
 - name: parse-version | Set OS-specific versions
@@ -53,7 +52,7 @@
 - name: parse-version | Construct commands to find Agent version
   ansible.builtin.set_fact:
     agent_datadog_version_finding_cmds:
-      Debian: "dpkg -s {{ datadog_agent_flavor }} | grep '^Version:' | awk '{print $2}'"
+      Debian: "dpkg-query --showformat '${Status} ${Version}\n' --show {{ datadog_agent_flavor }} | grep installed | awk '{print $NF}'"
       RedHat: "{{ agent_datadog_rpm_version_finding_cmd }}"
       Rocky: "{{ agent_datadog_rpm_version_finding_cmd }}"
       AlmaLinux: "{{ agent_datadog_rpm_version_finding_cmd }}"

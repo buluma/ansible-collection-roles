@@ -1,0 +1,54 @@
+---
+- name: windows_remote_update_check | Initialize remote update flag
+  ansible.builtin.set_fact:
+    datadog_remote_update_in_progress: false
+
+# Any process can be named datadog-installer.exe and carry the argument below,
+# so a match only counts when the executable is under Program Files\Datadog
+# (writable by administrators only) and has a valid Authenticode signature
+# from Datadog. A match that fails this is reported and ignored. Set
+# datadog_remote_update_verify_installer to false to trust the name and
+# argument alone, as the upstream role does.
+- name: windows_remote_update_check | Check if remote update is in progress
+  ansible.windows.win_shell:
+    cmd: |
+      $verify = {{ '$true' if datadog_remote_update_verify_installer else '$false' }}
+      $root = Join-Path $env:ProgramFiles 'Datadog'
+      Get-CimInstance Win32_Process | Where-Object {
+          $_.Name -eq "datadog-installer.exe" -and
+          $_.CommandLine -match "postStartExperimentBackground"
+      } | ForEach-Object {
+          $path = $_.ExecutablePath
+          $genuine = -not $verify
+          if ($verify -and $path -and $path.StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+              $signature = Get-AuthenticodeSignature -FilePath $path
+              $genuine = ($signature.Status -eq 'Valid') -and ($signature.SignerCertificate.Subject -match 'Datadog')
+          }
+          if ($genuine) { "GENUINE $($_.ProcessId)" } else { "UNTRUSTED $($_.ProcessId) $path" }
+      }
+  register: remote_update_check
+  changed_when: false
+
+- name: windows_remote_update_check | Update remote update flag if installer is running
+  ansible.builtin.set_fact:
+    datadog_remote_update_in_progress: true
+  when:
+    - remote_update_check.stdout is defined
+    - remote_update_check.stdout_lines | select('match', '^GENUINE ') | list | length > 0
+
+- name: windows_remote_update_check | Warn about processes that look like a remote update but are not trusted
+  ansible.builtin.debug:
+    msg: >-
+      Ignoring a datadog-installer.exe process that is not signed by Datadog or does not
+      run from the Datadog directory: {{ remote_update_check.stdout_lines | select('match', '^UNTRUSTED ') | list }}
+  when:
+    - remote_update_check.stdout is defined
+    - remote_update_check.stdout_lines | select('match', '^UNTRUSTED ') | list | length > 0
+
+- name: windows_remote_update_check | Inform about remote update in progress
+  ansible.builtin.debug:
+    msg: >-
+      Remote update is in progress. Skipping installation and restart of the Agent.
+      Any changes to the configuration will only take effect at the next Agent restart,
+      either manually or through a future role execution.
+  when: datadog_remote_update_in_progress

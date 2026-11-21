@@ -18,3 +18,37 @@ platforms:
   - name: Ubuntu
     versions:
       - all
+
+# Replaces the generator's default custom_message (the first paragraph is that default)
+# so the upgrade notes below end up in the README, which is generated.
+custom_message: |-
+  Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
+
+  ## [Upgrading to Datadog role 5.6.0](#upgrading-to-datadog-role-560)
+
+  This role is a vendored copy of [DataDog/ansible-datadog](https://github.com/DataDog/ansible-datadog), `role_version` in `defaults/main.yml` is the upstream version it was taken from. It was re-vendored from 4.21.0 to 5.6.0, keeping the local changes: `ansible.builtin.deb822_repository` instead of `apt_repository`, fully qualified module names, `ansible_facts['...']` instead of injected facts, `name[prefix]` task names, capitalized handler names and skipping the expired 2022 and 2024 RPM signing keys. Read the [upstream changelog](https://github.com/DataDog/ansible-datadog/blob/5.6.0/CHANGELOG.md) for everything else.
+
+  Dropped support (upstream 5.0.0 and 5.1.0):
+
+  - Python 2 and Ansible below 2.10 (this repository requires Ansible 2.19 anyway).
+  - Agent 5. `datadog_agent_major_version: 5` is no longer handled: the Agent 5 tasks and repositories are gone, but there is no explicit failure, so do not set it.
+  - Older Amazon Linux 2 and CentOS releases. The `yum` module is no longer used, RPM based hosts need `dnf`.
+
+  Removed variables, remove them from your playbooks:
+
+  - `datadog_agent5_apt_repo`, `datadog_agent5_yum_repo` and `datadog_agent5_zypper_repo`.
+  - `datadog_inject_apm_flavor`.
+  - `datadog_ignore_old_centos_python3_error`.
+  - `datadog_apm_instrumentation_languages`, replaced by `datadog_apm_instrumentation_libraries` (a list that can pin versions, for example `["java:1.23.0", "python:2.0.9"]`).
+  - `datadog_apm_instrumentation_docker_config`.
+
+  Added variables: `datadog_apm_instrumentation_libraries`, `datadog_installer_registry`, `datadog_installer_auth`, `datadog_installer_version`, `datadog_apm_inject_version`, `datadog_ssi_script_dir`, `datadog_remote_updates`, `datadog_infrastructure_mode`, `datadog_windows_skip_install`, `datadog_windows_force_reinstall`, `system_probe_other_config`, `datadog_ansible_facts_subset`, `datadog_macos_agent7_latest_arch_url`, and the 2033 signing key variables `datadog_yum_gpgkey_4f09d16b`, `datadog_zypper_gpgkey_4f09d16b` and their `_sha256sum` counterparts.
+
+  Behavior changes to check before upgrading:
+
+  - APM single step instrumentation is now installed by downloading and running `install-ssi.sh` (from `install.datadoghq.com`, or from `datadog_installer_registry` when set) in `datadog_ssi_script_dir`, which must allow execution. `datadog_apm_instrumentation_enabled` has no default anymore and must be `host`, `docker` or `all` when it is set, an empty string now fails.
+  - On Linux the legacy `datadog-installer` package and its systemd units are removed on every run.
+  - On Debian, RedHat and SUSE the repository and key tasks now also run when the requested Agent version is already installed, only the package install tasks are skipped.
+  - Windows: a running remote update is detected and the install and restart are skipped, and downgrades are allowed.
+  - macOS packages are downloaded from `install.datadoghq.com` instead of the `dd-agent` S3 bucket.
+  - Only a minimal set of facts is gathered when `ansible_facts` is not populated yet, see `datadog_ansible_facts_subset`.

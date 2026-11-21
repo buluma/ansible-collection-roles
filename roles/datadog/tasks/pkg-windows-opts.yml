@@ -17,13 +17,22 @@
   when: datadog_windows_ddagentuser_name | default('', true) | length > 0
 
 - name: pkg-windows-opts | Get Windows Agent features
-  win_ansible.builtin.shell:
-    "": ""
-    cmd: "$installer new-object -comobject WindowsInstaller.Installer\n$uninstall_key \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\"\n$agent_item
-      (Get-ItemProperty $uninstall_key -EA 0 | Where { $_.DisplayName -like \"Datadog Agent*\" }).PSChildName\nif (!$agent_item) {\n  return\n}\n$features $installer.features($agent_item)\n\
-      ForEach ($f in $features) {\n  if (($f -ieq 'MainApplication') -or ($installer.FeatureState($agent_item, $f) -ne 3)) {\n    continue\n  }\n  Write-Host $f\n\
-      }"
+  ansible.windows.win_shell: |
+    $installer = new-object -comobject WindowsInstaller.Installer
+    $uninstall_key = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    $agent_item = (Get-ItemProperty $uninstall_key -EA 0 | Where { $_.DisplayName -like "Datadog Agent*" }).PSChildName
+    if (!$agent_item) {
+      return
+    }
+    $features = $installer.features($agent_item)
+    ForEach ($f in $features) {
+      if (($f -ieq 'MainApplication') -or ($installer.FeatureState($agent_item, $f) -ne 3)) {
+        continue
+      }
+      Write-Host $f
+    }
   register: agent_windows_active_features
+  changed_when: false
 
 # NOTE: We don't set DD Password Arg here to prevent it from being printed;
 # we set it right before using agent_win_install_args
@@ -51,14 +60,14 @@
 - name: pkg-windows-opts | Validate config path
   ansible.builtin.fail:
     msg: "Incompatible configuration option {{ agent_config_root_from_registry.value }} != {{ datadog_windows_config_files_dir }}"
-  when: ( (agent_config_root_from_registry.exists) and (datadog_windows_config_files_dir | length > 0 ) and (agent_config_root_from_registry.value |
-    regex_replace('\\\\$','') | lower != datadog_windows_config_files_dir | lower ) )
+  when: ( (agent_config_root_from_registry.exists) and (datadog_windows_config_files_dir | length > 0 ) and (agent_config_root_from_registry.value
+    | regex_replace('\\\\$','') | lower != datadog_windows_config_files_dir | lower ) )
 
 - name: pkg-windows-opts | Validated config path
   ansible.builtin.debug:
     msg: "Allowing configuration option {{ agent_config_root_from_registry.value }} == {{ datadog_windows_config_files_dir }}"
-  when: ( (agent_config_root_from_registry.exists) and (datadog_windows_config_files_dir | length > 0 ) and (agent_config_root_from_registry.value |
-    regex_replace('\\\\$','') | lower == datadog_windows_config_files_dir | lower ) )
+  when: ( (agent_config_root_from_registry.exists) and (datadog_windows_config_files_dir | length > 0 ) and (agent_config_root_from_registry.value
+    | regex_replace('\\\\$','') | lower == datadog_windows_config_files_dir | lower ) )
 
 ## validate the binary install path.  Only necessary if it's set in the registry alread (i.e. upgrade)
 ## Will fail the install if the caller has set the binary install path to a non-standard root, and that
@@ -66,14 +75,14 @@
 - name: pkg-windows-opts | Validate install path
   ansible.builtin.fail:
     msg: "Incompatible configuration option {{ agent_install_path_from_registry.value }} != {{ datadog_windows_program_files_dir }}"
-  when: ( (agent_install_path_from_registry.exists) and (datadog_windows_program_files_dir | length > 0 ) and (agent_install_path_from_registry.value |
-    regex_replace('\\\\$','') | lower != datadog_windows_program_files_dir | lower ) )
+  when: ( (agent_install_path_from_registry.exists) and (datadog_windows_program_files_dir | length > 0 ) and (agent_install_path_from_registry.value
+    | regex_replace('\\\\$','') | lower != datadog_windows_program_files_dir | lower ) )
 
 - name: pkg-windows-opts | Validated install path
   ansible.builtin.debug:
     msg: "Allowing configuration option {{ agent_install_path_from_registry.value }} == {{ datadog_windows_program_files_dir }}"
-  when: ( (agent_install_path_from_registry.exists) and (datadog_windows_program_files_dir | length > 0 ) and (agent_install_path_from_registry.value |
-    regex_replace('\\\\$','') | lower == datadog_windows_program_files_dir | lower ) )
+  when: ( (agent_install_path_from_registry.exists) and (datadog_windows_program_files_dir | length > 0 ) and (agent_install_path_from_registry.value
+    | regex_replace('\\\\$','') | lower == datadog_windows_program_files_dir | lower ) )
 
 - name: pkg-windows-opts | Set Program Files Target Directory
   ansible.builtin.set_fact:
@@ -114,6 +123,43 @@
   # want to force the install for nothing in those version, we skip the step
   # when the agent is 7.45+
   when: >-
-    (agent_datadog_skip_install and (agent_datadog_major | int <= 7) and (agent_datadog_minor
-    | int < 45)) and
+    (agent_datadog_skip_install and (agent_datadog_major | int <= 7) and (agent_datadog_minor | int < 45)) and
     (("NPM" in agent_windows_active_features.stdout_lines) != agent_datadog_sysprobe_enabled)
+
+# Check if downgrade is requested (installed version is higher than requested version)
+- name: pkg-windows-opts | Initialize downgrade detection flag
+  ansible.builtin.set_fact:
+    agent_datadog_downgrade_detected: false
+
+- name: pkg-windows-opts | Detect if downgrade is requested
+  ansible.builtin.set_fact:
+    agent_datadog_downgrade_detected: true
+  when: >-
+    agent_datadog_installed_major is defined and
+    agent_datadog_installed_minor is defined and
+    agent_datadog_installed_bugfix is defined and
+    (
+      (agent_datadog_installed_major | int > agent_datadog_major | int) or
+      (agent_datadog_installed_major | int == agent_datadog_major | int and
+       agent_datadog_installed_minor | int > agent_datadog_minor | int) or
+      (agent_datadog_installed_major | int == agent_datadog_major | int and
+       agent_datadog_installed_minor | int == agent_datadog_minor | int and
+       agent_datadog_installed_bugfix | int > agent_datadog_bugfix | int)
+    )
+
+# Skip downgrade warning if remote update is in progress
+- name: pkg-windows-opts | Warn about downgrade
+  ansible.builtin.debug:
+    msg: >-
+      datadog_agent_version {{ agent_datadog_major }}.{{ agent_datadog_minor }}.{{ agent_datadog_bugfix }}
+      is lower than installed version
+      {{ agent_datadog_installed_major }}.{{ agent_datadog_installed_minor }}.{{ agent_datadog_installed_bugfix }},
+      proceeding to downgrade by uninstalling current version first
+  when: agent_datadog_downgrade_detected and not datadog_remote_update_in_progress
+
+# We do not need to check for remote update in progress here because installation is skipped if remote update is in progress anyway
+- name: pkg-windows-opts | Force reinstall for downgrade
+  ansible.builtin.set_fact:
+    agent_datadog_skip_install: false
+    agent_datadog_force_reinstall: true
+  when: agent_datadog_downgrade_detected

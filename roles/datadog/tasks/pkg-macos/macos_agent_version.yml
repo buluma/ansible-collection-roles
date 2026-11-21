@@ -1,4 +1,9 @@
 ---
 - name: pkg-macos | macos_agent_version | Set agent download filename to a specific version
   ansible.builtin.set_fact:
-    agent_dd_download_url: "{{ datadog_macos_versioned_url }}-{{ agent_datadog_agent_macos_version }}-1.dmg"
+    agent_dd_download_url: "{{ datadog_macos_versioned_url }}-{{ agent_datadog_agent_macos_version }}-1{{ maybe_arch }}.dmg"
+  vars:
+    maybe_arch: >-
+      {{ '.' + ansible_facts['architecture']
+      if agent_datadog_agent_macos_version is version('7.70', '>=')
+      else '' }}
