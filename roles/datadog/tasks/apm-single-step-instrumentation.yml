@@ -1,6 +1,8 @@
 ---
 # We use this step to not render empty environment variables when not explicitly set
+# datadog_installer_auth is a registry credential, so keep it out of the output when it is set.
 - name: apm-single-step-instrumentation | Build Datadog installer environment variables
+  no_log: "{{ datadog_installer_auth | length > 0 }}"
   ansible.builtin.set_fact:
     datadog_apm_single_step_instrumentation_environment: >
       {{
@@ -45,6 +47,7 @@
   register: install_ssi_script_result
 
 - name: apm-single-step-instrumentation | Run datadog-installer install-ssi.sh script
+  no_log: "{{ datadog_installer_auth | length > 0 }}"
   ansible.builtin.command:
     cmd: "{{ datadog_ssi_script_dir }}/install-ssi.sh"
   environment: "{{ datadog_apm_single_step_instrumentation_environment }}"

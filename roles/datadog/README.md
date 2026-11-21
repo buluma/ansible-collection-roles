@@ -324,6 +324,11 @@ datadog_installer_auth: ""
 datadog_installer_version: ""
 datadog_apm_inject_version: ""
 
+# Windows: only treat a datadog-installer.exe process as a remote update when it runs from
+# Program Files\Datadog and has a valid Datadog Authenticode signature. Set to false to trust
+# the process name and command line alone.
+datadog_remote_update_verify_installer: true
+
 # Configure APM host injection. Possible values are: "all", "host" or "docker".
 # datadog_apm_instrumentation_enabled: ""
 
