@@ -43,7 +43,8 @@ def module_names(items):
             if isinstance(value, str):
                 yield value.split()[0]
             elif isinstance(value, dict) and "module" in value:
-                yield value["module"]
+                # The module key can carry free-form arguments after the name.
+                yield str(value["module"]).split()[0]
         for key in task:
             if key not in KEYWORDS and not key.startswith("with_"):
                 yield key
