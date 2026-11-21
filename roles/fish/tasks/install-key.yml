@@ -1,0 +1,109 @@
+---
+# Verifies and installs the repository key _fish_key_id from _fish_key_url at
+# _fish_key_dest. Neither deb822_repository (it fetches a signed_by URL itself)
+# nor rpm_key (it accepts a key file that merely contains the fingerprint, also
+# as a subkey or next to other keys) can check that a download is exactly the
+# expected key. So the key is fetched into a private temporary directory first
+# and is only installed when it holds exactly one key and the fingerprint of
+# that key is _fish_key_id. The key has to be ASCII armored: apt rejects a
+# binary key in a .asc file.
+- name: install-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: fish-key-
+  register: _fish_key_dir
+  changed_when: false
+
+- name: install-key | Verify and install key
+  block:
+    - name: install-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ _fish_key_url }}"
+        dest: "{{ _fish_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _fish_key_download
+      until: _fish_key_download is succeeded
+
+    - name: install-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _fish_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _fish_key_dir.path }}"
+      changed_when: false
+      register: _fish_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: install-key | Verify key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _fish_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_fish_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == _fish_key_id | upper
+        fail_msg: >-
+          The key downloaded from {{ _fish_key_url }} is not a single key
+          with fingerprint {{ _fish_key_id }}, refusing to trust it.
+        quiet: true
+
+    # Install only the key that was checked, not the downloaded bytes. gpg here
+    # and apt or rpm later could read a crafted file differently, and a
+    # keyserver answers with different signatures and armor on each fetch,
+    # which would report a change on every run.
+    - name: install-key | Import the verified key into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _fish_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _fish_key_dir.path }}"
+      changed_when: false
+
+    - name: install-key | Export only the verified key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ _fish_key_dir.path }}/verified.asc"
+          - "{{ _fish_key_id }}"
+      environment:
+        GNUPGHOME: "{{ _fish_key_dir.path }}"
+      changed_when: false
+
+    - name: install-key | Install key
+      ansible.builtin.copy:
+        src: "{{ _fish_key_dir.path }}/verified.asc"
+        dest: "{{ _fish_key_dest }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+  always:
+    - name: install-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _fish_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _fish_key_dir.path is defined
+
+    - name: install-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _fish_key_dir.path }}"
+        state: absent
+      changed_when: false

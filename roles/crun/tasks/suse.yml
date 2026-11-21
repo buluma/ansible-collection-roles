@@ -13,7 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: suse | Rpm --import
+- name: suse | Install required package gpg2
+  vars:
+    ansible_python_interpreter: "python3"
+  community.general.zypper:
+    name: gpg2
+    state: present
+
+# A key to add is downloaded, verified and exported before it is imported, see
+# rpm-key.yml. Removing a key installs nothing, so it is left as it was.
+- name: suse | Verify and import Rpm keys
+  ansible.builtin.include_tasks: rpm-key.yml
+  vars:
+    ansible_python_interpreter: "python3"
+  loop: "{{ _rpm_key }}"
+  loop_control:
+    loop_var: _crun_rpm_key
+    label: "{{ _crun_rpm_key.key }}"
+  when: _crun_rpm_key.state == 'present'
+
+- name: suse | Rpm --import absent
   vars:
     ansible_python_interpreter: "python3"
   ansible.builtin.rpm_key:
@@ -21,6 +40,7 @@
     fingerprint: "{{ item.fingerprint }}"
     state: "{{ item.state }}"
   loop: "{{ _rpm_key }}"
+  when: item.state != 'present'
   register: result
   until: result is succeeded
 

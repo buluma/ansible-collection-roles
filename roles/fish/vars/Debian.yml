@@ -1,3 +1,7 @@
 ---
 _fish_apt_key_url: "https://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/Debian_{{ ansible_facts['distribution_major_version'] }}{{ '.0' if ansible_facts['distribution_major_version'] is version('9', '<=') else '' }}/Release.key"
-_fish_apt_repo_url: "deb http://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/Debian_{{ ansible_facts['distribution_major_version'] }}{{ '.0' if ansible_facts['distribution_major_version'] is version('9', '<=') else '' }}/ /"
+# Fingerprint of the shells:fish OBS project key, the same for every release and
+# Debian version. It matches the fingerprint the OBS API publishes at
+# https://api.opensuse.org/public/source/shells:fish/_keyinfo
+_fish_apt_key_id: "24A63B31CAB41B33EC48801E2CE2AC08D880C8E4"
+_fish_apt_repo_url: "deb https://download.opensuse.org/repositories/shells:/fish:/release:/{{ fish_release_version }}/Debian_{{ ansible_facts['distribution_major_version'] }}{{ '.0' if ansible_facts['distribution_major_version'] is version('9', '<=') else '' }}/ /"

@@ -1,0 +1,51 @@
+---
+# Verifies and installs one key of _apt_key, see export-key.yml. deb822_repository
+# fetches a signed_by URL itself and cannot check a fingerprint, so the key is
+# fetched into a private temporary directory first. Only the key with the id
+# listed in _apt_key is installed. The key is installed where deb822_repository
+# would have stored it, so installs from earlier versions of this role are
+# updated in place. The key is ASCII armored, as the file is named .asc; apt
+# rejects a binary key there.
+# _perforce_apt_key is a pair of the _apt_key entry and its _apt_repository entry.
+- name: apt-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: apt-key-
+  register: _perforce_apt_key_dir
+  changed_when: false
+
+- name: apt-key | Verify and install key
+  block:
+    - name: apt-key | Export the verified key
+      ansible.builtin.include_tasks: export-key.yml
+      vars:
+        _perforce_key_url: "{{ _perforce_apt_key[0].url }}"
+        _perforce_key_id: "{{ _perforce_apt_key[0].id }}"
+        _perforce_key_dir: "{{ _perforce_apt_key_dir.path }}"
+
+    - name: apt-key | Install key
+      ansible.builtin.copy:
+        src: "{{ _perforce_apt_key_dir.path }}/verified.asc"
+        dest: "/etc/apt/keyrings/{{ _perforce_apt_key[1].filename | regex_replace('[^A-Za-z0-9_-]+', '_') }}.asc"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+  always:
+    - name: apt-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _perforce_apt_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _perforce_apt_key_dir.path is defined
+
+    - name: apt-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _perforce_apt_key_dir.path }}"
+        state: absent
+      changed_when: false

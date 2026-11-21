@@ -1,0 +1,151 @@
+---
+# Verifies and imports the Zabbix repository key. zabbix-official-repo.key is
+# a bundle of several keys and rpm_key imports all of them, so the key is
+# fetched into a private temporary directory first and only imported when it
+# holds at least one key and every primary key in it has a fingerprint listed
+# in _zabbix_repository_rpm_key_fingerprints. The fingerprint option of rpm_key
+# is not used: depending on the version of Ansible it only compares the first
+# key of the file, or only checks that the given fingerprint is present, and
+# neither stops an extra key from being imported. What is imported is not the
+# download but a file exported from a temporary keyring, see below. The role
+# does not install gpg, rpm based hosts have it as a dependency of dnf and
+# zypper.
+- name: rpm-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: zabbix-key-
+  register: _zabbix_repository_rpm_key_dir
+  changed_when: false
+
+- name: rpm-key | Verify and import key
+  block:
+    - name: rpm-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ _zabbix_repository_rpm_key_url }}"
+        dest: "{{ _zabbix_repository_rpm_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _zabbix_repository_rpm_key_download
+      until: _zabbix_repository_rpm_key_download is succeeded
+
+    - name: rpm-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _zabbix_repository_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _zabbix_repository_rpm_key_dir.path }}"
+      changed_when: false
+      register: _zabbix_repository_rpm_key_info
+
+    # In the colon listing the fpr line right after a pub line is the
+    # fingerprint of that primary key, the other fpr lines belong to subkeys.
+    - name: rpm-key | Collect key fingerprints
+      ansible.builtin.set_fact:
+        _zabbix_repository_rpm_key_found: >-
+          {{ _zabbix_repository_rpm_key_info.stdout_lines
+          | zip(_zabbix_repository_rpm_key_info.stdout_lines[1:])
+          | selectattr('0', 'match', '^pub:')
+          | map(attribute='1')
+          | map('regex_replace', '^fpr:+([0-9A-Fa-f]+):.*$', '\1')
+          | map('upper')
+          | list }}
+
+    - name: rpm-key | Verify key fingerprints
+      ansible.builtin.assert:
+        that:
+          - _zabbix_repository_rpm_key_found | length > 0
+          - _zabbix_repository_rpm_key_found | difference(_zabbix_repository_rpm_key_fingerprints | map('upper') | list) | length == 0
+        fail_msg: >-
+          The key downloaded from {{ _zabbix_repository_rpm_key_url }} holds
+          primary keys with the fingerprints {{ _zabbix_repository_rpm_key_found | join(', ') }},
+          only {{ _zabbix_repository_rpm_key_fingerprints | join(', ') }} are
+          trusted, refusing to import it.
+        quiet: true
+
+    # Import only the keys that were checked, not the downloaded bytes. gpg here
+    # and rpm later could read a crafted file differently (skipped packets, extra
+    # keys), so the allowlisted keys are exported from a temporary keyring and
+    # that file is what rpm gets. A key that gpg does not accept into the keyring
+    # is missing from the export and fails the comparison below.
+    - name: rpm-key | Import the verified keys into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _zabbix_repository_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _zabbix_repository_rpm_key_dir.path }}"
+      changed_when: false
+
+    - name: rpm-key | Export only the verified keys
+      ansible.builtin.command:
+        argv: >-
+          {{ ['gpg', '--batch', '--export', '--armor', '--export-options', 'export-minimal',
+          '--output', _zabbix_repository_rpm_key_dir.path ~ '/verified.asc']
+          + _zabbix_repository_rpm_key_fingerprints }}
+      environment:
+        GNUPGHOME: "{{ _zabbix_repository_rpm_key_dir.path }}"
+      changed_when: false
+
+    - name: rpm-key | Read exported key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _zabbix_repository_rpm_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ _zabbix_repository_rpm_key_dir.path }}"
+      changed_when: false
+      register: _zabbix_repository_rpm_key_exported_info
+
+    # The export has to hold exactly the primary keys of the download, each once.
+    - name: rpm-key | Verify exported key fingerprints
+      ansible.builtin.assert:
+        that:
+          - _zabbix_repository_rpm_key_exported | length == _zabbix_repository_rpm_key_exported | unique | length
+          - _zabbix_repository_rpm_key_exported | sort == _zabbix_repository_rpm_key_found | unique | sort
+        fail_msg: >-
+          The keys exported for import hold the primary keys
+          {{ _zabbix_repository_rpm_key_exported | join(', ') }} but the key downloaded from
+          {{ _zabbix_repository_rpm_key_url }} holds {{ _zabbix_repository_rpm_key_found | join(', ') }},
+          refusing to import them.
+        quiet: true
+      vars:
+        _zabbix_repository_rpm_key_exported: >-
+          {{ _zabbix_repository_rpm_key_exported_info.stdout_lines
+          | zip(_zabbix_repository_rpm_key_exported_info.stdout_lines[1:])
+          | selectattr('0', 'match', '^pub:')
+          | map(attribute='1')
+          | map('regex_replace', '^fpr:+([0-9A-Fa-f]+):.*$', '\1')
+          | map('upper')
+          | list }}
+
+    - name: rpm-key | Import key
+      ansible.builtin.rpm_key:
+        key: "{{ _zabbix_repository_rpm_key_dir.path }}/verified.asc"
+        state: present
+  always:
+    - name: rpm-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _zabbix_repository_rpm_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _zabbix_repository_rpm_key_dir.path is defined
+
+    - name: rpm-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _zabbix_repository_rpm_key_dir.path }}"
+        state: absent
+      changed_when: false

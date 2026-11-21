@@ -1,12 +1,30 @@
 ---
-- name: suse | Rpm --import
+- name: suse | Install required package gpg2
+  vars:
+    ansible_python_interpreter: "python3"
+  community.general.zypper:
+    name: gpg2
+    state: present
+
+# A key is checked against its listed fingerprint before it is imported, see
+# rpm-key.yml. Removing a key needs no download.
+- name: suse | Verify and import rpm keys
+  vars:
+    ansible_python_interpreter: "python3"
+  ansible.builtin.include_tasks: rpm-key.yml
+  loop: "{{ _rpm_key | selectattr('state', 'equalto', 'present') | list }}"
+  loop_control:
+    loop_var: _perforce_rpm_key
+    label: "{{ _perforce_rpm_key.key }}"
+
+- name: suse | Rpm --import absent
   vars:
     ansible_python_interpreter: "python3"
   ansible.builtin.rpm_key:
     key: "{{ item.key }}"
     fingerprint: "{{ item.fingerprint }}"
     state: "{{ item.state }}"
-  loop: "{{ _rpm_key }}"
+  loop: "{{ _rpm_key | rejectattr('state', 'equalto', 'present') | list }}"
   register: result
   until: result is succeeded
 

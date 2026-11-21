@@ -70,9 +70,10 @@
       when:
         - ansible_facts['pkg_mgr'] == "zypper"
 
+    # The key is checked against the pinned fingerprints before it is imported, see rpm-key.yml.
     - name: Trust repository GPG key (rpm)
-      ansible.builtin.rpm_key:
-        key: "https://repo.zabbix.com/zabbix-official-repo.key"
+      ansible.builtin.include_tasks:
+        file: rpm-key.yml
       when:
         - ansible_facts['pkg_mgr'] in [ "dnf", "yum", "zypper" ]
 

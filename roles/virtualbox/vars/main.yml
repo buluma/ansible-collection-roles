@@ -7,6 +7,11 @@
 virtualbox_keys:
   - https://www.virtualbox.org/download/oracle_vbox_2016.asc
 
+# Fingerprint of oracle_vbox_2016.asc, as published by Oracle on
+# https://www.virtualbox.org/wiki/Linux_Downloads. Every key in virtualbox_keys
+# is verified against it before it is trusted.
+virtualbox_key_fingerprint: B9F8D658297AF3EFC18D5CDFA2F683C52980AECF
+
 _virtualbox_requirements:
   default:
     - kernel-devel
@@ -20,7 +25,7 @@ _virtualbox_repo_mapping:
 
 virtualbox_repo_mapping: "{{ _virtualbox_repo_mapping[ansible_facts['distribution']] | default(_virtualbox_repo_mapping[ansible_facts['os_family']]) }}"
 
-virtualbox_yum_baseurl: "http://download.virtualbox.org/virtualbox/rpm/{{ virtualbox_repo_mapping }}/$releasever/$basearch"
+virtualbox_yum_baseurl: "https://download.virtualbox.org/virtualbox/rpm/{{ virtualbox_repo_mapping }}/$releasever/$basearch"
 
 virtualbox_apt_repository: "https://download.virtualbox.org/virtualbox/debian"
 

@@ -9,6 +9,23 @@
     telegraf_redhat_releasever: 7
   when:
     - ansible_facts['distribution'] == "Fedora"
+# gpg is needed to verify the fingerprint of the rpm key and by rpm_key.
+- name: RedHat | Install gnupg
+  ansible.builtin.package:
+    name: gnupg2
+    state: present
+  become: true
+  register: are_telegraf_gnupg_installed
+  until: are_telegraf_gnupg_installed is succeeded
+  when:
+    - telegraf_agent_package_method == "repo"
+- name: RedHat | Import Telegraf rpm key
+  ansible.builtin.include_tasks: install-key.yml
+  vars:
+    _telegraf_key_url: "{{ telegraf_yum_gpgkey }}"
+    _telegraf_key_fingerprint: "{{ telegraf_gpgkey_fingerprint }}"
+  when:
+    - telegraf_agent_package_method == "repo"
 - name: RedHat | Add yum repository
   ansible.builtin.yum_repository:
     baseurl: "{{ telegraf_yum_baseurl[ansible_facts['distribution'] | lower] | default(telegraf_yum_baseurl['default']) }}"

@@ -1,0 +1,128 @@
+---
+# Verifies and imports one rpm signing key, the URL is _virtualbox_rpm_key_url.
+# rpm_key accepts a key file that merely contains the fingerprint, also next to
+# other keys, so it cannot check that a download is exactly the expected key.
+# So the key is fetched into a private temporary directory first and is only
+# imported when it holds exactly one key and the fingerprint of that key is
+# virtualbox_key_fingerprint. What is imported is not the download: gpg here
+# and rpm later could read a crafted file differently. So the verified key is
+# imported into a temporary keyring and exported again, which gives rpm exactly
+# that key.
+- name: rpm-key | Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: rpm-key-
+  register: _virtualbox_rpm_key_dir
+  changed_when: false
+
+- name: rpm-key | Verify and import key
+  block:
+    - name: rpm-key | Download key
+      ansible.builtin.get_url:
+        url: "{{ _virtualbox_rpm_key_url }}"
+        dest: "{{ _virtualbox_rpm_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: _virtualbox_rpm_key_download
+      until: _virtualbox_rpm_key_download is succeeded
+
+    - name: rpm-key | Read key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _virtualbox_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_rpm_key_dir.path }}"
+      changed_when: false
+      register: _virtualbox_rpm_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: rpm-key | Verify key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _virtualbox_rpm_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_virtualbox_rpm_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == virtualbox_key_fingerprint | upper
+        fail_msg: >-
+          The key downloaded from {{ _virtualbox_rpm_key_url }} is not a single
+          key with fingerprint {{ virtualbox_key_fingerprint }}, refusing to trust it.
+        quiet: true
+
+    - name: rpm-key | Import the verified key into a temporary keyring
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ _virtualbox_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_rpm_key_dir.path }}"
+      changed_when: false
+
+    - name: rpm-key | Export only the verified key
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ _virtualbox_rpm_key_dir.path }}/verified.asc"
+          - "{{ virtualbox_key_fingerprint }}"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_rpm_key_dir.path }}"
+      changed_when: false
+
+    # Fails when gpg could not use the key, as then nothing (or something
+    # else) is exported.
+    - name: rpm-key | Read exported key fingerprints
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ _virtualbox_rpm_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ _virtualbox_rpm_key_dir.path }}"
+      changed_when: false
+      register: _virtualbox_rpm_key_exported
+
+    - name: rpm-key | Verify exported key fingerprint
+      ansible.builtin.assert:
+        that:
+          - _virtualbox_rpm_key_exported.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (_virtualbox_rpm_key_exported.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == virtualbox_key_fingerprint | upper
+        fail_msg: >-
+          The key exported from {{ _virtualbox_rpm_key_url }} is not a single
+          key with fingerprint {{ virtualbox_key_fingerprint }}, refusing to trust it.
+        quiet: true
+
+    - name: rpm-key | Import key
+      ansible.builtin.rpm_key:
+        state: present
+        key: "{{ _virtualbox_rpm_key_dir.path }}/verified.asc"
+        fingerprint: "{{ virtualbox_key_fingerprint }}"
+  always:
+    - name: rpm-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ _virtualbox_rpm_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: _virtualbox_rpm_key_dir.path is defined
+
+    - name: rpm-key | Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _virtualbox_rpm_key_dir.path }}"
+        state: absent
+      changed_when: false

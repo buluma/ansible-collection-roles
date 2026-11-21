@@ -151,9 +151,14 @@ telegraf_agent_quiet: false
 telegraf_agent_round_interval: true
 telegraf_agent_version: "1.40.3"
 telegraf_agent_version_patch: 1
+telegraf_apt_gpgkey: "https://repos.influxdata.com/influxdata-archive.key"
 telegraf_enabled: true
 telegraf_gid_docker: 995
 telegraf_global_tags: []
+# Primary key fingerprint of influxdata-archive.key, as published in the
+# InfluxData Telegraf installation docs. Used to verify the key behind
+# telegraf_apt_gpgkey and telegraf_yum_gpgkey; set it too when you change either.
+telegraf_gpgkey_fingerprint: "24C975CBA61A024EE1B631787C3D57159FC2F927"
 telegraf_mac_group: admin
 telegraf_mac_user: user
 telegraf_plugins_default:
@@ -161,7 +166,9 @@ telegraf_plugins_default:
       - percpu = true
     plugin: cpu
   - plugin: disk
-  - plugin: io
+  # inputs.io was renamed/replaced by inputs.diskio; io was removed
+  # entirely (hard error, not just a warning, as of 1.38+).
+  - plugin: diskio
   - plugin: mem
   - plugin: net
   - plugin: system
@@ -183,16 +190,27 @@ telegraf_win_service_args:
   - --config-directory "{{ telegraf_win_include }}"
 telegraf_yum_baseurl:
   amazon: https://repos.influxdata.com/centos/6/$basearch/stable
-  centos: https://repos.influxdata.com/rhel/{{ telegraf_redhat_releasever }}/$basearch/stable
-  default: https://repos.influxdata.com/{{ ansible_facts['distribution']|lower }}/{{ telegraf_redhat_releasever }}/$basearch/stable
-  redhat: https://repos.influxdata.com/rhel/{{ telegraf_redhat_releasever }}/$basearch/stable
-  rocky: https://repos.influxdata.com/rhel/{{ telegraf_redhat_releasever }}/$basearch/stable
-telegraf_yum_gpgkey: "https://repos.influxdata.com/influxdata-archive_compat.key"
+  centos: https://repos.influxdata.com/stable/$basearch/main
+  # InfluxData now publishes one universal repo for every RPM distro
+  # (their own docs use this same path regardless of distro/release).
+  almalinux: https://repos.influxdata.com/stable/$basearch/main
+  default: https://repos.influxdata.com/stable/$basearch/main
+  fedora: https://repos.influxdata.com/stable/$basearch/main
+  redhat: https://repos.influxdata.com/stable/$basearch/main
+  rocky: https://repos.influxdata.com/stable/$basearch/main
+# influxdata-archive_compat.key only carries their old signing key;
+# newer packages (e.g. influxdata-archive-keyring) are signed with a
+# key that's only in the non-compat archive key.
+telegraf_yum_gpgkey: "https://repos.influxdata.com/influxdata-archive.key"
+# Signing key of the OBS devel:languages:go project, used for the default
+# telegraf_zypper_repos. The same key signs every repository of the project.
+telegraf_zypper_gpgkey: "https://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/repodata/repomd.xml.key"
+telegraf_zypper_gpgkey_fingerprint: "B619E7E24D0ED061FA14343CAF4CFE4D307D7BF9"
 telegraf_zypper_repos:
-  default: http://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/
-  opensuse leap: http://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Leap_{{ ansible_facts['distribution_version'] }}/
-  opensuse tumbleweed: http://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/
-  sles: http://download.opensuse.org/repositories/devel:/languages:/go/SLE_{{ ansible_facts['distribution_major_version'] }}_SP{{
+  default: https://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/
+  opensuse leap: https://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Leap_{{ ansible_facts['distribution_version'] }}/
+  opensuse tumbleweed: https://download.opensuse.org/repositories/devel:/languages:/go/openSUSE_Factory/
+  sles: https://download.opensuse.org/repositories/devel:/languages:/go/SLE_{{ ansible_facts['distribution_major_version'] }}_SP{{
     ansible_facts['distribution_release'] }}/
 ```
 

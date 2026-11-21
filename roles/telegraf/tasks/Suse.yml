@@ -30,10 +30,24 @@
   register: are_telegraf_dependencies_packages_installed
   until: are_telegraf_dependencies_packages_installed is succeeded
   when: ansible_python.version.major >= 3
+# gpg is needed to verify the fingerprint of the rpm key and by rpm_key.
+- name: Suse | Install gpg
+  become: true
+  community.general.zypper:
+    name: gpg2
+    state: present
+  register: are_telegraf_gnupg_installed
+  until: are_telegraf_gnupg_installed is succeeded
+  when: telegraf_zypper_baseurl is not defined
+- name: Suse | Import Open Build Service rpm key
+  ansible.builtin.include_tasks: install-key.yml
+  vars:
+    _telegraf_key_url: "{{ telegraf_zypper_gpgkey }}"
+    _telegraf_key_fingerprint: "{{ telegraf_zypper_gpgkey_fingerprint }}"
+  when: telegraf_zypper_baseurl is not defined
 - name: Suse | Add default Open Build Service repository
   become: true
   community.general.zypper_repository:
-    auto_import_keys: true
     name: telegraf
     repo: "{{ telegraf_zypper_repos[ansible_facts['distribution'] | lower] | default(telegraf_zypper_repos['default']) }}"
     runrefresh: true

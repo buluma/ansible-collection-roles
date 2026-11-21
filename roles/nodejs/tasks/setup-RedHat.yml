@@ -6,53 +6,46 @@
     # on, the repository lives under nodistro/ and is configured with a repo file.
     nodejs_rhel_legacy_layout: "{{ (nodejs_version | regex_replace('^(\\d+).*$', '\\1')) is version('22', '<') }}"
 
-- name: setup-RedHat | Import Nodesource RPM key (CentOS < 7).
-  ansible.builtin.rpm_key:
-    key: http://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
-    state: present
-  when:
-    - nodejs_rhel_legacy_layout
-    - ansible_facts['distribution_major_version'] | int < 7
-
-- name: setup-RedHat | Import Nodesource RPM key (CentOS 7+).
-  ansible.builtin.rpm_key:
-    key: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
-    state: present
-  when:
-    - nodejs_rhel_legacy_layout
-    - ansible_facts['distribution_major_version'] | int >= 7
-
-- name: setup-RedHat | Add Nodesource repositories for Node.js (CentOS < 7).
+# The key is verified with gpg before it is imported, so gpg has to be present
+# (minimal images don't always have it).
+- name: setup-RedHat | Ensure gnupg2 is present.
   ansible.builtin.dnf:
-    name: "http://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_facts['distribution_major_version'] }}/{{ ansible_facts['architecture'] }}/nodesource-release-el{{
-      ansible_facts['distribution_major_version'] }}-1.noarch.rpm"
+    name: gnupg2
     state: present
-  when:
-    - nodejs_rhel_legacy_layout
-    - ansible_facts['distribution_major_version'] | int < 7
-  register: node_repo
 
-- name: setup-RedHat | Add Nodesource repositories for Node.js (CentOS 7+).
+# The key is imported first, so dnf checks the signature of the release rpm
+# below against it.
+- name: setup-RedHat | Import Nodesource RPM key (20.x and earlier).
+  ansible.builtin.include_tasks:
+    file: install-rpm-key.yml
+  vars:
+    nodejs_rpm_key_url: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
+    nodejs_rpm_key_fingerprint: 2E55207A95D9944B0CC932615DDBE8D434FA74DD
+  when: nodejs_rhel_legacy_layout
+
+- name: setup-RedHat | Add Nodesource repositories for Node.js (20.x and earlier).
   ansible.builtin.dnf:
     name: "https://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_facts['distribution_major_version'] }}/{{ ansible_facts['architecture'] }}/nodesource-release-el{{
       ansible_facts['distribution_major_version'] }}-1.noarch.rpm"
     state: present
-  when:
-    - nodejs_rhel_legacy_layout
-    - ansible_facts['distribution_major_version'] | int >= 7
+  when: nodejs_rhel_legacy_layout
   register: node_repo
 
 # The key is imported up front so the package signature check below does not need
 # an interactive key import.
 - name: setup-RedHat | Import Nodesource RPM key (22.x and later).
-  ansible.builtin.rpm_key:
-    key: https://rpm.nodesource.com/gpgkey/ns-operations-public.key
-    state: present
+  ansible.builtin.include_tasks:
+    file: install-rpm-key.yml
+  vars:
+    nodejs_rpm_key_url: https://rpm.nodesource.com/gpgkey/ns-operations-public.key
+    nodejs_rpm_key_fingerprint: 242B813831AF09562B6C46F76B88DA4E3AF28A14
   when: not nodejs_rhel_legacy_layout
 
 # repo_gpgcheck stays off because this layout does not publish repomd.xml.asc.
 # Packages are still checked (gpgcheck) against the key imported above.
 # The settings mirror the repo file written by NodeSource's setup script.
+# gpgkey keeps pointing at the https URL: the verified key is already in the rpm
+# database, so dnf finds it there and does not fetch the URL for package checks.
 - name: setup-RedHat | Add Nodesource repository for Node.js (22.x and later).
   ansible.builtin.yum_repository:
     name: nodesource-nodejs

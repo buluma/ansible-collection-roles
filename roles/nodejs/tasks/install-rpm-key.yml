@@ -1,0 +1,131 @@
+---
+# Verifies and imports the RPM key nodejs_rpm_key_fingerprint from
+# nodejs_rpm_key_url. rpm_key accepts a key file that merely contains the
+# fingerprint, also as a subkey or next to other keys, so it cannot check that a
+# download is exactly the expected key. So the key is fetched into a private
+# temporary directory first and only imported when it holds exactly one key and
+# the fingerprint of that key is nodejs_rpm_key_fingerprint. Only that key is
+# imported: it is exported from a temporary keyring, because gpg here and rpm
+# later could read a crafted file differently.
+- name: install-rpm-key | Create temporary directory for the Nodesource RPM key.
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: nodesource-rpm-key-
+  register: nodejs_rpm_key_dir
+  changed_when: false
+
+- name: install-rpm-key | Verify and import Nodesource RPM key.
+  block:
+    - name: install-rpm-key | Download Nodesource RPM key.
+      ansible.builtin.get_url:
+        url: "{{ nodejs_rpm_key_url }}"
+        dest: "{{ nodejs_rpm_key_dir.path }}/key"
+        mode: "0600"
+      changed_when: false
+      register: nodejs_rpm_key_download
+      until: nodejs_rpm_key_download is succeeded
+
+    - name: install-rpm-key | Read Nodesource RPM key fingerprints.
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ nodejs_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ nodejs_rpm_key_dir.path }}"
+      changed_when: false
+      register: nodejs_rpm_key_info
+
+    # In the colon listing the first fpr line is the fingerprint of the
+    # primary key, the ones after it belong to subkeys.
+    - name: install-rpm-key | Verify Nodesource RPM key fingerprint.
+      ansible.builtin.assert:
+        that:
+          - nodejs_rpm_key_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (nodejs_rpm_key_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == nodejs_rpm_key_fingerprint | upper
+        fail_msg: >-
+          The key downloaded from {{ nodejs_rpm_key_url }} is not a single key
+          with fingerprint {{ nodejs_rpm_key_fingerprint }}, refusing to trust it.
+        quiet: true
+
+    # The export keeps the newest self-signature of the key and drops
+    # third-party signatures; the key stays as NodeSource published it
+    # otherwise. A keyserver answers with different signatures and armor on each
+    # fetch, so the exported bytes are also the stable ones.
+    - name: install-rpm-key | Import the verified Nodesource RPM key into a temporary keyring.
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --import
+          - "{{ nodejs_rpm_key_dir.path }}/key"
+      environment:
+        GNUPGHOME: "{{ nodejs_rpm_key_dir.path }}"
+      changed_when: false
+
+    - name: install-rpm-key | Export only the verified Nodesource RPM key.
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --batch
+          - --export
+          - --armor
+          - --export-options
+          - export-minimal
+          - --output
+          - "{{ nodejs_rpm_key_dir.path }}/verified.asc"
+          - "{{ nodejs_rpm_key_fingerprint }}"
+      environment:
+        GNUPGHOME: "{{ nodejs_rpm_key_dir.path }}"
+      changed_when: false
+
+    # Fails when gpg could not use the key, e.g. a skipped packet left the
+    # export empty or without the primary key.
+    - name: install-rpm-key | Read exported Nodesource RPM key fingerprints.
+      ansible.builtin.command:
+        argv:
+          - gpg
+          - --show-keys
+          - --with-colons
+          - --with-fingerprint
+          - "{{ nodejs_rpm_key_dir.path }}/verified.asc"
+      environment:
+        GNUPGHOME: "{{ nodejs_rpm_key_dir.path }}"
+      changed_when: false
+      register: nodejs_rpm_key_export_info
+
+    - name: install-rpm-key | Verify exported Nodesource RPM key fingerprint.
+      ansible.builtin.assert:
+        that:
+          - nodejs_rpm_key_export_info.stdout_lines | select('match', '^(pub|sec):') | list | length == 1
+          - (nodejs_rpm_key_export_info.stdout_lines | select('match', '^fpr:') | first).split(':')[9] | upper == nodejs_rpm_key_fingerprint | upper
+        fail_msg: >-
+          The key exported for {{ nodejs_rpm_key_fingerprint }} is not a single key
+          with that fingerprint, refusing to import it.
+        quiet: true
+
+    - name: install-rpm-key | Import Nodesource RPM key.
+      ansible.builtin.rpm_key:
+        key: "{{ nodejs_rpm_key_dir.path }}/verified.asc"
+        fingerprint: "{{ nodejs_rpm_key_fingerprint }}"
+        state: present
+  always:
+    - name: install-rpm-key | Stop the gpg-agent started by the key import
+      ansible.builtin.command:
+        argv:
+          - gpgconf
+          - --homedir
+          - "{{ nodejs_rpm_key_dir.path }}"
+          - --kill
+          - gpg-agent
+      changed_when: false
+      failed_when: false
+      when: nodejs_rpm_key_dir.path is defined
+
+    - name: install-rpm-key | Remove temporary directory for the Nodesource RPM key.
+      ansible.builtin.file:
+        path: "{{ nodejs_rpm_key_dir.path }}"
+        state: absent
+      changed_when: false
