@@ -30,6 +30,7 @@ jobs:
       matrix:
         ansible-core:
           - "2.19"
+          - "2.20"
           - "2"
     steps:
       - name: checkout
