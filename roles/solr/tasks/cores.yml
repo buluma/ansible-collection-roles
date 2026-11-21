@@ -69,8 +69,11 @@
   become: true
   become_user: "{{ solr_user }}"
 
+# Solr 10 replaced the -p option of `bin/solr create` with --solr-url.
 - name: cores | Create configured cores.
-  ansible.builtin.command: "{{ solr_install_path }}/bin/solr create -c {{ item }} -p {{ solr_port }}"
+  ansible.builtin.command: >-
+    {{ solr_install_path }}/bin/solr create -c {{ item }}
+    {{ ('--solr-url http://' ~ solr_connect_host ~ ':' ~ solr_port) if solr_version is version('10', '>=') else ('-p ' ~ solr_port) }}
   changed_when: true
   when: "item not in solr_cores_current.content"
   with_items: "{{ solr_cores }}"

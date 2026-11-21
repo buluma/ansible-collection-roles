@@ -22,11 +22,11 @@ sonar_data_dir: "{{ sonar_base_dir }}/data"
 sonar_temp_dir: "{{ sonar_base_dir }}/temp"
 
 # SonarQube version to install
-# 26.1.0.118079 (Community Build for Server 2026.1 LTA): 25.1.x crashes on
+# 26.11.0.134175 (Community Build 26.11): 25.1.x crashes on
 # Java 21.0.11+ with "UnsupportedOperationException: The Security Manager
 # is deprecated" (setSecurityManager removed) -- fixed upstream in 25.2,
-# and 2026.1 LTA documents support for both Java 21 and Java 25.
-sonar_version: "26.1.0.118079"
+# and 26.x documents support for both Java 21 and Java 25.
+sonar_version: "26.11.0.134175"
 
 # SonarQube system group
 sonar_group: sonar

@@ -15,26 +15,10 @@ This example is taken from [`molecule/default/converge.yml`](https://github.com/
 - name: Converge
   hosts: all
   become: true
+  gather_facts: true
 
-  vars:
-    distros:
-      - Debian9
-      - Debian10
-      - RedHat7
-      - RedHat8
-      - Fedora30
-      - Fedora31
-      - Fedora32
-      - Ubuntu16
-      - Ubuntu18
-      - Ubuntu20
-
-  tasks:
-    - include_role:
-        name: ansible-role-fish
-      when:
-        ansible_facts['distribution'] ~ ansible_facts['distribution_major_version']
-        in distros
+  roles:
+    - role: buluma.fish
 ```
 
 The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-fish/blob/master/molecule/default/prepare.yml):
@@ -87,7 +71,17 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 
 ```yaml
 ---
-fish_release_version: 3
+# The fish release series to install (the repository that is configured).
+# Valid values are 2, 3 and 4.
+#
+# Release 4 is the default. It has no builds for EL (RedHat family except Fedora:
+# RHEL, CentOS, Rocky, AlmaLinux, ...), so the role fails early when release 4
+# is requested there. EL users must pin `fish_release_version: 3`. Release 3
+# has builds for EL 7, 8 and 9, but not for EL 10 or Fedora 42 and newer.
+#
+# Release 3 also has no builds for Debian 13 and Ubuntu 25.04 and newer, use
+# release 4 there. Release 4 has no builds for Debian 11 and older.
+fish_release_version: 4
 ```
 
 ## [Requirements](#requirements)
@@ -116,7 +110,6 @@ This role has been tested on these [container images](https://hub.docker.com/u/b
 
 |container|tags|
 |---------|----|
-|[EL](https://hub.docker.com/r/buluma/docker-molecule-images)|10, 9|
 |[Debian](https://hub.docker.com/r/buluma/docker-molecule-images)|all|
 |[Fedora](https://hub.docker.com/r/buluma/docker-molecule-images)|44, 43|
 |[Ubuntu](https://hub.docker.com/r/buluma/docker-molecule-images)|all|

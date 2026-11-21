@@ -21,6 +21,18 @@ This example is taken from [`molecule/default/converge.yml`](https://github.com/
   vars:
     tomcat_instances:
       - name: tomcat
+      - name: tomcat10
+        version: 10
+        non_ssl_connector_port: 8081
+        ssl_connector_port: 8444
+        shutdown_port: 8006
+        ajp_port: 8010
+      - name: tomcat11
+        version: 11
+        non_ssl_connector_port: 8082
+        ssl_connector_port: 8445
+        shutdown_port: 8007
+        ajp_port: 8011
 ```
 
 The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-tomcat/blob/master/molecule/default/prepare.yml):
@@ -65,6 +77,8 @@ The machine needs to be prepared. In CI this is done using [`molecule/default/pr
     - role: buluma.bootstrap
     - role: buluma.core_dependencies
     - role: buluma.java
+      # Tomcat 11 needs Java 17+; EL9's buluma.java default is 11.
+      java_version: "{{ [java_default_version | int, 17] | max }}"
 ```
 
 Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
@@ -84,6 +98,8 @@ _tomcat_unarchive_urls:
     url: "{{ tomcat_mirror }}/dist/tomcat/tomcat-9/v{{ tomcat_version9 }}/bin/apache-tomcat-{{ tomcat_version9 }}.tar.gz"
   10:
     url: "{{ tomcat_mirror }}/dist/tomcat/tomcat-10/v{{ tomcat_version10 }}/bin/apache-tomcat-{{ tomcat_version10 }}.tar.gz"
+  11:
+    url: "{{ tomcat_mirror }}/dist/tomcat/tomcat-11/v{{ tomcat_version11 }}/bin/apache-tomcat-{{ tomcat_version11 }}.tar.gz"
 tomcat_access_log_directory: logs
 tomcat_access_log_enabled: true
 tomcat_access_log_pattern: "%h %l %u %t &quot;%r&quot; %s %b"
@@ -131,10 +147,11 @@ tomcat_ssl_connector_port: 8443
 tomcat_unarchive_url: "{{ _tomcat_unarchive_urls[tomcat_version].url }}"
 tomcat_user: tomcat
 tomcat_version: 9
-tomcat_version10: "10.1.61"
+tomcat_version10: "10.1.62"
+tomcat_version11: "11.0.29"
 tomcat_version7: "7.0.109"
 tomcat_version8: "8.5.100"
-tomcat_version9: "9.0.123"
+tomcat_version9: "9.0.124"
 tomcat_xms: 512M
 tomcat_xmx: 1024M
 ```
@@ -189,4 +206,4 @@ If you find issues, please register them on [GitHub](https://github.com/buluma/a
 
 [buluma](https://buluma.github.io/)
 
-The default now selects supported Tomcat 9.0.123, preserving the Java EE `javax.*` application API. Tomcat 10.1.61 is available with `tomcat_version: 10` and requires Java 11+ plus Jakarta-compatible applications. Explicit Tomcat 7/8 overrides remain for legacy callers; those release lines are unsupported. Existing extracted installations are guarded by their bin directory and require a separate upgrade deployment.
+The default now selects supported Tomcat 9.0.124, preserving the Java EE `javax.*` application API and running on Java 8+. Tomcat 10.1.62 is available with `tomcat_version: 10` and requires Java 11+; Tomcat 11.0.29 is available with `tomcat_version: 11` and requires Java 17+. Both use the Jakarta EE `jakarta.*` namespace, so existing `javax.*` applications must be migrated before they run. Each entry in `tomcat_instances` can pick its own major with `version`, so one host can run Tomcat 9, 10.1 and 11 side by side on distinct ports. This role does not install Java: provide a suitable runtime (for example with `buluma.java`) and point `tomcat_jre_home` or the instance `JRE_HOME` at it. Explicit Tomcat 7/8 overrides remain for legacy callers; those release lines are unsupported. Existing extracted installations are guarded by their bin directory and require a separate upgrade deployment.

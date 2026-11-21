@@ -18,40 +18,29 @@ This example is taken from [`molecule/default/converge.yml`](https://github.com/
   gather_facts: true
 
   pre_tasks:
-    - name: Set Java 8 package for RedHat.
-      ansible.builtin.set_fact:
-        java_packages:
-          - java-1.8.0-openjdk
-      when: ansible_facts['os_family'] == "RedHat"
-
-    - name: Set Java 8 package for Ubuntu.
-      ansible.builtin.set_fact:
-        java_packages:
-          - openjdk-8-jdk
-      when: ansible_facts['os_family'] == "Ubuntu"
-
-    - name: Set Java 11 package for Debian.
-      ansible.builtin.set_fact:
-        java_packages:
-          - openjdk-11-jdk
-      when: ansible_facts['os_family'] == "Debian"
-
     - name: Update apt cache.
       ansible.builtin.apt: update_cache=true cache_valid_time=600
       when: ansible_facts['os_family'] == "Debian"
 
-      # See: http://unix.stackexchange.com/a/342469
-    - name: Install dependencies (Debian).
-      ansible.builtin.apt:
-        name:
-          - openjdk-11-jre-headless
-          - ca-certificates-java
-        state: present
-      when: ansible_facts['distribution'] == "Debian"
+  vars:
+    # Solr 10 needs Java 21, which Debian 12 doesn't package, so that
+    # platform keeps testing Solr 9.
+    converge_solr_10: "{{ not (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] | int < 13) }}"
+    # Fedora has no java-21-openjdk package on every release, but its default
+    # (25 in buluma.java) is new enough.
+    converge_java_21: "{{ converge_solr_10 and ansible_facts['distribution'] != 'Fedora' }}"
 
   roles:
     - role: buluma.java
+      java_version: 21
+      when: converge_java_21
+    - role: buluma.java
+      when: not converge_java_21
     - role: buluma.solr
+      solr_version: "10.1.0"
+      when: converge_solr_10
+    - role: buluma.solr
+      when: not converge_solr_10
 ```
 
 The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/buluma/ansible-role-solr/blob/master/molecule/default/prepare.yml):
@@ -94,7 +83,6 @@ The machine needs to be prepared. In CI this is done using [`molecule/default/pr
 
   roles:
     - role: buluma.bootstrap
-    - role: buluma.java
 ```
 
 Also see a [full explanation and example](https://buluma.github.io/how-to-use-these-roles.html) on how to use these roles.
@@ -111,9 +99,14 @@ solr_create_user: true
 solr_user: solr
 solr_group: "{{ solr_user }}"
 
-solr_version: "8.11.2"
+# Solr 10 and later need Java 21 or newer, install it before this role (for example
+# with buluma.java and `java_version: 21`). The role runs Solr in standalone (user-managed) mode.
+# Solr 10 installs a systemd unit, older versions an init.d script, so changing solr_version
+# on a host that has Solr installed is not an upgrade, the install is skipped.
+solr_version: "9.11.0"
 solr_mirror: "https://archive.apache.org/dist"
 solr_remove_cruft: false
+solr_nashorn_core_version: "15.7"
 
 solr_service_manage: true
 solr_service_name: solr
@@ -135,7 +128,7 @@ solr_timezone: "UTC"
 solr_cores:
   - collection1
 
-solr_default_core_path: "{% if solr_version.split('.')[0] < '9' %}{{ solr_install_path }}/example/files/conf/{% else %}{{ solr_install_path }}/server/solr/configsets/_default/conf/{%
+solr_default_core_path: "{% if solr_version is version('9', '<') %}{{ solr_install_path }}/example/files/conf/{% else %}{{ solr_install_path }}/server/solr/configsets/_default/conf/{%
   endif %}"
 
 solr_config_file: /etc/default/{{ solr_service_name }}.in.sh

@@ -17,6 +17,10 @@
   ansible.builtin.package:
     name: python3-debian
 
+- name: debian | Install required package gnupg
+  ansible.builtin.package:
+    name: gnupg
+
 # The keys and the one-line sources below were written by earlier versions
 # of this role. Remove them so upgrades don't leave duplicate sources.
 - name: debian | Remove legacy Apt keys
@@ -31,9 +35,26 @@
     state: absent
   loop: "{{ _apt_repository[openjdk_release] }}"
 
+- name: debian | Create Apt keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# The key of a repository is the entry of _apt_key at the same position. It is
+# checked against its listed id before it is installed, see apt-key.yml.
+- name: debian | Verify and install Apt keys
+  ansible.builtin.include_tasks: apt-key.yml
+  loop: "{{ _apt_key[openjdk_release] | zip(_apt_repository[openjdk_release]) | list }}"
+  loop_control:
+    loop_var: _openjdk_apt_key
+    label: "{{ _openjdk_apt_key[0].url }}"
+  when: _openjdk_apt_key[0].state == 'present'
+
 # item.repo is a one-line "deb [options] URI SUITE [COMPONENT...]" string,
-# split here into the parts deb822_repository needs. The key of a repository
-# is the entry of _apt_key at the same position, and is fetched from its URL.
+# split here into the parts deb822_repository needs.
 # The noqa is there because ansible-lint can't validate the templated types.
 - name: debian | Apt-add-repository  # noqa: args[module]
   ansible.builtin.deb822_repository:
@@ -52,12 +73,10 @@
     _openjdk_repo_options: "{{ _openjdk_repo_line | regex_search('\\[[^\\]]*\\]') | default('', true) }}"
     _openjdk_repo_arch_option: "{{ _openjdk_repo_options | regex_search('arch=([^\\s\\]]+)', '\\1') | default([''], true) | first }}"
     _openjdk_repo_arch: "{{ _openjdk_repo_arch_option | split(',') | reject('equalto', '') | list }}"
-    # Without a signed-by option the key is fetched from the URL of the matching _apt_key entry.
-    _openjdk_repo_signed_by: "{{ _openjdk_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default([_apt_key[openjdk_release][ansible_loop.index0].url], true) | first }}"
+    # Without a signed-by option the key is the one apt-key.yml verified and installed for this repository.
+    _openjdk_repo_signed_by: "{{ _openjdk_repo_options | regex_search('signed-by=([^\\s\\]]+)', '\\1') | default(['/etc/apt/keyrings/' ~ (item.filename | regex_replace('[^A-Za-z0-9_-]+', '_')) ~ '.asc'], true) | first }}"
     _openjdk_repo_rest: "{{ _openjdk_repo_line | regex_replace('^\\S+\\s+(\\[[^\\]]*\\]\\s+)?', '') | split() }}"
   loop: "{{ _apt_repository[openjdk_release] }}"
-  loop_control:
-    extended: true
   register: result
   until: result is succeeded
 

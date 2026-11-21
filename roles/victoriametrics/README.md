@@ -79,7 +79,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 ```yaml
 ---
 proxy_env: {}
-victoriametrics_version: "1.154.1"
+victoriametrics_version: "1.156.0"
 victoriametrics_web_listen_address: "0.0.0.0"
 victoriametrics_web_listen_port: 8428
 victoriametrics_binary_install_dir: /usr/local/bin

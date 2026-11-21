@@ -9,7 +9,7 @@ platforms:
   - name: Debian
     versions:
       # Excludes 12: its repos top out at openjdk-17-jre, but SonarQube
-      # 26.1.0.118079 (see defaults/main.yml) requires Java 21 or 25 --
+      # 26.11.0.134175 (see defaults/main.yml) requires Java 21 or 25 --
       # no native package on Debian 12 satisfies that.
       - "13"
   - name: Fedora

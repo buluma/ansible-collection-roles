@@ -22,6 +22,21 @@
       - fish_release_version in _fish_valid_versions
     fail_msg: Invalid fish_release_version '{{ fish_release_version }}'. Valid versions are {{ _fish_valid_versions | join(', ') }}.
 
+# The opensuse repository for release 4 has no EL builds. Fail here, before any
+# repository is configured, instead of with a 404 or an undefined variable later.
+- name: Ensure fish release is available on this platform
+  ansible.builtin.assert:
+    that:
+      - not (fish_release_version is version('4', '>=')
+        and ansible_facts['os_family'] == 'RedHat'
+        and ansible_facts['distribution'] != 'Fedora')
+    fail_msg: >-
+      fish release {{ fish_release_version }} has no packages for
+      {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_major_version'] }} (EL).
+      Set fish_release_version: 3 for this host.
+  tags:
+    - fish
+
 - name: Include distribution specific variables
   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:

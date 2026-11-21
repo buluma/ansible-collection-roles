@@ -291,6 +291,22 @@
   when:
     - item.tls_key is defined
     - item.type == "tcp"
+- name: assert | Test vault_configuration_listeners has a TLS certificate and key unless TLS is disabled
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - (item.tls_cert is defined and item.tls_cert != "") or (item.tls_cert_file is defined and item.tls_cert_file != "")
+      - (item.tls_key is defined and item.tls_key != "") or (item.tls_key_file is defined and item.tls_key_file != "")
+    fail_msg: >-
+      Listener {{ item.address }} has TLS enabled but no certificate or key. Set tls_cert and tls_key
+      (or tls_cert_file and tls_key_file) on it, or set tls_disable: true. The role does not ship a
+      default key.
+  loop: "{{ vault_configuration_listeners }}"
+  loop_control:
+    label: "{{ item.address }}"
+  when:
+    - item.type == "tcp"
+    - not (item.tls_disable | default(false))
 - name: assert | Test vault_configuration_listeners.tls_min_version
   ansible.builtin.assert:
     quiet: true

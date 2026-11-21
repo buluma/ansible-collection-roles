@@ -2,25 +2,34 @@
 - name: setup-RedHat | Set up the Nodesource RPM directory.
   ansible.builtin.set_fact:
     nodejs_rhel_rpm_dir: "pub_{{ nodejs_version }}"
+    # NodeSource stopped publishing nodesource-release-elN rpms after 20.x. From 22.x
+    # on, the repository lives under nodistro/ and is configured with a repo file.
+    nodejs_rhel_legacy_layout: "{{ (nodejs_version | regex_replace('^(\\d+).*$', '\\1')) is version('22', '<') }}"
 
 - name: setup-RedHat | Import Nodesource RPM key (CentOS < 7).
   ansible.builtin.rpm_key:
     key: http://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
     state: present
-  when: ansible_facts['distribution_major_version'] | int < 7
+  when:
+    - nodejs_rhel_legacy_layout
+    - ansible_facts['distribution_major_version'] | int < 7
 
 - name: setup-RedHat | Import Nodesource RPM key (CentOS 7+).
   ansible.builtin.rpm_key:
     key: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
     state: present
-  when: ansible_facts['distribution_major_version'] | int >= 7
+  when:
+    - nodejs_rhel_legacy_layout
+    - ansible_facts['distribution_major_version'] | int >= 7
 
 - name: setup-RedHat | Add Nodesource repositories for Node.js (CentOS < 7).
   ansible.builtin.dnf:
     name: "http://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_facts['distribution_major_version'] }}/{{ ansible_facts['architecture'] }}/nodesource-release-el{{
       ansible_facts['distribution_major_version'] }}-1.noarch.rpm"
     state: present
-  when: ansible_facts['distribution_major_version'] | int < 7
+  when:
+    - nodejs_rhel_legacy_layout
+    - ansible_facts['distribution_major_version'] | int < 7
   register: node_repo
 
 - name: setup-RedHat | Add Nodesource repositories for Node.js (CentOS 7+).
@@ -28,12 +37,40 @@
     name: "https://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_facts['distribution_major_version'] }}/{{ ansible_facts['architecture'] }}/nodesource-release-el{{
       ansible_facts['distribution_major_version'] }}-1.noarch.rpm"
     state: present
-  when: ansible_facts['distribution_major_version'] | int >= 7
+  when:
+    - nodejs_rhel_legacy_layout
+    - ansible_facts['distribution_major_version'] | int >= 7
   register: node_repo
+
+# The key is imported up front so the package signature check below does not need
+# an interactive key import.
+- name: setup-RedHat | Import Nodesource RPM key (22.x and later).
+  ansible.builtin.rpm_key:
+    key: https://rpm.nodesource.com/gpgkey/ns-operations-public.key
+    state: present
+  when: not nodejs_rhel_legacy_layout
+
+# repo_gpgcheck stays off because this layout does not publish repomd.xml.asc.
+# Packages are still checked (gpgcheck) against the key imported above.
+# The settings mirror the repo file written by NodeSource's setup script.
+- name: setup-RedHat | Add Nodesource repository for Node.js (22.x and later).
+  ansible.builtin.yum_repository:
+    name: nodesource-nodejs
+    description: Node.js Packages for Linux RPM based distros - $basearch
+    baseurl: "https://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/nodistro/nodejs/$basearch"
+    gpgkey: https://rpm.nodesource.com/gpgkey/ns-operations-public.key
+    gpgcheck: true
+    repo_gpgcheck: false
+    priority: "9"
+    module_hotfixes: true
+    enabled: true
+    state: present
+  when: not nodejs_rhel_legacy_layout
+  register: node_repo_nodistro
 
 - name: setup-RedHat | Update package cache if repo was added.
   ansible.builtin.yum: update_cache=true
-  when: node_repo is changed
+  when: node_repo is changed or node_repo_nodistro is changed
   tags: ["skip_ansible_lint"]
 
 - name: setup-RedHat | Ensure Node.js AppStream module is disabled (CentOS 8+).
@@ -46,4 +83,4 @@
   ansible.builtin.dnf:
     name: "nodejs-{{ nodejs_version | regex_replace('x', '') }}*"
     state: present
-    enablerepo: nodesource
+    enablerepo: "{{ 'nodesource' if nodejs_rhel_legacy_layout else 'nodesource-nodejs' }}"

@@ -1,9 +1,9 @@
 ---
 # https://github.com/030/ansible-firefox
-# https://ftp.mozilla.org/pub/firefox/releases/158.0.1/SHA512SUMS
-firefox_checksum: "sha512:f15f8b281c4ead2ef35d0b56c59a0ead825521d7243d16f3e7c36f0c2732101ae1f564e044a7aad1e04c310f70064611d13434fb24d052a662356ce068d7d3ec"
+# https://ftp.mozilla.org/pub/firefox/releases/160.0.1/SHA512SUMS
+firefox_checksum: "sha512:516fdef2706a48e2d6bf93f4ae8c5ed6b1445dff1c5fed3ed652761b0d13bbe1170cde77fafacc68eb4965d27effa87e59486db5b1cee6039f566eb820bde0a6"
 firefox_desktop_icon: false
 firefox_home: /opt/firefox-{{ firefox_version }}
 firefox_image_path: "firefox/browser/chrome/icons/default/default128.png"
 firefox_logo: "{{ firefox_home }}/{{ firefox_image_path }}"
-firefox_version: "158.0.1"
+firefox_version: "160.0.1"

@@ -17,7 +17,7 @@ This example is taken from [`molecule/default/converge.yml`](https://github.com/
   become: true
 
   vars:
-    # nodejs_version: "18.x"
+    # nodejs_version: "26.x"
     nodejs_install_npm_user: root
     npm_config_prefix: /root/.npm-global
     npm_config_unsafe_perm: "true"
@@ -92,7 +92,7 @@ The default values for the variables are set in [`defaults/main.yml`](https://gi
 ---
 # Set the version of Node.js to install ("12.x", "13.x", "14.x", "15.x", etc.).
 # Version numbers from Nodesource: https://github.com/nodesource/distributions
-nodejs_version: "20.x"
+nodejs_version: "26.x"
 
 # The user for whom the npm packages will be installed.
 # nodejs_install_npm_user: username

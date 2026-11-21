@@ -4,7 +4,7 @@ vector_config_path: /etc/vector
 vector_config_template_path: templates/config/
 vector_configs_folder: "{{ vector_config_path }}"
 vector_data_dir: /var/lib/vector
-vector_deb_package: "https://apt.vector.dev/pool/v/ve/vector_{{ vector_version }}-1_{{ vector_package_architecture }}.deb"
+vector_deb_package: "https://github.com/vectordotdev/vector/releases/download/v{{ vector_version }}/vector_{{ vector_version }}-1_{{ vector_package_architecture }}.deb"
 vector_documentation_link: "https://vector.dev/docs/about/what-is-vector/"
 vector_env_path: /etc/default/vector
 vector_exec_name: vector
@@ -19,4 +19,4 @@ vector_skeleton_paths: "{{ vector_skeleton_paths_base + vector_skeleton_paths_ex
 vector_skeleton_paths_base:
   - "{{ vector_config_path }}"
 vector_user: vector
-vector_version: "0.60.0"
+vector_version: "0.62.0"

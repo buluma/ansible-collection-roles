@@ -19,6 +19,16 @@
   tags:
     - fish
 
+- name: install-RedHat | Require a fish repository for this release and platform
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['distribution_major_version'] | int in _fish_repo_strings['version_' ~ fish_release_version].get(ansible_facts['distribution'], {})
+    fail_msg: >-
+      fish release {{ fish_release_version }} has no repository for
+      {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_major_version'] }}.
+  tags:
+    - fish
+
 - name: install-RedHat | Create yum repo
   ansible.builtin.yum_repository:
     name: shells_fish_release_{{ fish_release_version }}

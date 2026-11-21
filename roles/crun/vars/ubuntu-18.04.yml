@@ -15,13 +15,13 @@
 
 _apt_key:
   - keyring: "/etc/apt/trusted.gpg.d/home_buluma.gpg"
-    url: "http://downloadcontent.opensuse.org/repositories/home:/buluma/xUbuntu_18.04/Release.key"
+    url: "https://downloadcontent.opensuse.org/repositories/home:/buluma/xUbuntu_18.04/Release.key"
     id: "73fa4cd708ec6538ce87b9db8a0cf4d70dee6ef3"
     state: "present"
 
 _apt_repository:
   - filename: "home:buluma"
-    repo: "deb http://downloadcontent.opensuse.org/repositories/home:/buluma/xUbuntu_18.04/ /"
+    repo: "deb https://downloadcontent.opensuse.org/repositories/home:/buluma/xUbuntu_18.04/ /"
     state: "present"
 
 _apt:

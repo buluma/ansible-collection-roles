@@ -22,11 +22,21 @@ _fish_repo_strings:
       6: RedHat_RHEL-{{ ansible_facts['distribution_major_version'] }}
       7: RHEL_{{ ansible_facts['distribution_major_version'] }}
       8: CentOS_{{ ansible_facts['distribution_major_version'] }}
+      9: CentOS-9_Stream
 
     CentOS:
       6: RedHat_RHEL-{{ ansible_facts['distribution_major_version'] }}
       7: RHEL_{{ ansible_facts['distribution_major_version'] }}
       8: CentOS_{{ ansible_facts['distribution_major_version'] }}
+      9: CentOS-9_Stream
+
+    Rocky:
+      8: CentOS_{{ ansible_facts['distribution_major_version'] }}
+      9: CentOS-9_Stream
+
+    AlmaLinux:
+      8: CentOS_{{ ansible_facts['distribution_major_version'] }}
+      9: CentOS-9_Stream
 
     Fedora:
       28: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
@@ -34,3 +44,10 @@ _fish_repo_strings:
       30: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
       31: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
       32: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
+
+  # Release 4 has no EL builds, main.yml fails early for EL hosts.
+  version_4:
+    Fedora:
+      42: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
+      43: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
+      44: "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}"
