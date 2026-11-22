@@ -126,7 +126,7 @@
 - name: Create postgres users
   community.postgresql.postgresql_user:
     name: "{{ item.name }}"
-    db: "{{ item.db | default(omit) }}"
+    login_db: "{{ item.db | default(omit) }}"
     password: "{{ item.password }}"
     expires: "{{ item.expires | default(omit) }}"
     # port: "{{ postgres_port }}"
