@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.1.1 (2026-11-22)
+
+**Fixes:**
+
+- `postgres`: creating a user with `postgres_users[].db` failed with "Unsupported parameters ... db" because community.postgresql 5.0.0 removed the `db` alias from `postgresql_user`. The role passes `login_db` now, which earlier community.postgresql releases also accept. The role variable is unchanged.
+
 ## 5.1.0 (2026-11-21)
 
 **Changes:**
